@@ -17,7 +17,7 @@ export const COUNTRIES: CountryPhone[] = [
   { code: 'FR', dialCode: '+33',  flag: '🇫🇷', name: 'France',        minDigits: 9,  maxDigits: 9 },
   { code: 'IT', dialCode: '+39',  flag: '🇮🇹', name: 'Italy',         minDigits: 9,  maxDigits: 11 },
   { code: 'ES', dialCode: '+34',  flag: '🇪🇸', name: 'Spain',         minDigits: 9,  maxDigits: 9 },
-  { code: 'BG', dialCode: '+359', flag: '🇧🇬', name: 'Bulgaria',      minDigits: 8,  maxDigits: 9 },
+  { code: 'BG', dialCode: '+359', flag: '🇧🇬', name: 'Bulgaria',      minDigits: 7,  maxDigits: 9 },
   { code: 'PL', dialCode: '+48',  flag: '🇵🇱', name: 'Poland',        minDigits: 9,  maxDigits: 9 },
   { code: 'NL', dialCode: '+31',  flag: '🇳🇱', name: 'Netherlands',   minDigits: 9,  maxDigits: 9 },
   { code: 'AU', dialCode: '+61',  flag: '🇦🇺', name: 'Australia',     minDigits: 9,  maxDigits: 9 },

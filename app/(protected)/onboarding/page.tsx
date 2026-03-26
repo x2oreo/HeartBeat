@@ -15,10 +15,11 @@ type MedEntry = {
 }
 
 type ContactEntry = {
-  name: string
+  firstName: string
+  lastName: string
   phone: string
   relationship: string
-  errors: { name?: string; phone?: string }
+  errors: { firstName?: string; lastName?: string; phone?: string }
 }
 
 // ── Constants ───────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ export default function OnboardingPage() {
 
   // Step 3
   const [contacts, setContacts] = useState<ContactEntry[]>([
-    { name: '', phone: '', relationship: 'Cardiologist', errors: {} },
+    { firstName: '', lastName: '', phone: '', relationship: 'Cardiologist', errors: {} },
   ])
 
   // ── Drug Search ─────────────────────────────────────────────────
@@ -181,12 +182,12 @@ export default function OnboardingPage() {
 
   // ── Contacts ────────────────────────────────────────────────────
 
-  function updateContact(index: number, field: 'name' | 'phone' | 'relationship', value: string) {
+  function updateContact(index: number, field: 'firstName' | 'lastName' | 'phone' | 'relationship', value: string) {
     setContacts((prev) =>
       prev.map((c, i) => {
         if (i !== index) return c
         const updated = { ...c, [field]: value }
-        if (field === 'name' || field === 'phone') {
+        if (field === 'firstName' || field === 'lastName' || field === 'phone') {
           updated.errors = { ...c.errors, [field]: undefined }
         }
         return updated
@@ -195,7 +196,7 @@ export default function OnboardingPage() {
   }
 
   function addContact() {
-    setContacts((prev) => [...prev, { name: '', phone: '', relationship: 'Family', errors: {} }])
+    setContacts((prev) => [...prev, { firstName: '', lastName: '', phone: '', relationship: 'Family', errors: {} }])
   }
 
   function removeContact(index: number) {
@@ -211,7 +212,8 @@ export default function OnboardingPage() {
     let hasErrors = false
     const validated = contacts.map((c) => {
       const errors: ContactEntry['errors'] = {}
-      if (!c.name.trim()) { errors.name = 'Name is required'; hasErrors = true }
+      if (!c.firstName.trim()) { errors.firstName = 'First name is required'; hasErrors = true }
+      if (!c.lastName.trim()) { errors.lastName = 'Last name is required'; hasErrors = true }
       const { country, nationalNumber } = parseE164(c.phone)
       const phoneError = validateNationalNumber(country, nationalNumber)
       if (phoneError) { errors.phone = phoneError; hasErrors = true }
@@ -229,7 +231,7 @@ export default function OnboardingPage() {
           genotype: genotype ?? 'UNKNOWN',
           medications: medications.map((m) => m.genericName),
           emergencyContacts: validated.map((c) => ({
-            name: c.name.trim(),
+            name: `${c.firstName.trim()} ${c.lastName.trim()}`,
             phone: c.phone,
             relationship: c.relationship.toLowerCase(),
           })),
@@ -503,21 +505,39 @@ export default function OnboardingPage() {
                     )}
                   </div>
 
-                  <div>
-                    <input
-                      type="text"
-                      value={contact.name}
-                      onChange={(e) => updateContact(i, 'name', e.target.value)}
-                      placeholder="Full name"
-                      className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
-                        contact.errors.name
-                          ? 'border-[#FF3B30]'
-                          : 'border-separator'
-                      }`}
-                    />
-                    {contact.errors.name && (
-                      <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.name}</p>
-                    )}
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={contact.firstName}
+                        onChange={(e) => updateContact(i, 'firstName', e.target.value)}
+                        placeholder="First name"
+                        className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
+                          contact.errors.firstName
+                            ? 'border-[#FF3B30]'
+                            : 'border-separator'
+                        }`}
+                      />
+                      {contact.errors.firstName && (
+                        <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.firstName}</p>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={contact.lastName}
+                        onChange={(e) => updateContact(i, 'lastName', e.target.value)}
+                        placeholder="Last name"
+                        className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
+                          contact.errors.lastName
+                            ? 'border-[#FF3B30]'
+                            : 'border-separator'
+                        }`}
+                      />
+                      {contact.errors.lastName && (
+                        <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.lastName}</p>
+                      )}
+                    </div>
                   </div>
                   <PhoneInput
                     value={contact.phone}

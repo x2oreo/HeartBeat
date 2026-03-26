@@ -54,8 +54,8 @@ export default function SettingsPage() {
 
   // New contact form state
   const [showAddContact, setShowAddContact] = useState(false)
-  const [newContact, setNewContact] = useState({ name: '', phone: '', relationship: 'Cardiologist' })
-  const [newContactErrors, setNewContactErrors] = useState<{ name?: string; phone?: string }>({})
+  const [newContact, setNewContact] = useState({ firstName: '', lastName: '', phone: '', relationship: 'Cardiologist' })
+  const [newContactErrors, setNewContactErrors] = useState<{ firstName?: string; lastName?: string; phone?: string }>({})
   const [addContactError, setAddContactError] = useState<string | null>(null)
   const [addingContact, setAddingContact] = useState(false)
   const [removingContactId, setRemovingContactId] = useState<string | null>(null)
@@ -112,7 +112,8 @@ export default function SettingsPage() {
 
   function validateNewContact() {
     const errors: typeof newContactErrors = {}
-    if (!newContact.name.trim()) errors.name = 'Name is required'
+    if (!newContact.firstName.trim()) errors.firstName = 'First name is required'
+    if (!newContact.lastName.trim()) errors.lastName = 'Last name is required'
     const { country, nationalNumber } = parseE164(newContact.phone)
     const phoneError = validateNationalNumber(country, nationalNumber)
     if (phoneError) errors.phone = phoneError
@@ -129,7 +130,7 @@ export default function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: newContact.name.trim(),
+          name: `${newContact.firstName.trim()} ${newContact.lastName.trim()}`,
           phone: newContact.phone,
           relationship: newContact.relationship.toLowerCase(),
         }),
@@ -137,7 +138,7 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error()
       const created: Contact = await res.json()
       setProfile((prev) => prev ? { ...prev, contacts: [...prev.contacts, created] } : prev)
-      setNewContact({ name: '', phone: '', relationship: 'Cardiologist' })
+      setNewContact({ firstName: '', lastName: '', phone: '', relationship: 'Cardiologist' })
       setNewContactErrors({})
       setShowAddContact(false)
     } catch {
@@ -262,15 +263,27 @@ export default function SettingsPage() {
 
           {showAddContact ? (
             <div className="space-y-3 p-3 bg-surface rounded-xl">
-              <div>
-                <input
-                  type="text"
-                  value={newContact.name}
-                  onChange={(e) => setNewContact((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="Full name"
-                  className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${newContactErrors.name ? 'border-[#FF3B30]' : 'border-separator'}`}
-                />
-                {newContactErrors.name && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.name}</p>}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={newContact.firstName}
+                    onChange={(e) => setNewContact((p) => ({ ...p, firstName: e.target.value }))}
+                    placeholder="First name"
+                    className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${newContactErrors.firstName ? 'border-[#FF3B30]' : 'border-separator'}`}
+                  />
+                  {newContactErrors.firstName && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.firstName}</p>}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={newContact.lastName}
+                    onChange={(e) => setNewContact((p) => ({ ...p, lastName: e.target.value }))}
+                    placeholder="Last name"
+                    className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${newContactErrors.lastName ? 'border-[#FF3B30]' : 'border-separator'}`}
+                  />
+                  {newContactErrors.lastName && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.lastName}</p>}
+                </div>
               </div>
               <PhoneInput
                 value={newContact.phone}

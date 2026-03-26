@@ -11,3 +11,15 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model HealthMetric {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String
+  value     Float
+  unit      String
+  timestamp DateTime
+  deviceId  String   @map("device_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("health_metrics")
+}

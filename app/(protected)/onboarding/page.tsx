@@ -296,7 +296,7 @@ export default function OnboardingPage() {
                       }`}
                     >
                       {genotype === option.value && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-brand-light0" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-brand" />
                       )}
                     </div>
                   </div>

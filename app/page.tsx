@@ -82,7 +82,7 @@ export default async function HomePage() {
             </svg>
             <span className="text-lg font-bold">Scan Medication</span>
           </div>
-          <p className="text-blue-200 text-sm mt-1">Check any drug for QT risk</p>
+          <p className="text-brand-light text-sm mt-1">Check any drug for QT risk</p>
         </Link>
 
         {/* Medication Summary */}

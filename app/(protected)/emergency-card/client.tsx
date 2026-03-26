@@ -65,7 +65,7 @@ export function EmergencyCardClient() {
             <div className="bg-coral-light dark:bg-coral-deep/40 rounded-t-2xl h-20" />
             <div className="bg-coral/30 dark:bg-coral-deep/60 h-10" />
             <div className="bg-white dark:bg-neutral-900 border border-t-0 border-neutral-200 dark:border-neutral-700 rounded-b-2xl p-6 space-y-4">
-              <div className="h-16 bg-red-50 dark:bg-red-950/30 rounded-xl" />
+              <div className="h-16 bg-coral-light dark:bg-coral-deep/20 rounded-xl" />
               <div className="space-y-3">
                 <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" />
                 <div className="h-20 bg-neutral-100 dark:bg-neutral-800 rounded-lg" />

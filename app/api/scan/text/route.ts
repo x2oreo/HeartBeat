@@ -29,13 +29,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await scanDrugByText(parsed.data.drugName, user.id)
+    const result = await Promise.race([
+      scanDrugByText(parsed.data.drugName, user.id),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('SCAN_TIMEOUT')), 30_000),
+      ),
+    ])
     return NextResponse.json(result)
   } catch (err) {
     console.error('[POST /api/scan/text] Error:', err)
+    const message = err instanceof Error && err.message === 'SCAN_TIMEOUT'
+      ? 'Scan timed out. External medical databases may be slow. Please try again.'
+      : 'Scan failed. Please try again.'
     return NextResponse.json(
-      { error: 'Scan failed. Please try again.' },
-      { status: 500 },
+      { error: message },
+      { status: err instanceof Error && err.message === 'SCAN_TIMEOUT' ? 504 : 500 },
     )
   }
 }

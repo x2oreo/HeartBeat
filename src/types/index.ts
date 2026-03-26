@@ -34,6 +34,15 @@ export type QtDrugEntry = {
   cyp: CypData
 }
 
+// ── Drug Search (autocomplete result from /api/medications/search) ─
+
+export type DrugSearchResult = {
+  genericName: string
+  brandNames: string[]
+  riskCategory: RiskCategory
+  isDTA: boolean
+}
+
 // ── Drug Info (lookup result) ──────────────────────────────────────
 
 export type DrugInfo = {

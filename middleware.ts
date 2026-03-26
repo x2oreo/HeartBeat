@@ -49,6 +49,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Pass pathname to server components via header (used by protected layout)
+  supabaseResponse.headers.set('x-next-pathname', pathname)
+
   return supabaseResponse
 }
 

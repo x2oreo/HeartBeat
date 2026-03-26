@@ -62,32 +62,19 @@ function suggestionRiskBadge(category: RiskCategory) {
   return null
 }
 
-async function resizeImage(file: File, maxSize: number): Promise<string> {
+function readFileAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const objectUrl = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl)
-      let { width, height } = img
-      if (width > maxSize || height > maxSize) {
-        const ratio = Math.min(maxSize / width, maxSize / height)
-        width = Math.round(width * ratio)
-        height = Math.round(height * ratio)
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return reject(new Error('Canvas not supported'))
-      ctx.drawImage(img, 0, 0, width, height)
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-      resolve(dataUrl.split(',')[1])
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result
+      if (typeof result !== 'string') return reject(new Error('Failed to read file'))
+      // Strip the data URL prefix (e.g. "data:image/heic;base64,")
+      const base64 = result.split(',')[1]
+      if (!base64) return reject(new Error('Empty file'))
+      resolve(base64)
     }
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Failed to load image'))
-    }
-    img.src = objectUrl
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsDataURL(file)
   })
 }
 
@@ -104,12 +91,56 @@ function LoadingSkeleton() {
   )
 }
 
+function sourceLabel(source: ScanResult['source']): string {
+  switch (source) {
+    case 'CREDIBLEMEDS_VERIFIED': return 'Verified by CredibleMeds'
+    case 'CREDIBLEMEDS_API': return 'CredibleMeds API'
+    case 'MULTI_SOURCE': return 'Multi-Source Verified'
+    case 'AI_ENRICHED': return 'AI + External Data'
+    case 'AI_ASSESSED': return 'AI Assessment Only'
+  }
+}
+
+function sourceBadgeStyle(source: ScanResult['source']): string {
+  switch (source) {
+    case 'CREDIBLEMEDS_VERIFIED':
+    case 'CREDIBLEMEDS_API':
+    case 'MULTI_SOURCE':
+      return 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'
+    case 'AI_ENRICHED':
+      return 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'
+    case 'AI_ASSESSED':
+      return 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
+  }
+}
+
 function ResultCard({ result, showActions = true }: { result: ScanResult; showActions?: boolean }) {
   const colors = riskColor(result.riskCategory, result.isDTA)
   const headline = riskHeadline(result.riskCategory, result.isDTA)
 
   return (
     <div className="space-y-4">
+      {/* Fuzzy match banner */}
+      {result.fuzzyMatch && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            Showing results for <strong>{result.fuzzyMatch.matchedName}</strong>
+            {result.fuzzyMatch.originalQuery !== result.fuzzyMatch.matchedName && (
+              <> (you searched for &ldquo;{result.fuzzyMatch.originalQuery}&rdquo;)</>
+            )}
+          </p>
+        </div>
+      )}
+
+      {/* AI-only warning */}
+      {result.source === 'AI_ASSESSED' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+            This drug was not found in any verified medical database. This assessment is based on AI analysis only. Please consult your cardiologist.
+          </p>
+        </div>
+      )}
+
       {/* Main risk card */}
       <div className={`rounded-2xl border-2 p-5 ${colors.bg} ${colors.border}`}>
         <div className="flex items-start gap-3">
@@ -139,6 +170,12 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             <dt className="text-xs text-neutral-500 dark:text-neutral-400">Primary Use</dt>
             <dd className="text-neutral-800 dark:text-neutral-200">{result.primaryUse}</dd>
           </div>
+          {result.dosage && (
+            <div>
+              <dt className="text-xs text-neutral-500 dark:text-neutral-400">Dosage</dt>
+              <dd className="text-neutral-800 dark:text-neutral-200">{result.dosage}</dd>
+            </div>
+          )}
           {result.qtMechanism && (
             <div className="sm:col-span-2">
               <dt className="text-xs text-neutral-500 dark:text-neutral-400">QT Mechanism</dt>
@@ -146,10 +183,20 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             </div>
           )}
         </dl>
-        <div className="mt-3">
-          <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${colors.badge}`}>
-            {result.source === 'CREDIBLEMEDS_VERIFIED' ? 'Verified by CredibleMeds' : 'AI Assessment'}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${sourceBadgeStyle(result.source)}`}>
+            {sourceLabel(result.source)}
           </span>
+          {result.enrichment && result.enrichment.fdaTorsadesReports !== null && result.enrichment.fdaTorsadesReports > 0 && (
+            <span className="inline-block rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/60 dark:text-red-300">
+              {result.enrichment.fdaTorsadesReports} FDA TdP reports
+            </span>
+          )}
+          {result.enrichment && result.enrichment.dataSources.length > 1 && (
+            <span className="inline-block rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+              {result.enrichment.dataSources.length} data sources
+            </span>
+          )}
         </div>
       </div>
 
@@ -292,14 +339,14 @@ export function ScanPage() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (!file) return
+      setPhotoError(null)
       try {
-        setPhotoError(null)
-        const base64 = await resizeImage(file, 1024)
+        const base64 = await readFileAsBase64(file)
         scanByPhoto(base64)
-      } catch {
-        setPhotoError('Could not process image. Please try again or type the medication name.')
+      } catch (err) {
+        console.error('Image read failed:', err)
+        setPhotoError('Could not read image. Please try again or type the medication name.')
       }
-      // Reset the input so the same file can be selected again
       e.target.value = ''
     },
     [scanByPhoto],
@@ -423,7 +470,7 @@ export function ScanPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             capture="environment"
             className="hidden"
             onChange={handlePhotoCapture}

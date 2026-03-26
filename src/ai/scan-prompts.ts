@@ -1,4 +1,7 @@
 import type { QtDrugEntry, CypData, RiskCategory } from '@/types'
+import type { CredibleMedsResult } from '@/services/external/crediblemeds-client'
+import type { OpenFDASignal } from '@/services/external/openfda-client'
+import type { RxNormResult } from '@/services/external/rxnorm-client'
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -152,4 +155,183 @@ When qtRiskAssessment is NOT_A_DRUG:
 - Set reasoning to explain what the input appears to be (or that it's unrecognizable)
 - Set recommendation to "This does not appear to be a medication name. Please check the spelling and try again, or type the generic name of the medication."
 - Leave genericName, drugClass, and primaryUse unset`
+}
+
+// ── Enriched Unknown Drug Prompt ─────────────────────────────────────
+// Injects external API data so Claude reasons with facts, not just parametric knowledge.
+
+export type EnrichmentData = {
+  rxnormResolution: RxNormResult | null
+  credibleMedsData: CredibleMedsResult | null
+  fdaSignal: OpenFDASignal | null
+}
+
+export function buildEnrichedUnknownDrugPrompt(
+  drugName: string,
+  enrichment: EnrichmentData,
+): string {
+  const externalDataBlock = buildExternalDataBlock(enrichment)
+
+  return `${SYSTEM_CONTEXT}
+
+---
+
+${externalDataBlock}
+
+## TASK
+A patient with Long QT Syndrome has scanned a medication called "${drugName}" which was NOT found in our local verified QT drug database.
+
+${enrichment.credibleMedsData ? `IMPORTANT: The CredibleMeds database (the gold standard for QT risk) has classified this drug. Use their classification as authoritative.` : ''}
+${enrichment.fdaSignal && enrichment.fdaSignal.torsadesReportCount > 0 ? `IMPORTANT: The FDA FAERS database shows ${enrichment.fdaSignal.torsadesReportCount} adverse event reports of Torsades de Pointes for this drug. This is real-world evidence of QT danger.` : ''}
+
+Analyze this drug name and provide:
+
+1. **Is this a real medication?** Determine if "${drugName}" is a legitimate medication name, a misspelling of one, or not a medication at all.
+
+2. **If it IS a real drug:**
+   - Provide the correct generic/INN name
+   - Identify its drug class
+   - State what it is commonly prescribed for
+   - Assess its QT prolongation risk using the external data above AND your medical knowledge:
+     - LIKELY_SAFE: No known QT-prolonging effect AND no adverse event signals
+     - POSSIBLE_RISK: Some evidence of QT prolongation (CredibleMeds listing, FDA reports, or medical literature)
+     - UNKNOWN: Insufficient data to make a determination
+
+3. **If it is NOT a real drug:**
+   - Set qtRiskAssessment to NOT_A_DRUG
+   - Explain what the input appears to be
+
+## CRITICAL RULES FOR THIS ASSESSMENT
+- If CredibleMeds data is provided above, use their risk category as the primary basis for your assessment
+- If FDA FAERS data shows torsades reports, this is strong evidence of QT risk — do not classify as LIKELY_SAFE
+- If you are UNSURE whether a drug prolongs QT, classify it as POSSIBLE_RISK, not LIKELY_SAFE
+- ALWAYS recommend consulting a cardiologist
+- Your assessment must be clearly marked as requiring medical verification
+
+## IDENTIFYING NON-DRUGS
+Set isRealDrug to false and qtRiskAssessment to NOT_A_DRUG when:
+- The input is random characters or gibberish
+- The input is a food, supplement brand, or non-pharmaceutical product
+- The input is a medical condition or symptom, not a medication
+- You cannot identify ANY real medication that matches or closely resembles the input
+
+When qtRiskAssessment is NOT_A_DRUG:
+- Set reasoning to explain what the input appears to be
+- Set recommendation to "This does not appear to be a medication name. Please check the spelling and try again, or type the generic name of the medication."
+- Leave genericName, drugClass, and primaryUse unset`
+}
+
+// ── Combo Prompt for Unknown/AI-Assessed Drugs ──────────────────────
+// Handles the gap where an AI-assessed drug needs combo analysis against
+// the user's current medications.
+
+export function buildComboPromptForUnknownDrug(
+  drugName: string,
+  aiAssessment: {
+    genericName: string
+    drugClass: string
+    primaryUse: string
+    qtRiskAssessment: string
+    reasoning: string
+  },
+  currentMeds: MedicationWithCyp[],
+  genotype: string | null,
+  enrichment: EnrichmentData | null,
+): string {
+  const currentMedsBlock = currentMeds.length > 0
+    ? currentMeds.map((m, i) =>
+        `${i + 1}. ${m.genericName}\n   - QT Risk: ${m.qtRisk}\n   - DTA: ${m.isDTA ? 'YES' : 'no'}\n   - ${formatCypProfile(m.cypData)}`
+      ).join('\n')
+    : 'Patient is not currently taking any other medications.'
+
+  const externalDataBlock = enrichment ? buildExternalDataBlock(enrichment) : ''
+
+  return `${SYSTEM_CONTEXT}
+
+---
+
+## PATIENT PROFILE
+- LQTS Genotype: ${genotype ?? 'Unknown (assume worst-case for all genotype-specific risks)'}
+
+## PATIENT'S CURRENT MEDICATIONS
+${currentMedsBlock}
+
+## NEW DRUG BEING SCANNED (AI-ASSESSED — NOT IN VERIFIED DATABASE)
+- Drug Name: ${drugName}
+- Resolved Generic Name: ${aiAssessment.genericName}
+- Drug Class: ${aiAssessment.drugClass}
+- Primary Use: ${aiAssessment.primaryUse}
+- AI QT Risk Assessment: ${aiAssessment.qtRiskAssessment}
+- AI Reasoning: ${aiAssessment.reasoning}
+- CYP data: unknown (not in our curated database — use your medical knowledge for CYP450 metabolism)
+
+⚠️ NOTE: This drug is NOT in our verified database. The information above is from AI assessment. Be EXTRA conservative in your risk evaluation. When in doubt, assume the drug has moderate QT risk and potential CYP interactions.
+
+${externalDataBlock}
+
+## YOUR TASK
+Analyze the COMBINATION RISK of this new drug with the patient's current medications. Specifically:
+
+1. **Pairwise Interactions**: For EACH current medication, determine if there is:
+   - ADDITIVE_QT risk: both drugs may prolong QT
+   - CYP_INHIBITION: one drug inhibits metabolism of the other
+   - CYP_INDUCTION: one drug induces metabolism of the other
+   - OTHER: any other pharmacological interaction relevant to QT safety
+
+2. **Overall Combo Risk Level**: LOW / MEDIUM / HIGH / CRITICAL
+   - Be conservative: since this drug is not verified, lean toward higher risk when uncertain
+   - Apply the same CRITICAL criteria as for verified drugs
+
+3. **Additive QT Count**: Count current medications that prolong QT (KNOWN_RISK, POSSIBLE_RISK, or CONDITIONAL_RISK).
+
+4. **Genotype Considerations**: If genotype is known, explain relevance.
+
+5. **Safer Alternatives**: Suggest 2-3 alternatives for ${aiAssessment.primaryUse} that have lower QT risk.
+
+Write in plain language for a patient. Be thorough but not alarmist.`
+}
+
+// ── Dosage-Aware Combo Prompt Extension ─────────────────────────────
+
+export function buildComboPromptWithDosage(
+  newDrug: QtDrugEntry,
+  currentMeds: MedicationWithCyp[],
+  genotype: string | null,
+  dosage: string,
+): string {
+  const basePrompt = buildComboPrompt(newDrug, currentMeds, genotype)
+
+  return `${basePrompt}
+
+## DOSAGE INFORMATION
+- Scanned dosage: ${dosage}
+- NOTE: Many QT-prolonging drugs have DOSE-DEPENDENT risk. Higher doses typically cause greater QT prolongation.
+- For this drug (${newDrug.genericName}): consider whether the scanned dosage represents a standard, high, or maximum dose, and factor this into your risk assessment.
+- Examples of dose-dependent QT risk: citalopram (FDA max 40mg for QT), ondansetron (high IV doses banned), escitalopram (>20mg increases QT risk significantly).`
+}
+
+// ── External Data Block Builder ─────────────────────────────────────
+
+function buildExternalDataBlock(enrichment: EnrichmentData): string {
+  const sections: string[] = []
+
+  sections.push('## EXTERNAL DATA SOURCES (use these FACTS to inform your analysis)')
+
+  if (enrichment.rxnormResolution) {
+    sections.push(`- **RxNorm (NIH)**: Drug name resolved to "${enrichment.rxnormResolution.genericName}" (RxCUI: ${enrichment.rxnormResolution.rxcui}, match confidence: ${enrichment.rxnormResolution.score}%)`)
+  }
+
+  if (enrichment.credibleMedsData) {
+    sections.push(`- **CredibleMeds (Gold Standard)**: ${enrichment.credibleMedsData.genericName} — Risk Category: ${enrichment.credibleMedsData.riskCategory}, DTA: ${enrichment.credibleMedsData.isDTA ? 'YES' : 'No'}, Drug Class: ${enrichment.credibleMedsData.drugClass}`)
+  }
+
+  if (enrichment.fdaSignal) {
+    sections.push(`- **FDA FAERS Database**: ${enrichment.fdaSignal.torsadesReportCount} adverse event reports of Torsades de Pointes — Signal Strength: ${enrichment.fdaSignal.signalStrength}`)
+  }
+
+  if (sections.length === 1) {
+    sections.push('- No external data available for this drug. Rely on your medical knowledge with extra caution.')
+  }
+
+  return sections.join('\n')
 }

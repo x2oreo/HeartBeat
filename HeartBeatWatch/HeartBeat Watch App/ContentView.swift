@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var hk: HealthKitManager
+    @EnvironmentObject var apiClient: WatchAPIClient
 
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
-                RiskBanner(risk: hk.riskLevel, irregularRhythm: hk.irregularRhythmDetected)
+                RiskBanner(risk: hk.riskLevel, irregularRhythm: hk.irregularRhythmDetected, genotype: hk.genotype, recentDrugRisk: hk.recentDrugRisk)
 
                 HeartRateCard(bpm: hk.heartRate, rrMs: hk.rrIntervalMs)
 
@@ -31,10 +32,35 @@ struct ContentView: View {
                                unit: "bpm", color: .secondary)
                 }
 
+                HStack(spacing: 8) {
+                    if hk.oxygenSaturation > 0 {
+                        MetricCard(label: "SpO2", value: "\(Int(hk.oxygenSaturation))",
+                                   unit: "%", color: hk.oxygenSaturation < 94 ? .red : .blue)
+                    }
+                    if hk.respiratoryRate > 0 {
+                        MetricCard(label: "Resp Rate", value: "\(Int(hk.respiratoryRate))",
+                                   unit: "/min", color: hk.respiratoryRate > 20 ? .orange : .secondary)
+                    }
+                }
+
+                if let recovery = hk.hrRecovery {
+                    MetricCard(label: "HR Recovery", value: "\(Int(recovery))",
+                               unit: "bpm/min", color: recovery < 12 ? .red : .green)
+                }
+
                 MetricCard(label: "Steps",  value: hk.steps > 0 ? "\(Int(hk.steps))" : "—",
                            unit: "today", color: .green)
                 MetricCard(label: "Calories", value: hk.activeEnergy > 0 ? "\(Int(hk.activeEnergy))" : "—",
                            unit: "kcal", color: .orange)
+
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(apiClient.isConnected ? .green : .red)
+                        .frame(width: 6, height: 6)
+                    Text(apiClient.isConnected ? "Connected" : "Offline")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                }
 
                 Text("⚠️ Not a medical device")
                     .font(.system(size: 9))
@@ -71,6 +97,8 @@ struct ContentView: View {
 struct RiskBanner: View {
     let risk: LongQTRisk
     let irregularRhythm: Bool
+    var genotype: LQTSGenotype = .unknown
+    var recentDrugRisk: Bool = false
 
     var body: some View {
         HStack(spacing: 6) {
@@ -79,10 +107,20 @@ struct RiskBanner: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Long QT Risk: \(risk.label)")
                     .font(.system(size: 11, weight: .semibold))
+                if genotype != .unknown {
+                    Text("\(genotype.rawValue) — \(genotype.triggerDescription)")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                }
                 if irregularRhythm {
                     Text("Irregular rhythm detected")
                         .font(.system(size: 9))
                         .foregroundStyle(.secondary)
+                }
+                if recentDrugRisk {
+                    Text("QT drug monitoring active")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.orange)
                 }
             }
             Spacer()
@@ -133,7 +171,7 @@ struct HeartRateCard: View {
         guard bpm > 0 else { return .secondary }
         if bpm < 50 { return .red }
         if bpm > 130 { return .orange }
-        return .red
+        return .green
     }
 }
 

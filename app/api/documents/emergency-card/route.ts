@@ -3,14 +3,33 @@ import { getCurrentUser } from '@/lib/auth'
 import { generateEmergencyCard } from '@/services/document-generator'
 import { prisma } from '@/lib/prisma'
 
-export async function POST() {
+export async function POST(request: Request) {
   const user = await getCurrentUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const cardData = await generateEmergencyCard(user.id)
+    const body = await request.json().catch(() => ({})) as Record<string, unknown>
+    const extras: { patientPhoto?: string; personalNotes?: { en: string; bg: string } } = {}
+
+    if (typeof body.patientPhoto === 'string' && body.patientPhoto.length > 0) {
+      extras.patientPhoto = body.patientPhoto
+    }
+    if (
+      body.personalNotes &&
+      typeof body.personalNotes === 'object' &&
+      body.personalNotes !== null &&
+      'en' in body.personalNotes &&
+      'bg' in body.personalNotes
+    ) {
+      const notes = body.personalNotes as { en: unknown; bg: unknown }
+      if (typeof notes.en === 'string' && typeof notes.bg === 'string') {
+        extras.personalNotes = { en: notes.en, bg: notes.bg }
+      }
+    }
+
+    const cardData = await generateEmergencyCard(user.id, extras)
     return NextResponse.json(cardData)
   } catch (error) {
     console.error('Emergency card generation failed:', error)

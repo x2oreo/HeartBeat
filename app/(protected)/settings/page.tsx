@@ -203,7 +203,7 @@ export default function SettingsPage() {
             <select
               value={genotype ?? ''}
               onChange={(e) => setGenotype(e.target.value as Genotype)}
-              className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             >
               <option value="" disabled>Select type</option>
               {GENOTYPE_OPTIONS.map((o) => (
@@ -213,7 +213,7 @@ export default function SettingsPage() {
             <button
               onClick={saveGenotype}
               disabled={savingGenotype || !genotype || genotype === profile?.genotype}
-              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-deep text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {savingGenotype ? 'Saving…' : 'Save'}
             </button>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                   value={newContact.name}
                   onChange={(e) => setNewContact((p) => ({ ...p, name: e.target.value }))}
                   placeholder="Full name"
-                  className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${newContactErrors.name ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${newContactErrors.name ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'}`}
                 />
                 {newContactErrors.name && <p className="text-xs text-red-500 mt-1">{newContactErrors.name}</p>}
               </div>
@@ -276,14 +276,14 @@ export default function SettingsPage() {
                   value={newContact.phone}
                   onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value.replace(/[^\d+\s\-()]/g, '') }))}
                   placeholder="Phone number"
-                  className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${newContactErrors.phone ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${newContactErrors.phone ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'}`}
                 />
                 {newContactErrors.phone && <p className="text-xs text-red-500 mt-1">{newContactErrors.phone}</p>}
               </div>
               <select
                 value={newContact.relationship}
                 onChange={(e) => setNewContact((p) => ({ ...p, relationship: e.target.value }))}
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               >
                 {RELATIONSHIP_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                 <button
                   onClick={addContact}
                   disabled={addingContact}
-                  className="flex-1 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  className="flex-1 py-2 rounded-lg text-sm font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-50 transition-colors"
                 >
                   {addingContact ? 'Adding…' : 'Add Contact'}
                 </button>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
           ) : (
             <button
               onClick={() => setShowAddContact(true)}
-              className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-brand hover:text-brand transition-colors"
             >
               + Add contact
             </button>

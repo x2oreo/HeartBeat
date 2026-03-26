@@ -1,17 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand */
+  /* Brand — Guardian Blue */
   --color-brand: #3478F6;
   --color-brand-deep: #1A56C4;
   --color-brand-hover: #2B6AE0;
   --color-brand-light: #EBF2FF;
   --color-brand-pale: #F6F9FF;
-  --color-brand-dark: #0E3A80;
 
-  /* Accent */
+  /* Accent — Pulse Coral */
   --color-coral: #F07167;
   --color-coral-deep: #D4574E;
   --color-coral-light: #FFF0EE;
@@ -20,8 +18,49 @@
   --color-teal: #32AFA9;
   --color-teal-light: #E8F8F7;
 
+  /* Risk Signal System */
+  --color-risk-safe: #34C759;
+  --color-risk-safe-bg: #EAFBF0;
+  --color-risk-safe-text: #1B7A34;
+  --color-risk-caution: #FF9F0A;
+  --color-risk-caution-bg: #FFF5E0;
+  --color-risk-caution-text: #8A5600;
+  --color-risk-danger: #FF3B30;
+  --color-risk-danger-bg: #FFEDEC;
+  --color-risk-danger-text: #C41E16;
+
+  /* Neutrals & Surfaces */
+  --color-surface: #F2F2F7;
+  --color-surface-raised: #FFFFFF;
+  --color-text-primary: #1D1D1F;
+  --color-text-secondary: #6E6E73;
+  --color-text-tertiary: #AEAEB2;
+  --color-separator: #D1D1D6;
+  --color-separator-light: #E5E5EA;
+
   /* Font */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Card shadow utility */
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Critical pulse animation */
+@keyframes critical-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(255, 59, 48, 0); }
+}
+
+.critical-indicator {
+  animation: critical-pulse 2s ease-in-out infinite;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(52, 120, 246, 0.2);
 }
 
 @media print {

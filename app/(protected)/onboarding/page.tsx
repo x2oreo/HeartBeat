@@ -32,10 +32,10 @@ const GENOTYPE_OPTIONS: { value: Genotype; label: string; description: string }[
 const RELATIONSHIP_OPTIONS = ['Cardiologist', 'Family', 'Friend']
 
 const RISK_COLORS: Record<RiskCategory, { bg: string; text: string; label: string }> = {
-  KNOWN_RISK: { bg: 'bg-red-100 dark:bg-red-950', text: 'text-red-700 dark:text-red-400', label: 'Known Risk' },
-  POSSIBLE_RISK: { bg: 'bg-yellow-100 dark:bg-yellow-950', text: 'text-yellow-700 dark:text-yellow-400', label: 'Possible Risk' },
-  CONDITIONAL_RISK: { bg: 'bg-orange-100 dark:bg-orange-950', text: 'text-orange-700 dark:text-orange-400', label: 'Conditional' },
-  NOT_LISTED: { bg: 'bg-green-100 dark:bg-green-950', text: 'text-green-700 dark:text-green-400', label: 'Not Listed' },
+  KNOWN_RISK: { bg: 'bg-[#FFEDEC]', text: 'text-[#C41E16]', label: 'Known Risk' },
+  POSSIBLE_RISK: { bg: 'bg-[#FFF5E0]', text: 'text-[#8A5600]', label: 'Possible Risk' },
+  CONDITIONAL_RISK: { bg: 'bg-[#FFF5E0]', text: 'text-[#8A5600]', label: 'Conditional' },
+  NOT_LISTED: { bg: 'bg-[#EAFBF0]', text: 'text-[#1B7A34]', label: 'Not Listed' },
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -50,8 +50,8 @@ function StepIndicator({ current }: { current: number }) {
               step === current
                 ? 'bg-brand text-white'
                 : step < current
-                  ? 'bg-brand-light text-brand-deep dark:bg-brand-dark dark:text-brand-light'
-                  : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                  ? 'bg-brand-light text-brand-deep'
+                  : 'bg-separator-light text-text-tertiary'
             }`}
           >
             {step < current ? '✓' : step}
@@ -59,7 +59,7 @@ function StepIndicator({ current }: { current: number }) {
           {step < 3 && (
             <div
               className={`w-12 h-0.5 ${
-                step < current ? 'bg-brand' : 'bg-gray-300 dark:bg-gray-600'
+                step < current ? 'bg-brand' : 'bg-separator-light'
               }`}
             />
           )}
@@ -72,7 +72,7 @@ function StepIndicator({ current }: { current: number }) {
 function RiskBadge({ riskCategory }: { riskCategory: RiskCategory }) {
   const style = RISK_COLORS[riskCategory]
   return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
+    <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${style.bg} ${style.text}`}>
       {style.label}
     </span>
   )
@@ -184,7 +184,6 @@ export default function OnboardingPage() {
       prev.map((c, i) => {
         if (i !== index) return c
         const updated = { ...c, [field]: value }
-        // Clear error for the field being edited
         if (field === 'name' || field === 'phone') {
           updated.errors = { ...c.errors, [field]: undefined }
         }
@@ -207,7 +206,6 @@ export default function OnboardingPage() {
   async function handleSubmit() {
     setError(null)
 
-    // Validate all contacts inline
     let hasErrors = false
     const validated = contacts.map((c) => {
       const errors: ContactEntry['errors'] = {}
@@ -230,7 +228,7 @@ export default function OnboardingPage() {
           medications: medications.map((m) => m.genericName),
           emergencyContacts: validated.map((c) => ({
             name: c.name.trim(),
-            phone: c.phone.replace(/\D/g, ''), // digits only
+            phone: c.phone.replace(/\D/g, ''),
             relationship: c.relationship.toLowerCase(),
           })),
         }),
@@ -252,12 +250,15 @@ export default function OnboardingPage() {
   // ── Render ──────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-start justify-center px-4 py-8">
+    <div
+      className="min-h-screen bg-surface flex items-start justify-center px-4 py-8"
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Set Up HeartGuard</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-text-primary">Set Up HeartGuard</h1>
+          <p className="text-sm text-text-secondary mt-1">
             Personalize your medication safety profile
           </p>
         </div>
@@ -267,10 +268,10 @@ export default function OnboardingPage() {
         {/* ── Step 1: Genotype ─────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-text-primary">
               What is your LQTS type?
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-text-secondary">
               This helps us tailor medication safety checks to your specific condition.
             </p>
 
@@ -280,21 +281,21 @@ export default function OnboardingPage() {
                   key={option.value}
                   type="button"
                   onClick={() => setGenotype(option.value)}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
                     genotype === option.value
-                      ? 'border-brand bg-brand-light dark:bg-brand-dark/50'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'border-brand bg-brand-light'
+                      : 'border-separator-light hover:border-separator'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="font-semibold text-text-primary">
                       {option.label}
                     </span>
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         genotype === option.value
                           ? 'border-brand'
-                          : 'border-gray-300 dark:border-gray-600'
+                          : 'border-separator'
                       }`}
                     >
                       {genotype === option.value && (
@@ -302,7 +303,7 @@ export default function OnboardingPage() {
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-text-secondary mt-1">
                     {option.description}
                   </p>
                 </button>
@@ -313,7 +314,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={() => setStep(2)}
               disabled={!genotype}
-              className="w-full mt-4 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-4 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
@@ -323,10 +324,10 @@ export default function OnboardingPage() {
         {/* ── Step 2: Medications ──────────────────────────────── */}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-text-primary">
               What medications do you currently take?
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-text-secondary">
               We&apos;ll check each medication for QT prolongation risk.
             </p>
 
@@ -354,11 +355,11 @@ export default function OnboardingPage() {
                   }
                 }}
                 placeholder="Search medication name..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
               />
               {searchLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
 
@@ -366,21 +367,21 @@ export default function OnboardingPage() {
               {showSuggestions && suggestions.length > 0 && (
                 <div
                   ref={suggestionsRef}
-                  className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden"
+                  className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden"
                 >
                   {suggestions.map((drug) => (
                     <button
                       key={drug.genericName}
                       type="button"
                       onClick={() => addMedication(drug)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
+                      className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center justify-between"
                     >
                       <div>
-                        <span className="font-medium text-gray-900 dark:text-white">
+                        <span className="font-medium text-text-primary">
                           {drug.genericName}
                         </span>
                         {drug.brandNames.length > 0 && (
-                          <span className="text-xs text-gray-400 ml-2">
+                          <span className="text-xs text-text-tertiary ml-2">
                             ({drug.brandNames.slice(0, 2).join(', ')})
                           </span>
                         )}
@@ -393,13 +394,13 @@ export default function OnboardingPage() {
 
               {/* "Add as custom" when no suggestions match */}
               {showSuggestions && medQuery.trim().length >= 2 && suggestions.length === 0 && !searchLoading && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden">
                   <button
                     type="button"
                     onClick={addCustomMedication}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-surface transition-colors"
                   >
-                    <span className="text-gray-600 dark:text-gray-300">
+                    <span className="text-text-secondary">
                       Add &quot;{medQuery.trim()}&quot; as medication
                     </span>
                   </button>
@@ -413,15 +414,15 @@ export default function OnboardingPage() {
                 {medications.map((med) => (
                   <div
                     key={med.genericName}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700"
+                    className="flex items-center justify-between p-3 bg-surface-raised rounded-xl card-shadow"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="font-medium text-gray-900 dark:text-white">
+                      <span className="font-medium text-text-primary">
                         {med.genericName}
                       </span>
                       <RiskBadge riskCategory={med.riskCategory} />
                       {med.isDTA && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-600 text-white">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#FF3B30] text-white">
                           DTA
                         </span>
                       )}
@@ -429,7 +430,7 @@ export default function OnboardingPage() {
                     <button
                       type="button"
                       onClick={() => removeMedication(med.genericName)}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-1"
                       aria-label={`Remove ${med.genericName}`}
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -445,14 +446,14 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 py-3 rounded-xl font-semibold text-text-secondary bg-separator-light hover:bg-separator transition-colors"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep transition-colors"
+                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-hover transition-colors"
               >
                 Next
               </button>
@@ -461,7 +462,7 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="w-full text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="w-full text-sm text-text-tertiary hover:text-text-secondary transition-colors"
               >
                 Skip — I don&apos;t take any medications
               </button>
@@ -472,10 +473,10 @@ export default function OnboardingPage() {
         {/* ── Step 3: Emergency Contacts ───────────────────────── */}
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-text-primary">
               Add your cardiologist and a family member
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-text-secondary">
               These contacts appear on your Emergency Card. At least one is required.
             </p>
 
@@ -483,17 +484,17 @@ export default function OnboardingPage() {
               {contacts.map((contact, i) => (
                 <div
                   key={i}
-                  className="p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3"
+                  className="p-4 bg-surface-raised rounded-2xl card-shadow space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-semibold text-text-secondary">
                       Contact {i + 1}
                     </span>
                     {contacts.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeContact(i)}
-                        className="text-gray-400 hover:text-red-500 transition-colors text-sm"
+                        className="text-text-tertiary hover:text-[#FF3B30] transition-colors text-sm"
                       >
                         Remove
                       </button>
@@ -506,14 +507,14 @@ export default function OnboardingPage() {
                       value={contact.name}
                       onChange={(e) => updateContact(i, 'name', e.target.value)}
                       placeholder="Full name"
-                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${
+                      className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
                         contact.errors.name
-                          ? 'border-red-400 dark:border-red-500'
-                          : 'border-gray-300 dark:border-gray-600'
+                          ? 'border-[#FF3B30]'
+                          : 'border-separator'
                       }`}
                     />
                     {contact.errors.name && (
-                      <p className="text-xs text-red-500 mt-1">{contact.errors.name}</p>
+                      <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.name}</p>
                     )}
                   </div>
                   <div>
@@ -523,20 +524,20 @@ export default function OnboardingPage() {
                       value={contact.phone}
                       onChange={(e) => updateContact(i, 'phone', e.target.value.replace(/[^\d+\s\-()]/g, ''))}
                       placeholder="Phone number"
-                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${
+                      className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
                         contact.errors.phone
-                          ? 'border-red-400 dark:border-red-500'
-                          : 'border-gray-300 dark:border-gray-600'
+                          ? 'border-[#FF3B30]'
+                          : 'border-separator'
                       }`}
                     />
                     {contact.errors.phone && (
-                      <p className="text-xs text-red-500 mt-1">{contact.errors.phone}</p>
+                      <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.phone}</p>
                     )}
                   </div>
                   <select
                     value={contact.relationship}
                     onChange={(e) => updateContact(i, 'relationship', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                    className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
                   >
                     {RELATIONSHIP_OPTIONS.map((rel) => (
                       <option key={rel} value={rel}>
@@ -551,13 +552,13 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={addContact}
-              className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-brand hover:text-brand transition-colors"
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-separator text-sm font-medium text-text-secondary hover:border-brand hover:text-brand transition-colors"
             >
               + Add another contact
             </button>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
+              <div className="p-3 rounded-xl bg-[#FFEDEC] border border-[#FF3B30]/20 text-sm text-[#C41E16]">
                 {error}
               </div>
             )}
@@ -567,7 +568,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={submitting}
-                className="flex-1 py-3 rounded-xl font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                className="flex-1 py-3 rounded-xl font-semibold text-text-secondary bg-separator-light hover:bg-separator disabled:opacity-40 transition-colors"
               >
                 Back
               </button>
@@ -575,7 +576,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-70 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-hover disabled:opacity-70 transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>

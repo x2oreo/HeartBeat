@@ -1,0 +1,37 @@
+{
+  "name": "my-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.99.1",
+    "next": "^15.3.1",
+    "prisma": "^7.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^15.3.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
+    "tailwindcss": "^4.2.1",
+    "typescript": "~5.9.3"
+  }
+}

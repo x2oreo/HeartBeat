@@ -1,0 +1,7 @@
+echo "▶ Linting..."
+npm run lint || { echo "✗ Lint failed. Push aborted."; exit 1; }
+
+echo "▶ Building..."
+npm run build || { echo "✗ Build failed. Push aborted."; exit 1; }
+
+echo "✓ All checks passed."

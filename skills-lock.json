@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "skills": {
+    "Command Development": {
+      "source": "anthropics/claude-code",
+      "sourceType": "github",
+      "computedHash": "bca581f0a2789f75d9501499b9f4dc354eb40b213ccd23d13f5b87299db1f84a"
+    },
+    "Hook Development": {
+      "source": "anthropics/claude-code",
+      "sourceType": "github",
+      "computedHash": "a1721df65785b6c0439d4326cdee0cb2b6aa98de09fc98463afc3e040fe00ce9"
+    },
+    "MCP Integration": {
+      "source": "anthropics/claude-code",
+      "sourceType": "github",
+      "computedHash": "99cfef49810cb80a39762a79dbb6a80d486ea56cfa1a81ed10cae0a5a296b496"
+    },
+    "Writing Hookify Rules": {
+      "source": "anthropics/claude-code",
+      "sourceType": "github",
+      "computedHash": "429463a57a711ee42d1373a726e66ccc2189118022f0c281dbb48b28796d417f"
+    },
+    "agent-orchestration-improve-agent": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "7ca7f5bc917c3bc6096ebea529acaacc9b48dd720ccf6cf8d67fbd4377d64704"
+    },
+    "frontend-design": {
+      "source": "anthropics/claude-code",
+      "sourceType": "github",
+      "computedHash": "e8118284a6365753790d44bb2758a6032b3af27fa84696428d9233f2be0f4e78"
+    },
+    "git-pushing": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "5c861e4c6225db3f0d4f729438c620e3905d72b8b218a5a178c521a86caeb570"
+    },
+    "rag-engineer": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "b881e8468e9f5597623194c18479688f126f5a5e08377664546880db512bd305"
+    },
+    "rag-implementation": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "627cb0f11eb32fc7c6664e79122367625bb21588500a9c176d8bd5241c5fd95a"
+    },
+    "react-nextjs-development": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "838cbe5367d111b95cdadcbbeb37bee977800e9564a76b569acfa7a22f6c9d21"
+    }
+  }
+}

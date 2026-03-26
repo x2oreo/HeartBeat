@@ -84,12 +84,16 @@ Analyze the COMBINATION RISK of this new drug with the patient's current medicat
    - OTHER: any other pharmacological interaction relevant to QT safety
 
 2. **Overall Combo Risk Level**: Considering ALL interactions together, assign an overall risk:
-   - LOW: no significant QT interactions found
-   - MEDIUM: minor additive risk or single non-critical CYP interaction
-   - HIGH: multiple QT-prolonging drugs combined, or significant CYP interaction raising levels of a QT drug
-   - CRITICAL: DTA drug combined with other QT-prolonging agents, or severe CYP interaction dramatically increasing exposure
+   - LOW: no significant QT interactions found (the new drug has QT risk but no current meds prolong QT or interfere via CYP)
+   - MEDIUM: minor additive risk (one current med has POSSIBLE_RISK or CONDITIONAL_RISK for QT) or a single non-critical CYP interaction
+   - HIGH: multiple QT-prolonging drugs combined, or a significant CYP interaction that raises plasma levels of a QT-prolonging drug
+   - CRITICAL: use this when ANY of these conditions apply:
+     * A DTA (Designated Torsades Agent) drug is combined with ANY other QT-prolonging medication
+     * A CYP inhibitor dramatically increases exposure to a QT-prolonging drug (e.g., a CYP3A4 inhibitor combined with a drug metabolized by CYP3A4 that also prolongs QT)
+     * 3 or more QT-prolonging drugs are being combined
+     * Both additive QT prolongation AND CYP-mediated increased exposure occur simultaneously
 
-3. **Additive QT Count**: Count how many of the patient's current medications ALSO prolong the QT interval (risk category is not NOT_LISTED).
+3. **Additive QT Count**: Count how many of the patient's current medications ALSO prolong the QT interval. A medication prolongs QT if its QT Risk is KNOWN_RISK, POSSIBLE_RISK, or CONDITIONAL_RISK. Do NOT count medications with risk NOT_LISTED. This count does NOT include the new drug being scanned — only count current medications.
 
 4. **Genotype Considerations**: If the patient's genotype is known, explain how it affects the risk of this specific combination. If unknown, return null.
 
@@ -133,7 +137,19 @@ Analyze this drug name and provide:
 ## CRITICAL RULES FOR THIS ASSESSMENT
 - Since this drug is NOT in our verified database, you MUST use your medical knowledge to assess QT risk. This is the exception to the "use only provided data" rule — we have no provided data for this drug.
 - If you are UNSURE whether a drug prolongs QT, classify it as POSSIBLE_RISK, not LIKELY_SAFE
-- If the drug name looks like a misspelling, try to identify the intended drug and assess THAT
+- If the drug name looks like a misspelling, try to identify the intended drug and assess THAT. Set genericName to the correct spelling.
 - ALWAYS recommend consulting a cardiologist before taking any medication not in our verified database, even if you assess it as LIKELY_SAFE
-- Your assessment is supplementary — it has NOT been verified by CredibleMeds and must be clearly marked as an AI assessment`
+- Your assessment is supplementary — it has NOT been verified by CredibleMeds and must be clearly marked as an AI assessment
+
+## IDENTIFYING NON-DRUGS
+Set isRealDrug to false and qtRiskAssessment to NOT_A_DRUG when:
+- The input is random characters or gibberish (e.g., "asdfgh", "xyz123")
+- The input is a food, supplement brand, or non-pharmaceutical product
+- The input is a medical condition or symptom, not a medication
+- You cannot identify ANY real medication that matches or closely resembles the input
+
+When qtRiskAssessment is NOT_A_DRUG:
+- Set reasoning to explain what the input appears to be (or that it's unrecognizable)
+- Set recommendation to "This does not appear to be a medication name. Please check the spelling and try again, or type the generic name of the medication."
+- Leave genericName, drugClass, and primaryUse unset`
 }

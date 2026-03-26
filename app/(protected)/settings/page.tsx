@@ -287,9 +287,12 @@ export default function SettingsPage() {
               >
                 {RELATIONSHIP_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
+              {addContactError && (
+                <p className="text-xs text-red-500">{addContactError}</p>
+              )}
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setShowAddContact(false); setNewContactErrors({}) }}
+                  onClick={() => { setShowAddContact(false); setNewContactErrors({}); setAddContactError(null) }}
                   className="flex-1 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                 >
                   Cancel

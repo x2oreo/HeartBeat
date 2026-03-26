@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { searchDrugs } from '@/services/drug-lookup'
 
+// Public endpoint (no auth) — used for drug autocomplete during onboarding
+// when the user record may not yet exist in the database.
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q')
   if (!q || q.trim().length < 1) {

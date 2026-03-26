@@ -1,11 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(ls:*)",
+      "Bash(npm uninstall:*)",
+      "WebSearch",
+      "Bash(grep '\"\"types\"\"' /Users/flychuban/Desktop/HeartBeat/node_modules/heic-convert/package.json)"
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "permissions": {
-    "allow": [
-      "Bash(gh pr:*)"
-    ]
-  }
+  ]
 }

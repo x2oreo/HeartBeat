@@ -25,6 +25,8 @@ const GENOTYPE_OPTIONS: { value: Genotype; label: string; description: string }[
   { value: 'LQT1', label: 'LQT1', description: 'Triggered by exercise and swimming' },
   { value: 'LQT2', label: 'LQT2', description: 'Triggered by sudden noises and emotional stress' },
   { value: 'LQT3', label: 'LQT3', description: 'Events occur during sleep or rest' },
+  { value: 'OTHER', label: 'Other', description: 'Another LQTS variant or acquired LQTS' },
+  { value: 'UNKNOWN', label: "I don't know", description: 'General LQTS safety guidelines will be used' },
 ]
 
 const RELATIONSHIP_OPTIONS = ['Cardiologist', 'Family', 'Friend']

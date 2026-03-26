@@ -13,7 +13,12 @@ export type Genotype = 'LQT1' | 'LQT2' | 'LQT3' | 'OTHER' | 'UNKNOWN'
 
 export type ScanType = 'TEXT' | 'PHOTO'
 
-export type RiskSource = 'CREDIBLEMEDS_VERIFIED' | 'AI_ASSESSED'
+export type RiskSource =
+  | 'CREDIBLEMEDS_VERIFIED'  // In local curated JSON (sourced from CredibleMeds)
+  | 'CREDIBLEMEDS_API'       // From CredibleMeds API, not in local JSON
+  | 'MULTI_SOURCE'           // Confirmed by multiple data sources
+  | 'AI_ASSESSED'            // AI-only assessment, no external verification
+  | 'AI_ENRICHED'            // AI assessment supplemented with external data
 
 // ── Drug Data (qtdrugs.json) ───────────────────────────────────────
 
@@ -80,7 +85,31 @@ export type ComboAnalysisResult = {
   genotypeConsiderations: string | null
 }
 
+// ── Pipeline Tracing ─────────────────────────────────────────────────
+
+export type PipelineStepStatus = 'HIT' | 'MISS' | 'SKIPPED' | 'ERROR'
+
+export type PipelineStep = {
+  name: string
+  status: PipelineStepStatus
+  durationMs: number
+  detail?: string
+}
+
 // ── Scan Results ───────────────────────────────────────────────────
+
+export type DrugEnrichment = {
+  credibleMedsVerified: boolean
+  fdaTorsadesReports: number | null
+  rxnormResolved: boolean
+  dataSources: string[] // e.g., ["local_db", "crediblemeds_api", "openfda"]
+}
+
+export type FuzzyMatchInfo = {
+  originalQuery: string
+  matchedName: string
+  confidence: number
+}
 
 export type ScanResult = {
   drugName: string
@@ -94,6 +123,10 @@ export type ScanResult = {
   source: RiskSource
   comboAnalysis: ComboAnalysisResult | null
   scannedAt: string
+  enrichment: DrugEnrichment | null
+  dosage: string | null
+  fuzzyMatch: FuzzyMatchInfo | null
+  pipelineTrace?: PipelineStep[]
 }
 
 export type PhotoScanResult = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import type { ScanResult, RiskCategory, ComboRiskLevel } from '@/types'
+import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep, PipelineStepStatus } from '@/types'
 import { useDrugSearch } from '@/hooks/use-drug-search'
 import type { DrugSuggestion } from '@/hooks/use-drug-search'
 import { useDrugScan } from '@/hooks/use-drug-scan'
@@ -62,32 +62,19 @@ function suggestionRiskBadge(category: RiskCategory) {
   return null
 }
 
-async function resizeImage(file: File, maxSize: number): Promise<string> {
+function readFileAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const objectUrl = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl)
-      let { width, height } = img
-      if (width > maxSize || height > maxSize) {
-        const ratio = Math.min(maxSize / width, maxSize / height)
-        width = Math.round(width * ratio)
-        height = Math.round(height * ratio)
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return reject(new Error('Canvas not supported'))
-      ctx.drawImage(img, 0, 0, width, height)
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-      resolve(dataUrl.split(',')[1])
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result
+      if (typeof result !== 'string') return reject(new Error('Failed to read file'))
+      // Strip the data URL prefix (e.g. "data:image/heic;base64,")
+      const base64 = result.split(',')[1]
+      if (!base64) return reject(new Error('Empty file'))
+      resolve(base64)
     }
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Failed to load image'))
-    }
-    img.src = objectUrl
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsDataURL(file)
   })
 }
 
@@ -104,12 +91,56 @@ function LoadingSkeleton() {
   )
 }
 
+function sourceLabel(source: ScanResult['source']): string {
+  switch (source) {
+    case 'CREDIBLEMEDS_VERIFIED': return 'Verified by CredibleMeds'
+    case 'CREDIBLEMEDS_API': return 'CredibleMeds API'
+    case 'MULTI_SOURCE': return 'Multi-Source Verified'
+    case 'AI_ENRICHED': return 'AI + External Data'
+    case 'AI_ASSESSED': return 'AI Assessment Only'
+  }
+}
+
+function sourceBadgeStyle(source: ScanResult['source']): string {
+  switch (source) {
+    case 'CREDIBLEMEDS_VERIFIED':
+    case 'CREDIBLEMEDS_API':
+    case 'MULTI_SOURCE':
+      return 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'
+    case 'AI_ENRICHED':
+      return 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'
+    case 'AI_ASSESSED':
+      return 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
+  }
+}
+
 function ResultCard({ result, showActions = true }: { result: ScanResult; showActions?: boolean }) {
   const colors = riskColor(result.riskCategory, result.isDTA)
   const headline = riskHeadline(result.riskCategory, result.isDTA)
 
   return (
     <div className="space-y-4">
+      {/* Fuzzy match banner */}
+      {result.fuzzyMatch && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            Showing results for <strong>{result.fuzzyMatch.matchedName}</strong>
+            {result.fuzzyMatch.originalQuery !== result.fuzzyMatch.matchedName && (
+              <> (you searched for &ldquo;{result.fuzzyMatch.originalQuery}&rdquo;)</>
+            )}
+          </p>
+        </div>
+      )}
+
+      {/* AI-only warning */}
+      {result.source === 'AI_ASSESSED' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+            This drug was not found in any verified medical database. This assessment is based on AI analysis only. Please consult your cardiologist.
+          </p>
+        </div>
+      )}
+
       {/* Main risk card */}
       <div className={`rounded-2xl border-2 p-5 ${colors.bg} ${colors.border}`}>
         <div className="flex items-start gap-3">
@@ -139,6 +170,12 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             <dt className="text-[13px] text-text-secondary">Primary Use</dt>
             <dd className="text-text-primary">{result.primaryUse}</dd>
           </div>
+          {result.dosage && (
+            <div>
+              <dt className="text-xs text-neutral-500 dark:text-neutral-400">Dosage</dt>
+              <dd className="text-neutral-800 dark:text-neutral-200">{result.dosage}</dd>
+            </div>
+          )}
           {result.qtMechanism && (
             <div className="sm:col-span-2">
               <dt className="text-[13px] text-text-secondary">QT Mechanism</dt>
@@ -146,11 +183,20 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             </div>
           )}
         </dl>
-        <div className="mt-3">
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${colors.badge}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${colors.icon.replace('text-', 'bg-')}`} />
-            {result.source === 'CREDIBLEMEDS_VERIFIED' ? 'Verified by CredibleMeds' : 'AI Assessment'}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${sourceBadgeStyle(result.source)}`}>
+            {sourceLabel(result.source)}
           </span>
+          {result.enrichment && result.enrichment.fdaTorsadesReports !== null && result.enrichment.fdaTorsadesReports > 0 && (
+            <span className="inline-block rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/60 dark:text-red-300">
+              {result.enrichment.fdaTorsadesReports} FDA TdP reports
+            </span>
+          )}
+          {result.enrichment && result.enrichment.dataSources.length > 1 && (
+            <span className="inline-block rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+              {result.enrichment.dataSources.length} data sources
+            </span>
+          )}
         </div>
       </div>
 
@@ -251,6 +297,115 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
   )
 }
 
+function stepStatusIcon(status: PipelineStepStatus) {
+  switch (status) {
+    case 'HIT':
+      return <span className="text-emerald-500">&#10003;</span>
+    case 'MISS':
+      return <span className="text-neutral-400">&mdash;</span>
+    case 'SKIPPED':
+      return <span className="text-neutral-300">&#8226;</span>
+    case 'ERROR':
+      return <span className="text-red-500">&#10005;</span>
+  }
+}
+
+function stepStatusColor(status: PipelineStepStatus) {
+  switch (status) {
+    case 'HIT':
+      return 'border-emerald-200 dark:border-emerald-800'
+    case 'ERROR':
+      return 'border-red-200 dark:border-red-800'
+    default:
+      return 'border-neutral-200 dark:border-neutral-700'
+  }
+}
+
+function PipelineView({ steps }: { steps: PipelineStep[] }) {
+  const [open, setOpen] = useState(false)
+  const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
+  const hitCount = steps.filter((s) => s.status === 'HIT').length
+
+  return (
+    <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+      >
+        <div className="flex items-center gap-2">
+          <svg className="h-4 w-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            How we verified this
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-neutral-400 dark:text-neutral-500">
+            {hitCount}/{steps.length} sources &middot; {totalMs > 1000 ? `${(totalMs / 1000).toFixed(1)}s` : `${totalMs}ms`}
+          </span>
+          <svg
+            className={`h-4 w-4 text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-neutral-100 px-4 pb-4 pt-3 dark:border-neutral-800">
+          <div className="space-y-2">
+            {steps.map((step, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-3 rounded-lg border px-3 py-2 ${stepStatusColor(step.status)}`}
+              >
+                <div className="mt-0.5 w-5 text-center text-sm font-bold leading-none">
+                  {stepStatusIcon(step.status)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                      {step.name}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                        step.status === 'HIT'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
+                          : step.status === 'ERROR'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300'
+                            : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                      }`}>
+                        {step.status}
+                      </span>
+                      <span className="font-mono text-[10px] text-neutral-400 dark:text-neutral-500">
+                        {step.durationMs > 1000 ? `${(step.durationMs / 1000).toFixed(1)}s` : `${step.durationMs}ms`}
+                      </span>
+                    </div>
+                  </div>
+                  {step.detail && (
+                    <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                      {step.detail}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] text-neutral-400 dark:text-neutral-500">
+            Pipeline: Local DB &rarr; Fuzzy Match &rarr; RxNorm &rarr; CredibleMeds &rarr; FDA FAERS &rarr; AI Analysis
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Disclaimer() {
   return (
     <p className="text-xs text-text-tertiary print:text-text-secondary">
@@ -293,12 +448,13 @@ export function ScanPage() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (!file) return
+      setPhotoError(null)
       try {
-        setPhotoError(null)
-        const base64 = await resizeImage(file, 1024)
+        const base64 = await readFileAsBase64(file)
         scanByPhoto(base64)
-      } catch {
-        setPhotoError('Could not process image. Please try again or type the medication name.')
+      } catch (err) {
+        console.error('Image read failed:', err)
+        setPhotoError('Could not read image. Please try again or type the medication name.')
       }
       e.target.value = ''
     },
@@ -422,7 +578,7 @@ export function ScanPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             capture="environment"
             className="hidden"
             onChange={handlePhotoCapture}
@@ -452,6 +608,9 @@ export function ScanPage() {
       {result && (
         <div className="mt-6 space-y-4">
           <ResultCard result={result} />
+          {result.pipelineTrace && result.pipelineTrace.length > 0 && (
+            <PipelineView steps={result.pipelineTrace} />
+          )}
           <Disclaimer />
         </div>
       )}
@@ -477,7 +636,12 @@ export function ScanPage() {
             )}
           </div>
           {photoResult.scanResults.map((scanResult, i) => (
-            <ResultCard key={i} result={scanResult} showActions={i === photoResult.scanResults.length - 1} />
+            <div key={i} className="space-y-3">
+              <ResultCard result={scanResult} showActions={i === photoResult.scanResults.length - 1} />
+              {scanResult.pipelineTrace && scanResult.pipelineTrace.length > 0 && (
+                <PipelineView steps={scanResult.pipelineTrace} />
+              )}
+            </div>
           ))}
           <Disclaimer />
         </div>

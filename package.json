@@ -18,6 +18,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.99.1",
     "ai": "^6.0.138",
+    "heic-convert": "^2.1.0",
     "jspdf": "^4.2.1",
     "next": "^15.3.1",
     "prisma": "^7.5.0",

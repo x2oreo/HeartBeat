@@ -2,9 +2,16 @@ import { generateObject } from 'ai'
 import { model } from '@/ai/client'
 import { ComboAnalysisSchema, UnknownDrugSchema } from '@/ai/scan-schemas'
 import type { ComboAnalysis, UnknownDrug } from '@/ai/scan-schemas'
-import { buildComboPrompt, buildUnknownDrugPrompt } from '@/ai/scan-prompts'
-import type { MedicationWithCyp } from '@/ai/scan-prompts'
-import { lookupDrug } from '@/services/drug-lookup'
+import {
+  buildComboPrompt,
+  buildUnknownDrugPrompt,
+  buildEnrichedUnknownDrugPrompt,
+  buildComboPromptForUnknownDrug,
+  buildComboPromptWithDosage,
+} from '@/ai/scan-prompts'
+import type { MedicationWithCyp, EnrichmentData } from '@/ai/scan-prompts'
+import { resolveDrug, aggregateRisk } from '@/services/drug-resolver'
+import type { ResolvedDrug } from '@/services/drug-resolver'
 import { prisma } from '@/lib/prisma'
 import type {
   ScanResult,
@@ -12,9 +19,45 @@ import type {
   DrugInfo,
   QtDrugEntry,
   RiskCategory,
+  RiskSource,
   CypData,
   ComboRiskLevel,
+  PipelineStep,
 } from '@/types'
+
+// ── Scan Cache ──────────────────────────────────────────────────────
+
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const scanCache = new Map<string, { result: ScanResult; timestamp: number }>()
+
+function getCacheKey(userId: string, drugName: string): string {
+  return `${userId}:${drugName.toLowerCase().trim()}`
+}
+
+function getCachedResult(userId: string, drugName: string): ScanResult | null {
+  const key = getCacheKey(userId, drugName)
+  const entry = scanCache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    scanCache.delete(key)
+    return null
+  }
+  return entry.result
+}
+
+function setCachedResult(userId: string, drugName: string, result: ScanResult): void {
+  const key = getCacheKey(userId, drugName)
+  scanCache.set(key, { result, timestamp: Date.now() })
+}
+
+/** Clear scan cache for a user (call when medications change). */
+export function clearScanCache(userId: string): void {
+  for (const key of scanCache.keys()) {
+    if (key.startsWith(`${userId}:`)) {
+      scanCache.delete(key)
+    }
+  }
+}
 
 // ── Private Helpers ─────────────────────────────────────────────────
 
@@ -84,45 +127,75 @@ function mapQtRiskToCategory(
   }
 }
 
-/** Build a ScanResult from an AI unknown drug assessment. */
+/** Determine the best RiskSource based on resolution data. */
+function determineSource(resolved: ResolvedDrug): RiskSource {
+  const hasLocal = resolved.localEntry !== null
+  const hasCredibleMeds = resolved.credibleMedsData !== null
+  const hasExternalData = resolved.fdaSignal !== null || hasCredibleMeds || resolved.rxnormData !== null
+
+  if (hasLocal && hasCredibleMeds) return 'MULTI_SOURCE'
+  if (hasLocal) return 'CREDIBLEMEDS_VERIFIED'
+  if (hasCredibleMeds) return 'CREDIBLEMEDS_API'
+  if (hasExternalData) return 'AI_ENRICHED'
+  return 'AI_ASSESSED'
+}
+
+/** Build a ScanResult from an AI unknown drug assessment with enrichment. */
 function mapUnknownDrugToScanResult(
   drugName: string,
   ai: UnknownDrug,
+  resolved: ResolvedDrug,
 ): ScanResult {
+  // Aggregate risk: if CredibleMeds says it's risky, use that over AI assessment
+  const aiRisk = mapQtRiskToCategory(ai.qtRiskAssessment)
+  const credibleMedsRisk = resolved.credibleMedsData?.riskCategory ?? null
+  const finalRisk = aggregateRisk(aiRisk, credibleMedsRisk)
+
   return {
     drugName,
-    genericName: ai.genericName ?? drugName,
-    riskCategory: mapQtRiskToCategory(ai.qtRiskAssessment),
-    isDTA: false,
-    drugClass: ai.drugClass ?? 'Unknown',
+    genericName: ai.genericName ?? resolved.genericName,
+    riskCategory: finalRisk,
+    isDTA: resolved.credibleMedsData?.isDTA ?? false,
+    drugClass: ai.drugClass ?? resolved.credibleMedsData?.drugClass ?? 'Unknown',
     primaryUse: ai.primaryUse ?? 'Unknown',
     qtMechanism: ai.recommendation
       ? `${ai.reasoning}\n\n${ai.recommendation}`
       : ai.reasoning,
     cyp: { metabolizedBy: [], inhibits: [], induces: [] },
-    source: 'AI_ASSESSED',
+    source: determineSource(resolved),
     comboAnalysis: null,
     scannedAt: new Date().toISOString(),
+    enrichment: resolved.enrichment,
+    dosage: null,
+    fuzzyMatch: resolved.fuzzyMatch,
   }
 }
 
-/** Build a base ScanResult from a verified DrugInfo lookup. */
+/** Build a base ScanResult from a verified DrugInfo lookup with enrichment. */
 function drugInfoToScanResult(
   drugName: string,
   info: DrugInfo,
+  resolved: ResolvedDrug,
 ): ScanResult {
+  // Aggregate risk from all sources (highest wins)
+  const credibleMedsRisk = resolved.credibleMedsData?.riskCategory ?? null
+  const finalRisk = aggregateRisk(info.riskCategory, credibleMedsRisk)
+
   return {
     drugName,
     genericName: info.genericName,
-    riskCategory: info.riskCategory,
-    isDTA: info.isDTA,
+    riskCategory: finalRisk,
+    isDTA: info.isDTA || (resolved.credibleMedsData?.isDTA ?? false),
     drugClass: info.drugClass,
     primaryUse: info.primaryUse,
     qtMechanism: info.qtMechanism,
     cyp: info.cyp,
-    source: info.source,
+    source: determineSource(resolved),
     comboAnalysis: null,
     scannedAt: new Date().toISOString(),
+    enrichment: resolved.enrichment,
+    dosage: null,
+    fuzzyMatch: resolved.fuzzyMatch,
   }
 }
 
@@ -152,96 +225,303 @@ async function saveScanLog(
   }
 }
 
+/** Fetch current medications for a user. */
+async function getUserMedications(userId: string): Promise<{
+  genotype: string | null
+  currentMeds: MedicationWithCyp[]
+}> {
+  const userData = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      genotype: true,
+      medications: {
+        where: { active: true },
+        select: {
+          genericName: true,
+          qtRisk: true,
+          isDTA: true,
+          cypData: true,
+        },
+      },
+    },
+  })
+
+  const currentMeds: MedicationWithCyp[] = (userData?.medications ?? []).map(
+    (m) => ({
+      genericName: m.genericName,
+      qtRisk: m.qtRisk as RiskCategory,
+      isDTA: m.isDTA,
+      cypData: m.cypData as CypData | null,
+    }),
+  )
+
+  return { genotype: userData?.genotype ?? null, currentMeds }
+}
+
 // ── Main Export ──────────────────────────────────────────────────────
 
 /**
- * Scan a drug by text name. Orchestrates local lookup + AI analysis.
+ * Scan a drug by text name. Orchestrates multi-source resolution + AI analysis.
  *
  * Flow:
- * 1. lookupDrug() — instant local JSON search
- * 2. If not found → AI unknown drug assessment
- * 3. If found + risky + user has meds → AI combo analysis
- * 4. Save to ScanLog
- * 5. Return ScanResult
+ * 1. resolveDrug() — multi-step: local exact → fuzzy → RxNorm → CredibleMeds → AI
+ * 2. If no local/API match → AI unknown drug assessment (enriched with external data)
+ * 3. If risky + user has meds → AI combo analysis (works for BOTH known AND unknown drugs)
+ * 4. Multi-source risk aggregation (highest risk from any source wins)
+ * 5. Save to ScanLog
+ * 6. Return ScanResult with enrichment data
  */
 export async function scanDrugByText(
   drugName: string,
   userId: string,
+  dosage?: string,
 ): Promise<ScanResult> {
-  const drugInfo = lookupDrug(drugName)
+  // ── Cache check ────────────────────────────────────────────────────
+  const cached = getCachedResult(userId, drugName)
+  if (cached) {
+    const cachedResult = {
+      ...cached,
+      pipelineTrace: [
+        { name: 'Cache', status: 'HIT' as const, durationMs: 0, detail: 'Returning cached result (5-min TTL)' },
+        ...(cached.pipelineTrace ?? []),
+      ],
+    }
+    return cachedResult
+  }
 
-  // ── Unknown drug path ───────────────────────────────────────────
+  // ── Step 1: Multi-source drug resolution ──────────────────────────
+  const resolved = await resolveDrug(drugName)
+  const trace: PipelineStep[] = [...(resolved.pipelineTrace ?? [])]
+
+  // ── Step 2: Unknown drug path (AI assessment) ─────────────────────
+  if (!resolved.localEntry && resolved.matchSource === 'AI_ONLY') {
+    // Build enrichment data for the AI prompt
+    const enrichment: EnrichmentData = {
+      rxnormResolution: resolved.rxnormData,
+      credibleMedsData: resolved.credibleMedsData,
+      fdaSignal: resolved.fdaSignal,
+    }
+
+    // Use enriched prompt if we have any external data, otherwise standard
+    const hasExternalData = resolved.rxnormData || resolved.credibleMedsData || resolved.fdaSignal
+    const prompt = hasExternalData
+      ? buildEnrichedUnknownDrugPrompt(drugName, enrichment)
+      : buildUnknownDrugPrompt(drugName)
+
+    const tAi = Date.now()
+    const { object: aiResult } = await generateObject({
+      model,
+      schema: UnknownDrugSchema,
+      prompt,
+      temperature: 0,
+    })
+    trace.push({
+      name: 'AI Drug Assessment',
+      status: 'HIT',
+      durationMs: Date.now() - tAi,
+      detail: aiResult.isRealDrug
+        ? `${aiResult.genericName ?? drugName}: ${aiResult.qtRiskAssessment}`
+        : 'Not recognized as a medication',
+    })
+
+    const result = mapUnknownDrugToScanResult(drugName, aiResult, resolved)
+    if (dosage) result.dosage = dosage
+
+    // ── CRITICAL FIX: Combo analysis for unknown drugs ──────────────
+    // Previously, unknown drugs NEVER got combo analysis even if the user
+    // had medications. Now we run combo analysis when the AI assessment
+    // indicates the drug may be risky.
+    if (
+      aiResult.isRealDrug &&
+      aiResult.qtRiskAssessment !== 'LIKELY_SAFE' &&
+      aiResult.qtRiskAssessment !== 'NOT_A_DRUG'
+    ) {
+      try {
+        const { genotype, currentMeds } = await getUserMedications(userId)
+
+        if (currentMeds.length > 0) {
+          const comboPrompt = buildComboPromptForUnknownDrug(
+            drugName,
+            {
+              genericName: aiResult.genericName ?? drugName,
+              drugClass: aiResult.drugClass ?? 'Unknown',
+              primaryUse: aiResult.primaryUse ?? 'Unknown',
+              qtRiskAssessment: aiResult.qtRiskAssessment,
+              reasoning: aiResult.reasoning,
+            },
+            currentMeds,
+            genotype,
+            enrichment,
+          )
+
+          const tCombo = Date.now()
+          const { object: comboAI } = await generateObject({
+            model,
+            schema: ComboAnalysisSchema,
+            prompt: comboPrompt,
+            temperature: 0,
+          })
+          trace.push({
+            name: 'AI Combo Analysis',
+            status: 'HIT',
+            durationMs: Date.now() - tCombo,
+            detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
+          })
+
+          result.comboAnalysis = mapComboAnalysis(comboAI)
+        }
+      } catch (err) {
+        console.error('[drug-scanner] Combo analysis for unknown drug failed:', err)
+        trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed — returning local result' })
+      }
+    }
+
+    result.pipelineTrace = trace
+    setCachedResult(userId, drugName, result)
+    await saveScanLog(userId, drugName, result)
+    return result
+  }
+
+  // ── Step 3: Known/resolved drug path ──────────────────────────────
+  const drugInfo = resolved.localEntry
   if (!drugInfo) {
+    // Resolved via CredibleMeds API but not in local DB
+    // Use CredibleMeds data to build a result, then optionally run combo analysis
+    const credData = resolved.credibleMedsData
+    if (credData) {
+      const result: ScanResult = {
+        drugName,
+        genericName: credData.genericName,
+        riskCategory: credData.riskCategory,
+        isDTA: credData.isDTA,
+        drugClass: credData.drugClass,
+        primaryUse: 'See prescribing information',
+        qtMechanism: 'Classified by CredibleMeds — consult your cardiologist for details',
+        cyp: { metabolizedBy: [], inhibits: [], induces: [] },
+        source: 'CREDIBLEMEDS_API',
+        comboAnalysis: null,
+        scannedAt: new Date().toISOString(),
+        enrichment: resolved.enrichment,
+        dosage: dosage ?? null,
+        fuzzyMatch: resolved.fuzzyMatch,
+      }
+
+      // Run combo analysis if drug is risky and user has meds
+      if (credData.riskCategory !== 'NOT_LISTED') {
+        try {
+          const { genotype, currentMeds } = await getUserMedications(userId)
+          if (currentMeds.length > 0) {
+            const comboPrompt = buildComboPromptForUnknownDrug(
+              drugName,
+              {
+                genericName: credData.genericName,
+                drugClass: credData.drugClass,
+                primaryUse: 'See prescribing information',
+                qtRiskAssessment: credData.riskCategory === 'KNOWN_RISK' ? 'POSSIBLE_RISK' : 'POSSIBLE_RISK',
+                reasoning: `This drug is classified as ${credData.riskCategory} by CredibleMeds, the gold standard QT risk database.`,
+              },
+              currentMeds,
+              genotype,
+              {
+                rxnormResolution: resolved.rxnormData,
+                credibleMedsData: resolved.credibleMedsData,
+                fdaSignal: resolved.fdaSignal,
+              },
+            )
+
+            const tCombo2 = Date.now()
+            const { object: comboAI } = await generateObject({
+              model,
+              schema: ComboAnalysisSchema,
+              prompt: comboPrompt,
+              temperature: 0,
+            })
+            trace.push({
+              name: 'AI Combo Analysis',
+              status: 'HIT',
+              durationMs: Date.now() - tCombo2,
+              detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
+            })
+
+            result.comboAnalysis = mapComboAnalysis(comboAI)
+          }
+        } catch (err) {
+          console.error('[drug-scanner] Combo analysis for CredibleMeds drug failed:', err)
+          trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed' })
+        }
+      }
+
+      result.pipelineTrace = trace
+      await saveScanLog(userId, drugName, result)
+      return result
+    }
+
+    // Should not reach here, but fallback to AI assessment
+    const tFb = Date.now()
     const { object: aiResult } = await generateObject({
       model,
       schema: UnknownDrugSchema,
       prompt: buildUnknownDrugPrompt(drugName),
       temperature: 0,
     })
+    trace.push({ name: 'AI Drug Assessment', status: 'HIT', durationMs: Date.now() - tFb, detail: 'Fallback assessment' })
 
-    const result = mapUnknownDrugToScanResult(drugName, aiResult)
+    const result = mapUnknownDrugToScanResult(drugName, aiResult, resolved)
+    result.pipelineTrace = trace
+    setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
     return result
   }
 
-  // ── Known drug path ─────────────────────────────────────────────
-  const result = drugInfoToScanResult(drugName, drugInfo)
+  // ── Step 4: Known drug with local entry ───────────────────────────
+  const result = drugInfoToScanResult(drugName, drugInfo, resolved)
+  if (dosage) result.dosage = dosage
 
   // If NOT_LISTED → instant green, no AI call needed
-  if (drugInfo.riskCategory === 'NOT_LISTED') {
+  if (result.riskCategory === 'NOT_LISTED') {
+    trace.push({ name: 'AI Combo Analysis', status: 'SKIPPED', durationMs: 0, detail: 'Drug is NOT_LISTED — no combo analysis needed' })
+    result.pipelineTrace = trace
+    setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
     return result
   }
 
   // Risky drug — attempt combo analysis with patient's current medications
   try {
-    const userData = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        genotype: true,
-        medications: {
-          where: { active: true },
-          select: {
-            genericName: true,
-            qtRisk: true,
-            isDTA: true,
-            cypData: true,
-          },
-        },
-      },
-    })
-
-    const currentMeds: MedicationWithCyp[] = (userData?.medications ?? []).map(
-      (m) => ({
-        genericName: m.genericName,
-        qtRisk: m.qtRisk as RiskCategory,
-        isDTA: m.isDTA,
-        cypData: m.cypData as CypData | null,
-      }),
-    )
+    const { genotype, currentMeds } = await getUserMedications(userId)
 
     if (currentMeds.length > 0) {
       const qtEntry = drugInfoToQtDrugEntry(drugInfo)
-      const prompt = buildComboPrompt(
-        qtEntry,
-        currentMeds,
-        userData?.genotype ?? null,
-      )
 
+      // Use dosage-aware combo prompt if dosage is available
+      const prompt = dosage
+        ? buildComboPromptWithDosage(qtEntry, currentMeds, genotype, dosage)
+        : buildComboPrompt(qtEntry, currentMeds, genotype)
+
+      const tCombo3 = Date.now()
       const { object: comboAI } = await generateObject({
         model,
         schema: ComboAnalysisSchema,
         prompt,
         temperature: 0,
       })
+      trace.push({
+        name: 'AI Combo Analysis',
+        status: 'HIT',
+        durationMs: Date.now() - tCombo3,
+        detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
+      })
 
       result.comboAnalysis = mapComboAnalysis(comboAI)
+    } else {
+      trace.push({ name: 'AI Combo Analysis', status: 'SKIPPED', durationMs: 0, detail: 'No current medications to analyze' })
     }
   } catch (err) {
     console.error('[drug-scanner] Combo analysis failed, returning local result only:', err)
-    // comboAnalysis stays null — local lookup result is still valid
+    trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed — returning local result' })
   }
 
+  result.pipelineTrace = trace
   await saveScanLog(userId, drugName, result)
   return result
 }

@@ -20,6 +20,8 @@ const onboardingSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Uses getSupabaseUser() instead of getCurrentUser() because onboarding
+    // creates/upserts the DB user record itself within the transaction below.
     const supabaseUser = await getSupabaseUser()
     if (!supabaseUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

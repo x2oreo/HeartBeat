@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { lookupDrug } from '@/services/drug-lookup'
+import { clearScanCache } from '@/services/drug-scanner'
 
 // ── GET /api/medications ─────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
     },
   })
 
+  clearScanCache(user.id)
   return NextResponse.json(medication, { status: 201 })
 }
 
@@ -102,5 +104,6 @@ export async function DELETE(request: Request) {
     data: { active: false },
   })
 
+  clearScanCache(user.id)
   return NextResponse.json({ success: true })
 }

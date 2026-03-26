@@ -19,6 +19,8 @@ const GENOTYPE_OPTIONS: { value: Genotype; label: string }[] = [
   { value: 'LQT1', label: 'LQT1' },
   { value: 'LQT2', label: 'LQT2' },
   { value: 'LQT3', label: 'LQT3' },
+  { value: 'OTHER', label: 'Other' },
+  { value: 'UNKNOWN', label: "I don't know" },
 ]
 
 const RELATIONSHIP_OPTIONS = ['Cardiologist', 'Family', 'Friend']

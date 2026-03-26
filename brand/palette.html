@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeartGuard — Brand System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   HeartGuard Brand System v2.0
+   ================================================================ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Brand */
+  --guardian-blue: #3478F6;
+  --guardian-blue-deep: #1A56C4;
+  --guardian-blue-hover: #2B6AE0;
+  --guardian-blue-light: #EBF2FF;
+  --guardian-blue-pale: #F6F9FF;
+
+  --pulse-coral: #F07167;
+  --pulse-coral-deep: #D4574E;
+  --pulse-coral-light: #FFF0EE;
+
+  /* Supporting */
+  --wellness-teal: #32AFA9;
+  --wellness-teal-light: #E8F8F7;
+  --warm-amber: #FFB340;
+  --warm-amber-light: #FFF8EB;
+
+  /* Risk */
+  --risk-safe: #34C759;
+  --risk-safe-bg: #EAFBF0;
+  --risk-safe-text: #1B7A34;
+  --risk-caution: #FF9F0A;
+  --risk-caution-bg: #FFF5E0;
+  --risk-caution-text: #8A5600;
+  --risk-danger: #FF3B30;
+  --risk-danger-bg: #FFEDEC;
+  --risk-danger-text: #C41E16;
+
+  /* Neutrals */
+  --text-primary: #1D1D1F;
+  --text-secondary: #6E6E73;
+  --text-tertiary: #AEAEB2;
+  --text-quaternary: #C7C7CC;
+  --separator: #D1D1D6;
+  --separator-light: #E5E5EA;
+  --surface: #F2F2F7;
+  --surface-raised: #FFFFFF;
+
+  /* Fonts */
+  --font-editorial: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-product: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+body {
+  font-family: var(--font-editorial);
+  background: #FFFFFF;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.page-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Sticky Nav ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--separator-light);
+}
+
+.nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-inner::-webkit-scrollbar { display: none; }
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.nav-logo svg { width: 24px; height: 24px; }
+.nav-logo span { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.nav-links a {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.nav-links a:hover { color: var(--guardian-blue); }
+
+/* ── Hero ── */
+.hero {
+  padding: 96px 0 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  transform: translateY(-50%);
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+.hero-bg-line polyline {
+  stroke: var(--guardian-blue);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: trace-line 4s ease forwards 0.5s;
+}
+
+@keyframes trace-line {
+  to { stroke-dashoffset: 0; }
+}
+
+.hero-logo {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 32px;
+  position: relative;
+}
+
+.hero-logo svg {
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 8px 32px rgba(52, 120, 246, 0.25));
+}
+
+.hero-pulse-ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 24px;
+  border: 2px solid rgba(52, 120, 246, 0.12);
+  animation: pulse-ring 3s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0; }
+}
+
+.hero h1 {
+  font-family: var(--font-editorial);
+  font-size: 60px;
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+
+.hero h1 .gradient-text {
+  background: linear-gradient(135deg, var(--guardian-blue) 0%, var(--guardian-blue-deep) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero .tagline {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
+}
+
+.hero .version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding: 6px 14px;
+  background: var(--surface);
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ── Section ── */
+.section {
+  padding: 64px 0;
+  border-top: 1px solid var(--separator-light);
+}
+
+.section-header { margin-bottom: 48px; }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--guardian-blue);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+/* ── Brand Swatches ── */
+.brand-colors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.brand-swatch {
+  height: 220px;
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brand-swatch:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.brand-swatch h3 {
+  font-family: var(--font-editorial);
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.brand-swatch .swatch-hex {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.brand-swatch .swatch-desc {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 8px;
+}
+
+/* ── Color Grid ── */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 16px;
+}
+
+.color-card {
+  background: var(--surface-raised);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--separator-light);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.color-card .swatch {
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 12px;
+}
+
+.color-card .swatch .hex {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  color: var(--text-primary);
+}
+
+.color-card .swatch .hex.dark {
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.color-card .info { padding: 12px; }
+.color-card .color-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.color-card .color-role { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+/* ── Risk System ── */
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.risk-card {
+  background: var(--surface-raised);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid var(--separator-light);
+  transition: transform 0.2s ease;
+}
+
+.risk-card:hover { transform: translateY(-2px); }
+
+.risk-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-icon svg { width: 28px; height: 28px; fill: white; }
+.risk-card .risk-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.risk-card .risk-hex { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); }
+.risk-card .risk-desc { font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4; }
+
+.risk-icon.critical { animation: critical-pulse 2s ease-in-out infinite; }
+
+@keyframes critical-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); }
+  50% { box-shadow: 0 0 0 14px rgba(255, 59, 48, 0); }
+}
+
+.risk-usage {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.risk-usage-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+
+.risk-usage-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--separator-light);
+}
+
+.risk-usage-row:last-child { border-bottom: none; }
+
+.risk-usage-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.risk-usage-label { font-size: 13px; font-weight: 600; min-width: 80px; }
+.risk-usage-desc { font-size: 13px; color: var(--text-secondary); }
+
+/* ── Typography ── */
+.type-specimen {
+  background: var(--surface-raised);
+  border-radius: 20px;
+  border: 1px solid var(--separator-light);
+  overflow: hidden;
+}
+
+.type-row {
+  display: flex;
+  align-items: baseline;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--separator-light);
+  gap: 24px;
+}
+
+.type-row:last-child { border-bottom: none; }
+
+.type-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.type-sample { flex: 1; font-family: var(--font-product); }
+
+.type-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-quaternary);
+  min-width: 120px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.t-display { font-size: 36px; font-weight: 800; letter-spacing: -1.5px; }
+.t-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.8px; }
+.t-h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+.t-h3 { font-size: 17px; font-weight: 600; }
+.t-body { font-size: 15px; font-weight: 400; line-height: 1.55; }
+.t-caption { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.t-micro { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-tertiary); }
+
+/* ── UX Guidelines ── */
+.guidelines-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.guideline-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.guideline-card .g-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--guardian-blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.guideline-card .g-icon svg { width: 20px; height: 20px; color: var(--guardian-blue); }
+
+.guideline-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.guideline-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+
+.guideline-card .g-rule {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--separator-light);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+/* ── Components ── */
+.components-section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.component-group { margin-bottom: 40px; }
+.component-group:last-child { margin-bottom: 0; }
+
+.component-group-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+}
+
+.btn-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+.btn {
+  font-family: var(--font-product);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary { background: var(--guardian-blue); color: white; }
+.btn-primary:hover { background: var(--guardian-blue-hover); box-shadow: 0 4px 16px rgba(52, 120, 246, 0.3); }
+.btn-secondary { background: var(--guardian-blue-light); color: var(--guardian-blue); }
+.btn-secondary:hover { background: #dde8fd; }
+.btn-ghost { background: transparent; color: var(--guardian-blue); border: 1.5px solid var(--separator); }
+.btn-ghost:hover { border-color: var(--guardian-blue); background: var(--guardian-blue-pale); }
+.btn-danger { background: var(--risk-danger); color: white; }
+.btn-danger:hover { background: #E53529; box-shadow: 0 4px 16px rgba(255, 59, 48, 0.3); }
+
+.badge-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.badge {
+  font-family: var(--font-product);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.badge-safe { background: var(--risk-safe-bg); color: var(--risk-safe-text); }
+.badge-safe::before { background: var(--risk-safe); }
+.badge-caution { background: var(--risk-caution-bg); color: var(--risk-caution-text); }
+.badge-caution::before { background: var(--risk-caution); }
+.badge-danger { background: var(--risk-danger-bg); color: var(--risk-danger-text); }
+.badge-danger::before { background: var(--risk-danger); }
+.badge-info { background: var(--guardian-blue-light); color: var(--guardian-blue); }
+.badge-info::before { background: var(--guardian-blue); }
+
+.input-preview { max-width: 400px; }
+
+.input-field {
+  font-family: var(--font-product);
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--separator);
+  border-radius: 12px;
+  font-size: 15px;
+  background: white;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-field:focus { border-color: var(--guardian-blue); box-shadow: 0 0 0 4px rgba(52, 120, 246, 0.12); }
+.input-field::placeholder { color: var(--text-tertiary); }
+
+.alert {
+  font-family: var(--font-product);
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.alert:last-child { margin-bottom: 0; }
+
+.alert-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+
+.alert-safe { background: var(--risk-safe-bg); color: var(--risk-safe-text); }
+.alert-caution { background: var(--risk-caution-bg); color: var(--risk-caution-text); }
+.alert-danger { background: var(--risk-danger-bg); color: var(--risk-danger-text); }
+.alert-info { background: var(--guardian-blue-light); color: var(--guardian-blue-deep); }
+
+/* ── Phone Mockup ── */
+.mockup-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.phone-frame {
+  width: 375px;
+  background: #1D1D1F;
+  border-radius: 48px;
+  padding: 14px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 40px 80px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.phone-screen {
+  background: var(--surface);
+  border-radius: 38px;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone-notch {
+  width: 120px;
+  height: 28px;
+  background: #1D1D1F;
+  border-radius: 0 0 18px 18px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 28px 8px;
+  font-family: var(--font-product);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-bar-right { display: flex; gap: 6px; align-items: center; }
+.status-bar-right svg { width: 16px; height: 16px; fill: var(--text-primary); }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 20px 16px;
+}
+
+.app-header-left { display: flex; align-items: center; gap: 10px; }
+.app-header-logo { width: 32px; height: 32px; }
+.app-header-title { font-family: var(--font-product); font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
+
+.app-header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--guardian-blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-product);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--guardian-blue);
+}
+
+.app-content {
+  padding: 0 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scan-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.scan-card-title {
+  font-family: var(--font-product);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scan-card-title svg { width: 18px; height: 18px; color: var(--guardian-blue); }
+
+.scan-input-row { display: flex; gap: 8px; }
+
+.scan-input {
+  flex: 1;
+  font-family: var(--font-product);
+  padding: 12px 14px;
+  border: 1.5px solid var(--separator-light);
+  border-radius: 12px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.scan-btn {
+  font-family: var(--font-product);
+  padding: 12px 18px;
+  background: var(--guardian-blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.meds-section {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.meds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.meds-title { font-family: var(--font-product); font-size: 15px; font-weight: 700; }
+.meds-see-all { font-family: var(--font-product); font-size: 13px; font-weight: 600; color: var(--guardian-blue); text-decoration: none; }
+
+.med-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--separator-light);
+}
+
+.med-item:last-child { border-bottom: none; }
+
+.med-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.med-icon svg { width: 18px; height: 18px; }
+.med-info { flex: 1; }
+.med-name { font-family: var(--font-product); font-size: 14px; font-weight: 600; }
+.med-dose { font-family: var(--font-product); font-size: 12px; color: var(--text-secondary); }
+
+.med-badge {
+  font-family: var(--font-product);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.result-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+
+.result-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.result-drug { font-family: var(--font-product); font-size: 16px; font-weight: 700; }
+
+.result-body {
+  font-family: var(--font-product);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Scroll Animations ── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Copy Toast ── */
+.copied-feedback {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.copied-feedback.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero { padding: 64px 0 48px; }
+  .hero h1 { font-size: 42px; letter-spacing: -1.5px; }
+  .section-title { font-size: 28px; }
+  .brand-colors { grid-template-columns: 1fr; }
+  .risk-grid { grid-template-columns: repeat(2, 1fr); }
+  .guidelines-grid { grid-template-columns: 1fr; }
+  .type-row { flex-direction: column; gap: 4px; }
+  .type-meta { text-align: left; }
+  .type-label { min-width: unset; }
+  .nav-links { display: none; }
+  .phone-frame { width: 100%; max-width: 375px; }
+  .components-section { padding: 24px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 34px; }
+  .brand-swatch { height: 180px; }
+  .hero-logo { width: 72px; height: 72px; }
+  .hero-logo svg { width: 72px; height: 72px; }
+  .risk-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 48 48" fill="none">
+        <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="#3478F6"/>
+        <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>HeartGuard</span>
+    </a>
+    <div class="nav-links">
+      <a href="#colors">Colors</a>
+      <a href="#risk">Risk System</a>
+      <a href="#neutrals">Neutrals</a>
+      <a href="#typography">Typography</a>
+      <a href="#guidelines">UX Guidelines</a>
+      <a href="#components">Components</a>
+      <a href="#preview">App Preview</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-container">
+
+  <!-- Hero -->
+  <div class="hero fade-in">
+    <!-- Subtle ECG background line -->
+    <svg class="hero-bg-line" viewBox="0 0 1200 60" preserveAspectRatio="none">
+      <polyline points="0,30 200,30 240,30 260,20 280,40 300,10 320,50 340,25 360,30 500,30 540,30 560,20 580,40 600,10 620,50 640,25 660,30 800,30 840,30 860,20 880,40 900,10 920,50 940,25 960,30 1200,30" />
+    </svg>
+    <div class="hero-logo">
+      <div class="hero-pulse-ring"></div>
+      <svg viewBox="0 0 48 48" fill="none">
+        <defs>
+          <linearGradient id="hero-grad" x1="6" y1="4" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#3478F6"/>
+            <stop offset="1" stop-color="#1A56C4"/>
+          </linearGradient>
+        </defs>
+        <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="url(#hero-grad)"/>
+        <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1><span class="gradient-text">HeartGuard</span></h1>
+    <p class="tagline">Your heart's guardian, always on watch</p>
+    <div class="version-badge">Brand System v2.0</div>
+  </div>
+
+  <!-- ═══════════ BRAND COLORS ═══════════ -->
+  <div class="section fade-in" id="colors">
+    <div class="section-header">
+      <div class="section-label">01 — Brand Colors</div>
+      <h2 class="section-title">Two colors that say it all</h2>
+      <p class="section-desc">Guardian Blue is trust and authority — the medical institution that has your back. Pulse Coral is warmth and care — the heartbeat that says we're human.</p>
+    </div>
+
+    <div class="brand-colors">
+      <div class="brand-swatch" style="background: linear-gradient(135deg, #3478F6 0%, #1A56C4 100%);" onclick="copyColor('#3478F6')">
+        <h3>Guardian Blue</h3>
+        <span class="swatch-hex">#3478F6</span>
+        <span class="swatch-desc">Trust · Authority · Protection</span>
+      </div>
+      <div class="brand-swatch" style="background: linear-gradient(135deg, #F07167 0%, #D4574E 100%);" onclick="copyColor('#F07167')">
+        <h3>Pulse Coral</h3>
+        <span class="swatch-hex">#F07167</span>
+        <span class="swatch-desc">Warmth · Care · Heartbeat</span>
+      </div>
+    </div>
+
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Extended Palette</h3>
+    <div class="color-grid">
+      <div class="color-card" onclick="copyColor('#3478F6')">
+        <div class="swatch" style="background: #3478F6;"><span class="hex">#3478F6</span></div>
+        <div class="info"><div class="color-name">Guardian Blue</div><div class="color-role">Primary actions, links</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#1A56C4')">
+        <div class="swatch" style="background: #1A56C4;"><span class="hex">#1A56C4</span></div>
+        <div class="info"><div class="color-name">Deep Blue</div><div class="color-role">Pressed states, headers</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#EBF2FF')">
+        <div class="swatch" style="background: #EBF2FF;"><span class="hex">#EBF2FF</span></div>
+        <div class="info"><div class="color-name">Blue Tint</div><div class="color-role">Selected backgrounds</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#F07167')">
+        <div class="swatch" style="background: #F07167;"><span class="hex">#F07167</span></div>
+        <div class="info"><div class="color-name">Pulse Coral</div><div class="color-role">Heart icon, accent</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#D4574E')">
+        <div class="swatch" style="background: #D4574E;"><span class="hex">#D4574E</span></div>
+        <div class="info"><div class="color-name">Deep Coral</div><div class="color-role">Pressed accent states</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#FFF0EE')">
+        <div class="swatch" style="background: #FFF0EE;"><span class="hex">#FFF0EE</span></div>
+        <div class="info"><div class="color-name">Coral Tint</div><div class="color-role">Warm backgrounds</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#32AFA9')">
+        <div class="swatch" style="background: #32AFA9;"><span class="hex">#32AFA9</span></div>
+        <div class="info"><div class="color-name">Wellness Teal</div><div class="color-role">Health metrics, wellness</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#FFB340')">
+        <div class="swatch" style="background: #FFB340;"><span class="hex">#FFB340</span></div>
+        <div class="info"><div class="color-name">Warm Amber</div><div class="color-role">Gentle notifications</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RISK SYSTEM ═══════════ -->
+  <div class="section fade-in" id="risk">
+    <div class="section-header">
+      <div class="section-label">02 — Risk Signal System</div>
+      <h2 class="section-title">Color that saves lives</h2>
+      <p class="section-desc">These colors are not decorative — they're medical signals. A patient sees green and breathes easy. They see red and they know. One second of clarity can prevent a fatal mistake.</p>
+    </div>
+
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-icon" style="background: #34C759;">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        </div>
+        <div class="risk-name" style="color: #1B7A34;">Safe</div>
+        <div class="risk-hex">#34C759</div>
+        <div class="risk-desc">Not listed as QT-prolonging. Safe to take.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon" style="background: #FF9F0A;">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="risk-name" style="color: #8A5600;">Caution</div>
+        <div class="risk-hex">#FF9F0A</div>
+        <div class="risk-desc">Possible or conditional risk. Talk to your doctor.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon" style="background: #FF3B30;">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </div>
+        <div class="risk-name" style="color: #C41E16;">Danger</div>
+        <div class="risk-hex">#FF3B30</div>
+        <div class="risk-desc">Known QT risk. Do not take without cardiologist approval.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon critical" style="background: #FF3B30;">
+          <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        </div>
+        <div class="risk-name" style="color: #C41E16;">Critical</div>
+        <div class="risk-hex">#FF3B30 + pulse</div>
+        <div class="risk-desc">Dangerous drug combination detected. Immediate alert.</div>
+      </div>
+    </div>
+
+    <div class="risk-usage">
+      <div class="risk-usage-title">How to apply risk colors</div>
+      <div class="risk-usage-row">
+        <div class="risk-usage-dot" style="background: var(--risk-safe);"></div>
+        <div class="risk-usage-label" style="color: var(--risk-safe-text);">Safe</div>
+        <div class="risk-usage-desc">Dot + green tint bg (#EAFBF0) + dark green text (#1B7A34)</div>
+      </div>
+      <div class="risk-usage-row">
+        <div class="risk-usage-dot" style="background: var(--risk-caution);"></div>
+        <div class="risk-usage-label" style="color: var(--risk-caution-text);">Caution</div>
+        <div class="risk-usage-desc">Dot + amber tint bg (#FFF5E0) + dark amber text (#8A5600)</div>
+      </div>
+      <div class="risk-usage-row">
+        <div class="risk-usage-dot" style="background: var(--risk-danger);"></div>
+        <div class="risk-usage-label" style="color: var(--risk-danger-text);">Danger</div>
+        <div class="risk-usage-desc">Dot + red tint bg (#FFEDEC) + dark red text (#C41E16)</div>
+      </div>
+      <div class="risk-usage-row">
+        <div class="risk-usage-dot" style="background: var(--risk-danger); animation: critical-pulse 2s infinite;"></div>
+        <div class="risk-usage-label" style="color: var(--risk-danger-text);">Critical</div>
+        <div class="risk-usage-desc">Pulsing dot + red tint bg + bold text + pulse animation on first load</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ NEUTRALS ═══════════ -->
+  <div class="section fade-in" id="neutrals">
+    <div class="section-header">
+      <div class="section-label">03 — Neutrals & Surfaces</div>
+      <h2 class="section-title">Where color rests</h2>
+      <p class="section-desc">Neutral surfaces let the risk signals and brand colors command attention. Apple-inspired grays that feel clean, warm, and breathable.</p>
+    </div>
+
+    <div class="color-grid">
+      <div class="color-card" onclick="copyColor('#1D1D1F')">
+        <div class="swatch" style="background: #1D1D1F;"><span class="hex dark">#1D1D1F</span></div>
+        <div class="info"><div class="color-name">Primary Text</div><div class="color-role">Headings, body copy</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#6E6E73')">
+        <div class="swatch" style="background: #6E6E73;"><span class="hex dark">#6E6E73</span></div>
+        <div class="info"><div class="color-name">Secondary Text</div><div class="color-role">Captions, metadata</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#AEAEB2')">
+        <div class="swatch" style="background: #AEAEB2;"><span class="hex">#AEAEB2</span></div>
+        <div class="info"><div class="color-name">Tertiary Text</div><div class="color-role">Placeholders, disabled</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#D1D1D6')">
+        <div class="swatch" style="background: #D1D1D6;"><span class="hex">#D1D1D6</span></div>
+        <div class="info"><div class="color-name">Separator</div><div class="color-role">Borders, dividers</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#E5E5EA')">
+        <div class="swatch" style="background: #E5E5EA;"><span class="hex">#E5E5EA</span></div>
+        <div class="info"><div class="color-name">Light Separator</div><div class="color-role">Subtle dividers</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#F2F2F7')">
+        <div class="swatch" style="background: #F2F2F7; border-bottom: 1px solid #E5E5EA;"><span class="hex">#F2F2F7</span></div>
+        <div class="info"><div class="color-name">Surface</div><div class="color-role">Page background</div></div>
+      </div>
+      <div class="color-card" onclick="copyColor('#FFFFFF')">
+        <div class="swatch" style="background: #FFFFFF; border-bottom: 1px solid #E5E5EA;"><span class="hex">#FFFFFF</span></div>
+        <div class="info"><div class="color-name">Card</div><div class="color-role">Elevated surfaces</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TYPOGRAPHY ═══════════ -->
+  <div class="section fade-in" id="typography">
+    <div class="section-header">
+      <div class="section-label">04 — Typography</div>
+      <h2 class="section-title">Inter — clean, precise, medical</h2>
+      <p class="section-desc">Inter's tall x-height and open forms ensure readability at small sizes — critical when patients are scanning drug names under stress.</p>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-row">
+        <div class="type-label">Display</div>
+        <div class="type-sample t-display">HeartGuard</div>
+        <div class="type-meta">36 / 800 / -1.5</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Heading 1</div>
+        <div class="type-sample t-h1">Scan Results</div>
+        <div class="type-meta">28 / 700 / -0.8</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Heading 2</div>
+        <div class="type-sample t-h2">My Medications</div>
+        <div class="type-meta">22 / 700 / -0.4</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Heading 3</div>
+        <div class="type-sample t-h3">Drug Interactions</div>
+        <div class="type-meta">17 / 600 / 0</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body</div>
+        <div class="type-sample t-body">Ciprofloxacin is a known QT-prolonging drug. It blocks the hERG potassium channel and should be avoided if you have Long QT Syndrome.</div>
+        <div class="type-meta">15 / 400 / 1.55lh</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Caption</div>
+        <div class="type-sample t-caption">Last scanned 2 hours ago</div>
+        <div class="type-meta">13 / 500</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Micro</div>
+        <div class="type-sample t-micro">Known Risk &middot; QT Prolongation</div>
+        <div class="type-meta">11 / 600 / caps</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ UX GUIDELINES ═══════════ -->
+  <div class="section fade-in" id="guidelines">
+    <div class="section-header">
+      <div class="section-label">05 — UX Guidelines</div>
+      <h2 class="section-title">Rules that build trust</h2>
+      <p class="section-desc">Every pixel is designed for people in high-stress, high-stakes moments. These rules ensure consistency and clarity across every screen.</p>
+    </div>
+
+    <div class="guidelines-grid">
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+        </div>
+        <h4>Color is Semantic, Never Decorative</h4>
+        <p>Color only appears when it communicates risk, status, or action. No colored backgrounds for aesthetics. When a user sees green, amber, or red — they know exactly what it means.</p>
+        <div class="g-rule">If removing the color loses information, keep it. Otherwise, remove it.</div>
+      </div>
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        </div>
+        <h4>Spacing Rhythm: 4-8-16-24</h4>
+        <p>All spacing uses a 4px base. Elements within a group: 4-8px. Between groups: 16px. Between sections: 24-32px. Consistent rhythm creates the calm, breathable feel of Apple Health.</p>
+        <div class="g-rule">Every margin and padding must be a multiple of 4px.</div>
+      </div>
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4>Design for Panic</h4>
+        <p>Critical information must be visible without scrolling. Risk level, drug name, and primary action should all be above the fold. Users may be anxious, rushed, or in an ER.</p>
+        <div class="g-rule">Scan result risk badge visible within 300ms of page load.</div>
+      </div>
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </div>
+        <h4>Icons: Outlined, 2px, Rounded</h4>
+        <p>Use outlined (stroke) icons, not filled. 2px stroke weight. Rounded line caps and joins. Matches Apple's SF Symbols style — light, precise, consistent.</p>
+        <div class="g-rule">Lucide React or Heroicons (outline). 20px default, 24px nav.</div>
+      </div>
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h4>Cards: White, 16px Radius, Soft Shadow</h4>
+        <p>All cards use white background on #F2F2F7 surface. border-radius: 16px. Shadow: 0 1px 3px rgba(0,0,0,0.04). No heavy borders — shadow alone provides separation.</p>
+        <div class="g-rule">Cards never have colored backgrounds unless showing risk status.</div>
+      </div>
+      <div class="guideline-card">
+        <div class="g-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h4>Every Action, One Tap Away</h4>
+        <p>Scan, View Result, Emergency Card — never more than one tap from any screen. Bottom navigation on mobile. Prominent CTAs. No hunting required.</p>
+        <div class="g-rule">Scan button always accessible from primary navigation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ COMPONENTS ═══════════ -->
+  <div class="section fade-in" id="components">
+    <div class="section-header">
+      <div class="section-label">06 — Components</div>
+      <h2 class="section-title">Building blocks</h2>
+      <p class="section-desc">Every component follows the same principles: clear, calm, functional. Here's how the palette translates to interactive elements.</p>
+    </div>
+
+    <div class="components-section">
+      <div class="component-group">
+        <div class="component-group-title">Buttons</div>
+        <div class="btn-row">
+          <button class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Scan Drug
+          </button>
+          <button class="btn btn-secondary">View Details</button>
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-danger">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Emergency
+          </button>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <div class="component-group-title">Risk Badges</div>
+        <div class="badge-row">
+          <span class="badge badge-safe">Safe</span>
+          <span class="badge badge-caution">Caution</span>
+          <span class="badge badge-danger">Known Risk</span>
+          <span class="badge badge-info">Not Listed</span>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <div class="component-group-title">Input Field</div>
+        <div class="input-preview">
+          <input type="text" class="input-field" placeholder="Enter medication name...">
+        </div>
+      </div>
+
+      <div class="component-group">
+        <div class="component-group-title">Alert Notifications</div>
+        <div class="alert alert-safe">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div><strong>Amoxicillin</strong> is not listed as a QT-prolonging drug. Safe to take with your current medications.</div>
+        </div>
+        <div class="alert alert-caution">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Escitalopram</strong> has possible QT risk. Discuss with your cardiologist before starting this medication.</div>
+        </div>
+        <div class="alert alert-danger">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Ciprofloxacin</strong> is a known QT-prolonging drug. Do NOT take this medication. Contact your cardiologist immediately.</div>
+        </div>
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div><strong>Combo analysis complete.</strong> Your scan considered interactions with 3 current medications.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ APP PREVIEW ═══════════ -->
+  <div class="section fade-in" id="preview">
+    <div class="section-header">
+      <div class="section-label">07 — App Preview</div>
+      <h2 class="section-title">How it all comes together</h2>
+      <p class="section-desc">A realistic preview of the HeartGuard dashboard at 375px mobile width. Every color earns its place.</p>
+    </div>
+
+    <div class="mockup-wrapper">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-bar-right">
+              <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+            </div>
+          </div>
+
+          <div class="app-header">
+            <div class="app-header-left">
+              <svg class="app-header-logo" viewBox="0 0 48 48" fill="none">
+                <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="#3478F6"/>
+                <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="app-header-title">HeartGuard</span>
+            </div>
+            <div class="app-header-avatar">K</div>
+          </div>
+
+          <div class="app-content">
+            <!-- Scan Card -->
+            <div class="scan-card">
+              <div class="scan-card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Quick Scan
+              </div>
+              <div class="scan-input-row">
+                <input type="text" class="scan-input" placeholder="Drug name..." disabled>
+                <button class="scan-btn">Check</button>
+              </div>
+            </div>
+
+            <!-- Medications -->
+            <div class="meds-section">
+              <div class="meds-header">
+                <span class="meds-title">My Medications</span>
+                <a href="#" class="meds-see-all">See all</a>
+              </div>
+              <div class="med-item">
+                <div class="med-icon" style="background: var(--risk-safe-bg);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#1B7A34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2.5"/><path d="M10 2h4v2h-4z"/></svg>
+                </div>
+                <div class="med-info">
+                  <div class="med-name">Metoprolol</div>
+                  <div class="med-dose">50mg daily</div>
+                </div>
+                <span class="med-badge" style="background: var(--risk-safe-bg); color: var(--risk-safe-text);">Safe</span>
+              </div>
+              <div class="med-item">
+                <div class="med-icon" style="background: var(--risk-caution-bg);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#8A5600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2.5"/><path d="M10 2h4v2h-4z"/></svg>
+                </div>
+                <div class="med-info">
+                  <div class="med-name">Escitalopram</div>
+                  <div class="med-dose">10mg daily</div>
+                </div>
+                <span class="med-badge" style="background: var(--risk-caution-bg); color: var(--risk-caution-text);">Caution</span>
+              </div>
+              <div class="med-item">
+                <div class="med-icon" style="background: var(--risk-danger-bg);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#C41E16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2.5"/><path d="M10 2h4v2h-4z"/></svg>
+                </div>
+                <div class="med-info">
+                  <div class="med-name">Clarithromycin</div>
+                  <div class="med-dose">500mg as needed</div>
+                </div>
+                <span class="med-badge" style="background: var(--risk-danger-bg); color: var(--risk-danger-text);">Risk</span>
+              </div>
+            </div>
+
+            <!-- Recent Result -->
+            <div class="result-card">
+              <div class="result-header">
+                <div>
+                  <div class="result-label">Last Scan &middot; 2h ago</div>
+                  <div class="result-drug">Ciprofloxacin</div>
+                </div>
+                <span class="med-badge" style="background: var(--risk-danger-bg); color: var(--risk-danger-text);">Known Risk</span>
+              </div>
+              <div class="result-body">Blocks hERG potassium channel. Dangerous combination with Clarithromycin — both QT prolonging.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align: center; padding: 48px 0 64px; color: var(--text-quaternary); font-size: 13px; font-weight: 500; border-top: 1px solid var(--separator-light);">
+    HeartGuard Brand System v2.0
+  </div>
+
+</div>
+
+<!-- Copy toast -->
+<div class="copied-feedback" id="copiedToast">Copied</div>
+
+<script>
+function copyColor(hex) {
+  navigator.clipboard.writeText(hex).then(() => {
+    const toast = document.getElementById('copiedToast');
+    toast.textContent = 'Copied ' + hex;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>

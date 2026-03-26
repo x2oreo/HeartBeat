@@ -10,7 +10,7 @@ export function DoctorPrepView({ data }: Props) {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="bg-blue-600 rounded-t-2xl px-6 py-5 text-white">
+      <div className="bg-brand rounded-t-2xl px-6 py-5 text-white">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -19,21 +19,21 @@ export function DoctorPrepView({ data }: Props) {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight">Doctor Visit Preparation</h1>
-            <p className="text-blue-100 text-sm">HeartGuard Medical Brief</p>
+            <p className="text-white/80 text-sm">HeartGuard Medical Brief</p>
           </div>
         </div>
       </div>
 
       {/* Patient Info Bar */}
-      <div className="bg-blue-700 px-6 py-3 flex flex-wrap items-center gap-3 text-white text-sm">
+      <div className="bg-brand-deep px-6 py-3 flex flex-wrap items-center gap-3 text-white text-sm">
         <span className="font-semibold">{data.patientName}</span>
-        <span className="w-px h-4 bg-blue-400" />
+        <span className="w-px h-4 bg-white/30" />
         <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
           LQTS {data.genotype ?? 'Unknown'}
         </span>
         {data.procedureType && (
           <>
-            <span className="w-px h-4 bg-blue-400" />
+            <span className="w-px h-4 bg-white/30" />
             <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
               {data.procedureType}
             </span>
@@ -44,9 +44,9 @@ export function DoctorPrepView({ data }: Props) {
       {/* Body */}
       <div className="bg-white dark:bg-neutral-900 border border-t-0 border-neutral-200 dark:border-neutral-700 rounded-b-2xl overflow-hidden">
         {/* Drug Safety Brief */}
-        <div className="mx-4 mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
-          <h2 className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2">Drug Safety Brief</h2>
-          <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
+        <div className="mx-4 mt-4 p-4 bg-brand-light dark:bg-brand-dark/30 border border-brand/20 dark:border-brand-deep rounded-xl">
+          <h2 className="text-sm font-bold text-brand-deep dark:text-brand-light mb-2">Drug Safety Brief</h2>
+          <p className="text-sm text-brand-dark dark:text-brand-light leading-relaxed">
             {data.drugSafetyBrief}
           </p>
         </div>

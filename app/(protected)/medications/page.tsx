@@ -95,11 +95,11 @@ function AddMedicationPanel({ onAdd, onClose }: { onAdd: (name: string) => Promi
             if (e.key === 'Escape') onClose()
           }}
           placeholder="Search medication name..."
-          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
         />
         {searching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
@@ -145,7 +145,7 @@ function AddMedicationPanel({ onAdd, onClose }: { onAdd: (name: string) => Promi
         type="button"
         onClick={() => { if (suggestions.length > 0) submit(suggestions[0].genericName); else if (query.trim()) submit(query.trim()) }}
         disabled={!query.trim() || adding}
-        className="w-full py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {adding ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Adding...</> : 'Add Medication'}
       </button>
@@ -183,7 +183,7 @@ export default function MedicationsPage() {
           {!showAdd && (
             <button
               onClick={() => setShowAdd(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-deep text-white text-sm font-semibold transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -241,7 +241,7 @@ export default function MedicationsPage() {
             </p>
             <button
               onClick={() => setShowAdd(true)}
-              className="mt-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors"
+              className="mt-2 px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-deep text-white text-sm font-semibold transition-colors"
             >
               Add your first medication
             </button>

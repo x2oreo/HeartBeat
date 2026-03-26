@@ -74,7 +74,7 @@ export default async function HomePage() {
         {/* Scan Button */}
         <Link
           href="/scan"
-          className="block w-full py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-center transition-colors shadow-lg shadow-indigo-200 dark:shadow-indigo-950"
+          className="block w-full py-5 rounded-2xl bg-brand hover:bg-brand-deep active:bg-brand-dark text-white text-center transition-colors shadow-lg shadow-brand-light dark:shadow-brand-dark"
         >
           <div className="flex items-center justify-center gap-3">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -82,13 +82,13 @@ export default async function HomePage() {
             </svg>
             <span className="text-lg font-bold">Scan Medication</span>
           </div>
-          <p className="text-indigo-200 text-sm mt-1">Check any drug for QT risk</p>
+          <p className="text-white/80 text-sm mt-1">Check any drug for QT risk</p>
         </Link>
 
         {/* Medication Summary */}
         <Link
           href="/medications"
-          className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+          className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 hover:border-brand dark:hover:border-brand-deep transition-colors"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -115,7 +115,7 @@ export default async function HomePage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-4 pb-3">
             <p className="font-semibold text-gray-900 dark:text-white">Recent Scans</p>
-            <Link href="/history" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View all</Link>
+            <Link href="/history" className="text-sm text-brand dark:text-brand hover:underline">View all</Link>
           </div>
           {recentScans.length === 0 ? (
             <div className="px-4 pb-5 text-center">

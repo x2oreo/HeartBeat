@@ -17,7 +17,7 @@ export default async function PublicEmergencyCardPage({ params }: Props) {
   return (
     <div
       className="min-h-screen bg-neutral-50"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif" }}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       {/* Top Bar */}
       <header className="bg-white border-b border-neutral-200 px-4 py-3">

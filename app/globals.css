@@ -1,16 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  /* Brand */
+  --color-brand: #3478F6;
+  --color-brand-deep: #1A56C4;
+  --color-brand-hover: #2B6AE0;
+  --color-brand-light: #EBF2FF;
+  --color-brand-pale: #F6F9FF;
+  --color-brand-dark: #0E3A80;
+
+  /* Accent */
+  --color-coral: #F07167;
+  --color-coral-deep: #D4574E;
+  --color-coral-light: #FFF0EE;
+
+  /* Supporting */
+  --color-teal: #32AFA9;
+  --color-teal-light: #E8F8F7;
+
+  /* Font */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
 @media print {
-  /* Hide sidebar, topbar, and outer chrome when printing scan results */
-  aside {
-    display: none !important;
-  }
-  header {
-    display: none !important;
-  }
-  body, main {
-    background: white !important;
-  }
+  aside { display: none !important; }
+  header { display: none !important; }
+  body, main { background: white !important; }
 }

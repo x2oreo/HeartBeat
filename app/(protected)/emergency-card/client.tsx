@@ -35,8 +35,8 @@ export function EmergencyCardClient() {
       {/* Generate Button (shown when no card yet) */}
       {!cardData && !isGenerating && (
         <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-700">
-          <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-16 h-16 rounded-2xl bg-coral-light dark:bg-coral-deep/20 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-coral dark:text-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </div>
@@ -48,7 +48,7 @@ export function EmergencyCardClient() {
           </p>
           <button
             onClick={generate}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-coral-deep hover:bg-coral text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -62,10 +62,10 @@ export function EmergencyCardClient() {
       {isGenerating && (
         <div className="max-w-2xl mx-auto">
           <div className="animate-pulse">
-            <div className="bg-red-200 dark:bg-red-900/40 rounded-t-2xl h-20" />
-            <div className="bg-red-300 dark:bg-red-900/60 h-10" />
+            <div className="bg-coral-light dark:bg-coral-deep/40 rounded-t-2xl h-20" />
+            <div className="bg-coral/30 dark:bg-coral-deep/60 h-10" />
             <div className="bg-white dark:bg-neutral-900 border border-t-0 border-neutral-200 dark:border-neutral-700 rounded-b-2xl p-6 space-y-4">
-              <div className="h-16 bg-red-50 dark:bg-red-950/30 rounded-xl" />
+              <div className="h-16 bg-coral-light dark:bg-coral-deep/20 rounded-xl" />
               <div className="space-y-3">
                 <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" />
                 <div className="h-20 bg-neutral-100 dark:bg-neutral-800 rounded-lg" />

@@ -119,7 +119,7 @@ export function DashboardLayout({ email, children }: Props) {
   return (
     <div
       className="flex h-screen overflow-hidden bg-white dark:bg-neutral-950 p-2"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif" }}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       <div className="flex flex-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden">
 
@@ -129,9 +129,10 @@ export function DashboardLayout({ email, children }: Props) {
           {/* Logo */}
           <div className="h-14 flex items-center px-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-red-500 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+              <div className="w-7 h-7 rounded-xl bg-brand flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                  <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="white" fillOpacity="0.25"/>
+                  <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
@@ -152,7 +153,7 @@ export function DashboardLayout({ email, children }: Props) {
                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-neutral-900 dark:hover:text-neutral-100'
                 }`}
               >
-                <span className={isActive(item.href) ? 'text-indigo-500' : 'text-neutral-400 dark:text-neutral-500'}>
+                <span className={isActive(item.href) ? 'text-brand' : 'text-neutral-400 dark:text-neutral-500'}>
                   {item.icon}
                 </span>
                 {item.label}
@@ -170,7 +171,7 @@ export function DashboardLayout({ email, children }: Props) {
                   : 'text-neutral-500 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-neutral-900 dark:hover:text-neutral-100'
               }`}
             >
-              <span className={isActive(BOTTOM_NAV.href) ? 'text-indigo-500' : 'text-neutral-400 dark:text-neutral-500'}>
+              <span className={isActive(BOTTOM_NAV.href) ? 'text-brand' : 'text-neutral-400 dark:text-neutral-500'}>
                 {BOTTOM_NAV.icon}
               </span>
               {BOTTOM_NAV.label}

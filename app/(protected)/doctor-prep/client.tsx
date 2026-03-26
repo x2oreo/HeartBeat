@@ -53,7 +53,7 @@ export function DoctorPrepClient() {
                 id="procedure"
                 value={selectedProcedure}
                 onChange={(e) => setSelectedProcedure(e.target.value)}
-                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors"
+                className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
               >
                 {PROCEDURE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -74,14 +74,14 @@ export function DoctorPrepClient() {
                   value={customProcedure}
                   onChange={(e) => setCustomProcedure(e.target.value)}
                   placeholder="e.g., Colonoscopy, Cardiac catheterization..."
-                  className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
                 />
               </div>
             )}
 
             <button
               onClick={handleGenerate}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand hover:bg-brand-deep text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -96,10 +96,10 @@ export function DoctorPrepClient() {
       {isGenerating && (
         <div className="max-w-2xl mx-auto">
           <div className="animate-pulse">
-            <div className="bg-blue-200 dark:bg-blue-900/40 rounded-t-2xl h-20" />
-            <div className="bg-blue-300 dark:bg-blue-900/60 h-10" />
+            <div className="bg-brand-light dark:bg-brand-dark/40 rounded-t-2xl h-20" />
+            <div className="bg-brand/30 dark:bg-brand-dark/60 h-10" />
             <div className="bg-white dark:bg-neutral-900 border border-t-0 border-neutral-200 dark:border-neutral-700 rounded-b-2xl p-6 space-y-4">
-              <div className="h-20 bg-blue-50 dark:bg-blue-950/20 rounded-xl" />
+              <div className="h-20 bg-brand-pale dark:bg-brand-dark/20 rounded-xl" />
               <div className="space-y-2">
                 <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" />
                 <div className="h-4 bg-neutral-100 dark:bg-neutral-800 rounded" />

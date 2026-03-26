@@ -26,7 +26,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="bg-red-600 rounded-t-2xl px-6 py-5 text-white">
+      <div className="bg-coral-deep rounded-t-2xl px-6 py-5 text-white">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -35,22 +35,22 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight">{aiContent.headline}</h1>
-            <p className="text-red-100 text-sm">HeartGuard Emergency Card</p>
+            <p className="text-white/80 text-sm">HeartGuard Emergency Card</p>
           </div>
         </div>
       </div>
 
       {/* Patient Info Bar */}
-      <div className="bg-red-700 px-6 py-3 flex flex-wrap items-center gap-3 text-white text-sm">
+      <div className="bg-coral px-6 py-3 flex flex-wrap items-center gap-3 text-white text-sm">
         <span className="font-semibold">{data.patientName}</span>
-        <span className="w-px h-4 bg-red-400" />
+        <span className="w-px h-4 bg-white/30" />
         <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
           LQTS {data.genotype ?? 'Unknown'}
         </span>
         {!isPublic && data.generatedAt && (
           <>
-            <span className="w-px h-4 bg-red-400" />
-            <span className="text-red-200 text-xs">
+            <span className="w-px h-4 bg-white/30" />
+            <span className="text-white/60 text-xs">
               Generated {new Date(data.generatedAt).toLocaleDateString()}
             </span>
           </>

@@ -46,9 +46,9 @@ function StepIndicator({ current }: { current: number }) {
           <div
             className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
               step === current
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-brand text-white'
                 : step < current
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
+                  ? 'bg-brand-light text-brand-deep dark:bg-brand-dark dark:text-brand-light'
                   : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
             }`}
           >
@@ -57,7 +57,7 @@ function StepIndicator({ current }: { current: number }) {
           {step < 3 && (
             <div
               className={`w-12 h-0.5 ${
-                step < current ? 'bg-indigo-400' : 'bg-gray-300 dark:bg-gray-600'
+                step < current ? 'bg-brand' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             />
           )}
@@ -280,7 +280,7 @@ export default function OnboardingPage() {
                   onClick={() => setGenotype(option.value)}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                     genotype === option.value
-                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/50'
+                      ? 'border-brand bg-brand-light dark:bg-brand-dark/50'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
@@ -291,12 +291,12 @@ export default function OnboardingPage() {
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         genotype === option.value
-                          ? 'border-indigo-500'
+                          ? 'border-brand'
                           : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
                       {genotype === option.value && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-brand" />
                       )}
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={() => setStep(2)}
               disabled={!genotype}
-              className="w-full mt-4 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-4 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
                   }
                 }}
                 placeholder="Search medication name..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               />
               {searchLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -450,7 +450,7 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep transition-colors"
               >
                 Next
               </button>
@@ -504,7 +504,7 @@ export default function OnboardingPage() {
                       value={contact.name}
                       onChange={(e) => updateContact(i, 'name', e.target.value)}
                       placeholder="Full name"
-                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${
                         contact.errors.name
                           ? 'border-red-400 dark:border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -521,7 +521,7 @@ export default function OnboardingPage() {
                       value={contact.phone}
                       onChange={(e) => updateContact(i, 'phone', e.target.value.replace(/[^\d+\s\-()]/g, ''))}
                       placeholder="Phone number"
-                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2.5 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${
                         contact.errors.phone
                           ? 'border-red-400 dark:border-red-500'
                           : 'border-gray-300 dark:border-gray-600'
@@ -534,7 +534,7 @@ export default function OnboardingPage() {
                   <select
                     value={contact.relationship}
                     onChange={(e) => updateContact(i, 'relationship', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   >
                     {RELATIONSHIP_OPTIONS.map((rel) => (
                       <option key={rel} value={rel}>
@@ -549,7 +549,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={addContact}
-              className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-brand hover:text-brand transition-colors"
             >
               + Add another contact
             </button>
@@ -573,7 +573,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex-1 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-deep disabled:opacity-70 transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>

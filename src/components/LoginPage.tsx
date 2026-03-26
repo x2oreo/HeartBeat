@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../lib/supabase/client'
 import { useTheme } from '../context/theme'
-import { GlobeIcon, SunIcon, MoonIcon } from './icons'
+import { SunIcon, MoonIcon } from './icons'
 
 type Mode = 'signin' | 'signup' | 'forgot'
 
@@ -60,18 +60,21 @@ export function LoginPage() {
   return (
     <div
       className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center p-2"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif" }}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
       {/* Card shell — matches dashboard gray container */}
       <div className="w-full max-w-sm bg-neutral-100 dark:bg-neutral-900 rounded-2xl p-2">
         {/* Header row */}
         <div className="flex items-center justify-between px-3 pt-3 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-neutral-900 dark:bg-white flex items-center justify-center text-white dark:text-neutral-900">
-              <GlobeIcon />
+            <div className="w-7 h-7 rounded-xl bg-brand flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="white" fillOpacity="0.25"/>
+                <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
             <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
-              Dashboard
+              HeartGuard
             </span>
           </div>
           <button

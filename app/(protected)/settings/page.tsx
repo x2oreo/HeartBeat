@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import type { Genotype } from '@/types'
+import PhoneInput from '@/components/PhoneInput'
+import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -111,9 +113,9 @@ export default function SettingsPage() {
   function validateNewContact() {
     const errors: typeof newContactErrors = {}
     if (!newContact.name.trim()) errors.name = 'Name is required'
-    const digits = newContact.phone.replace(/\D/g, '')
-    if (!digits) errors.phone = 'Phone is required'
-    else if (digits.length < 7) errors.phone = 'Enter a valid phone number'
+    const { country, nationalNumber } = parseE164(newContact.phone)
+    const phoneError = validateNationalNumber(country, nationalNumber)
+    if (phoneError) errors.phone = phoneError
     setNewContactErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -128,7 +130,7 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newContact.name.trim(),
-          phone: newContact.phone.replace(/\D/g, ''),
+          phone: newContact.phone,
           relationship: newContact.relationship.toLowerCase(),
         }),
       })
@@ -237,7 +239,7 @@ export default function SettingsPage() {
               <div key={c.id} className="flex items-start justify-between gap-3 p-3 bg-surface rounded-xl">
                 <div>
                   <p className="font-medium text-text-primary">{c.name}</p>
-                  <p className="text-sm text-text-secondary">{c.phone}</p>
+                  <p className="text-sm text-text-secondary">{formatPhoneDisplay(c.phone)}</p>
                   <p className="text-xs text-text-tertiary capitalize mt-0.5">{c.relationship}</p>
                 </div>
                 <button
@@ -270,17 +272,11 @@ export default function SettingsPage() {
                 />
                 {newContactErrors.name && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.name}</p>}
               </div>
-              <div>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  value={newContact.phone}
-                  onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value.replace(/[^\d+\s\-()]/g, '') }))}
-                  placeholder="Phone number"
-                  className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${newContactErrors.phone ? 'border-[#FF3B30]' : 'border-separator'}`}
-                />
-                {newContactErrors.phone && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.phone}</p>}
-              </div>
+              <PhoneInput
+                value={newContact.phone}
+                onChange={(val) => setNewContact((p) => ({ ...p, phone: val }))}
+                error={newContactErrors.phone}
+              />
               <select
                 value={newContact.relationship}
                 onChange={(e) => setNewContact((p) => ({ ...p, relationship: e.target.value }))}

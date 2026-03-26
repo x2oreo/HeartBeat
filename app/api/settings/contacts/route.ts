@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 const postSchema = z.object({
   name: z.string().min(1).max(100),
-  phone: z.string().min(7).max(30).regex(/^\+?[\d\s\-()]+$/, 'Invalid phone number format'),
+  phone: z.string().min(8).max(16).regex(/^\+\d{7,15}$/, 'Phone must be in E.164 format'),
   relationship: z.string().min(1).max(50),
 })
 

@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RiskCategory, Genotype, DrugSearchResult } from '@/types'
+import PhoneInput from '@/components/PhoneInput'
+import { parseE164, validateNationalNumber } from '@/lib/phone-countries'
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -210,9 +212,9 @@ export default function OnboardingPage() {
     const validated = contacts.map((c) => {
       const errors: ContactEntry['errors'] = {}
       if (!c.name.trim()) { errors.name = 'Name is required'; hasErrors = true }
-      const digits = c.phone.replace(/\D/g, '')
-      if (!digits) { errors.phone = 'Phone number is required'; hasErrors = true }
-      else if (digits.length < 7) { errors.phone = 'Enter a valid phone number'; hasErrors = true }
+      const { country, nationalNumber } = parseE164(c.phone)
+      const phoneError = validateNationalNumber(country, nationalNumber)
+      if (phoneError) { errors.phone = phoneError; hasErrors = true }
       return { ...c, errors }
     })
     setContacts(validated)
@@ -228,7 +230,7 @@ export default function OnboardingPage() {
           medications: medications.map((m) => m.genericName),
           emergencyContacts: validated.map((c) => ({
             name: c.name.trim(),
-            phone: c.phone.replace(/\D/g, ''),
+            phone: c.phone,
             relationship: c.relationship.toLowerCase(),
           })),
         }),
@@ -517,23 +519,11 @@ export default function OnboardingPage() {
                       <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.name}</p>
                     )}
                   </div>
-                  <div>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      value={contact.phone}
-                      onChange={(e) => updateContact(i, 'phone', e.target.value.replace(/[^\d+\s\-()]/g, ''))}
-                      placeholder="Phone number"
-                      className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${
-                        contact.errors.phone
-                          ? 'border-[#FF3B30]'
-                          : 'border-separator'
-                      }`}
-                    />
-                    {contact.errors.phone && (
-                      <p className="text-xs text-[#FF3B30] mt-1">{contact.errors.phone}</p>
-                    )}
-                  </div>
+                  <PhoneInput
+                    value={contact.phone}
+                    onChange={(val) => updateContact(i, 'phone', val)}
+                    error={contact.errors.phone}
+                  />
                   <select
                     value={contact.relationship}
                     onChange={(e) => updateContact(i, 'relationship', e.target.value)}

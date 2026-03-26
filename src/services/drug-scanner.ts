@@ -11,6 +11,7 @@ import {
 } from '@/ai/scan-prompts'
 import type { MedicationWithCyp, EnrichmentData } from '@/ai/scan-prompts'
 import { resolveDrug, aggregateRisk } from '@/services/drug-resolver'
+import { notifyWatchOfDrugRisk } from '@/services/watch-push'
 import type { ResolvedDrug } from '@/services/drug-resolver'
 import { prisma } from '@/lib/prisma'
 import type {
@@ -523,5 +524,11 @@ export async function scanDrugByText(
 
   result.pipelineTrace = trace
   await saveScanLog(userId, drugName, result)
+
+  // Notify watch if drug is risky (fire-and-forget, non-blocking)
+  if (result.riskCategory === 'KNOWN_RISK' || result.riskCategory === 'POSSIBLE_RISK') {
+    notifyWatchOfDrugRisk(userId, result.genericName, result.riskCategory).catch(() => {})
+  }
+
   return result
 }

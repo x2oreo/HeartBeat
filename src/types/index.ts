@@ -183,3 +183,52 @@ export type EnhancedEmergencyCardData = EmergencyCardData & {
 export type EnhancedDoctorPrepData = DoctorPrepData & {
   procedureSpecificWarnings: string[]
 }
+
+// ── Watch Health Data ──────────────────────────────────────────────
+
+export type WatchRiskLevel = 'NORMAL' | 'CAUTION' | 'ELEVATED'
+
+export type WatchStressLevel = 'CALM' | 'MODERATE' | 'HIGH'
+
+export type WatchMonitoringMode = 'normal' | 'heightened'
+
+export type HealthMetricPayload = {
+  heartRate: number
+  hrv: number
+  restingHR: number
+  rrIntervalMs: number
+  steps: number
+  activeEnergy: number
+  riskLevel: WatchRiskLevel
+  stressLevel: WatchStressLevel
+  isAsleep: boolean
+  irregularRhythm: boolean
+  recordedAt: string // ISO 8601
+}
+
+export type HealthAlertPayload = {
+  riskLevel: 'CAUTION' | 'ELEVATED'
+  heartRate: number
+  hrv: number
+  stressLevel: WatchStressLevel
+  isAsleep: boolean
+  irregularRhythm: boolean
+  message: string
+  triggeredAt: string // ISO 8601
+}
+
+export type WatchConfigResponse = {
+  monitoringMode: WatchMonitoringMode
+  medications: { genericName: string; riskCategory: RiskCategory }[]
+  genotype: Genotype | null
+}
+
+export type HealthStreamEvent = {
+  type: 'health-update' | 'alert' | 'connected'
+  data: HealthMetricPayload | HealthAlertPayload | null
+  timestamp: string
+}
+
+export type WatchPushPayload =
+  | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
+  | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }

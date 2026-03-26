@@ -1,6 +1,8 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
+export { getWatchUser } from '@/lib/watch-auth'
+
 /**
  * Get the current authenticated user from Supabase session.
  * Returns the Supabase user or null if not authenticated.

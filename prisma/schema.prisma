@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,6 +5,72 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  supabaseId String   @unique @map("supabase_id")
+  email      String
+  name       String?
+  genotype   String?  // LQT1, LQT2, LQT3, OTHER, UNKNOWN
+  onboarded  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  medications       Medication[]
+  scanLogs          ScanLog[]
+  emergencyContacts EmergencyContact[]
+
+  @@map("users")
+}
+
+model Medication {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  genericName String   @map("generic_name")
+  brandName   String?  @map("brand_name")
+  dosage      String?
+  qtRisk      String   @map("qt_risk") // KNOWN_RISK, POSSIBLE_RISK, CONDITIONAL_RISK, NOT_LISTED
+  isDTA       Boolean  @default(false) @map("is_dta")
+  cypData     Json?    @map("cyp_data")
+  active      Boolean  @default(true)
+  addedAt     DateTime @default(now()) @map("added_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("medications")
+}
+
+model ScanLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  drugName     String   @map("drug_name")
+  genericName  String   @map("generic_name")
+  riskCategory String   @map("risk_category")
+  comboRisk    String?  @map("combo_risk")
+  scanType     String   @map("scan_type") // TEXT, PHOTO
+  alternatives Json?
+  fullResult   Json?    @map("full_result")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("scan_logs")
+}
+
+model EmergencyContact {
+  id           String @id @default(uuid()) @db.Uuid
+  userId       String @map("user_id") @db.Uuid
+  name         String
+  phone        String
+  relationship String // cardiologist, family, friend
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("emergency_contacts")
 }
 
 model HealthMetric {

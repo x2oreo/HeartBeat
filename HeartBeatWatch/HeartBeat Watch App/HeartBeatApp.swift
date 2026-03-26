@@ -1,8 +1,14 @@
 import SwiftUI
+import UserNotifications
 
 @main
 struct HeartBeatApp: App {
     @StateObject private var hk = HealthKitManager()
+
+    init() {
+        // Allow notifications to appear even when the app is in the foreground
+        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -11,9 +17,18 @@ struct HeartBeatApp: App {
             }
             .environmentObject(hk)
         }
-        // Flush offline buffer when woken for background app refresh
-        .backgroundTask(.appRefresh("com.heartbeat.flush")) {
-            await hk.supabase.flush()
-        }
+    }
+}
+
+/// Tells the system to show banner + play sound even when the app is open.
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    static let shared = NotificationDelegate()
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
     }
 }

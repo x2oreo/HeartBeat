@@ -1,11 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(ls:*)"
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "permissions": {
-    "allow": [
-      "Bash(gh pr:*)"
-    ]
-  }
+  ]
 }

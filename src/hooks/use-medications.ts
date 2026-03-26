@@ -47,18 +47,22 @@ export function useMedications() {
   }, [fetchMedications])
 
   const removeMedication = useCallback(async (id: string) => {
-    const res = await fetch('/api/medications', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ medicationId: id }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => null)
-      throw new Error(data?.error ?? 'Failed to remove medication')
+    try {
+      const res = await fetch('/api/medications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicationId: id }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error ?? 'Failed to remove medication')
+      }
+      setMedications((prev) => prev.filter((m) => m.id !== id))
+    } catch (err) {
+      await fetchMedications()
+      throw err
     }
-    // Optimistic local removal
-    setMedications((prev) => prev.filter((m) => m.id !== id))
-  }, [])
+  }, [fetchMedications])
 
   useEffect(() => {
     fetchMedications()

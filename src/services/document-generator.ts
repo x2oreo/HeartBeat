@@ -46,7 +46,7 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
     name: m.genericName,
     riskCategory: riskCategorySchema.parse(m.qtRisk),
     isDTA: m.isDTA,
-    cyp: cypDataSchema.catch(defaultCyp).parse(m.cypData),
+    cyp: cypDataSchema.safeParse(m.cypData).success ? cypDataSchema.parse(m.cypData) : defaultCyp,
   }))
 
   const prompt = buildEnhancedEmergencyCardPrompt(
@@ -107,7 +107,7 @@ export async function generateDoctorPrep(
     name: m.genericName,
     riskCategory: riskCategorySchema.parse(m.qtRisk),
     isDTA: m.isDTA,
-    cyp: cypDataSchema.catch(defaultCyp).parse(m.cypData),
+    cyp: cypDataSchema.safeParse(m.cypData).success ? cypDataSchema.parse(m.cypData) : defaultCyp,
   }))
 
   const prompt = buildEnhancedDoctorPrepPrompt(

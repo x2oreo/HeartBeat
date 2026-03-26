@@ -87,7 +87,7 @@ const BOTTOM_NAV = {
 
 // ── Component ────────────────────────────────────────────────────────
 
-interface Props {
+type Props = {
   email: string
   children: React.ReactNode
 }

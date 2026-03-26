@@ -2,16 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useMedications } from '@/hooks/use-medications'
-import type { RiskCategory } from '@/types'
-
-// ── Types ────────────────────────────────────────────────────────────
-
-type DrugSearchResult = {
-  genericName: string
-  brandNames: string[]
-  riskCategory: RiskCategory
-  isDTA: boolean
-}
+import type { RiskCategory, DrugSearchResult } from '@/types'
 
 // ── Constants ────────────────────────────────────────────────────────
 

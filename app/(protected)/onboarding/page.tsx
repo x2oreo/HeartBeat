@@ -2,21 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import type { RiskCategory } from '@/types'
+import type { RiskCategory, Genotype, DrugSearchResult } from '@/types'
 
 // ── Types ───────────────────────────────────────────────────────────
 
-type Genotype = 'LQT1' | 'LQT2' | 'LQT3' | 'OTHER' | 'UNKNOWN'
-
 type MedEntry = {
   genericName: string
-  riskCategory: RiskCategory
-  isDTA: boolean
-}
-
-type DrugSearchResult = {
-  genericName: string
-  brandNames: string[]
   riskCategory: RiskCategory
   isDTA: boolean
 }

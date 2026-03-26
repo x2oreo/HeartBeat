@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import type { Genotype } from '@/types'
 
 // ── Types ────────────────────────────────────────────────────────────
 
 type Contact = { id: string; name: string; phone: string; relationship: string }
-type Genotype = 'LQT1' | 'LQT2' | 'LQT3' | 'OTHER' | 'UNKNOWN'
 
 type ProfileData = {
   email: string
@@ -52,6 +52,7 @@ export default function SettingsPage() {
   const [showAddContact, setShowAddContact] = useState(false)
   const [newContact, setNewContact] = useState({ name: '', phone: '', relationship: 'Cardiologist' })
   const [newContactErrors, setNewContactErrors] = useState<{ name?: string; phone?: string }>({})
+  const [addContactError, setAddContactError] = useState<string | null>(null)
   const [addingContact, setAddingContact] = useState(false)
   const [removingContactId, setRemovingContactId] = useState<string | null>(null)
 
@@ -119,6 +120,7 @@ export default function SettingsPage() {
   async function addContact() {
     if (!validateNewContact()) return
     setAddingContact(true)
+    setAddContactError(null)
     try {
       const res = await fetch('/api/settings/contacts', {
         method: 'POST',
@@ -136,7 +138,7 @@ export default function SettingsPage() {
       setNewContactErrors({})
       setShowAddContact(false)
     } catch {
-      setNewContactErrors({ name: 'Failed to add contact. Try again.' })
+      setAddContactError('Failed to add contact. Try again.')
     } finally {
       setAddingContact(false)
     }

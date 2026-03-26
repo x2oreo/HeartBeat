@@ -37,6 +37,11 @@ export async function POST(request: Request) {
     const { genotype, medications, emergencyContacts } = parsed.data
 
     const result = await prisma.$transaction(async (tx: TransactionClient) => {
+      const existing = await tx.user.findUnique({
+        where: { supabaseId: supabaseUser.id },
+        select: { id: true, onboarded: true },
+      })
+
       const user = await tx.user.upsert({
         where: { supabaseId: supabaseUser.id },
         update: {
@@ -54,9 +59,12 @@ export async function POST(request: Request) {
         select: { id: true },
       })
 
-      // Delete existing medications and contacts to make onboarding idempotent
-      await tx.medication.deleteMany({ where: { userId: user.id } })
-      await tx.emergencyContact.deleteMany({ where: { userId: user.id } })
+      // Only wipe medications and contacts on first-time onboarding.
+      // Re-submitting (e.g. back-button retry) must not destroy data added post-onboarding.
+      if (!existing?.onboarded) {
+        await tx.medication.deleteMany({ where: { userId: user.id } })
+        await tx.emergencyContact.deleteMany({ where: { userId: user.id } })
+      }
 
       for (const medName of medications) {
         const drugInfo = lookupDrug(medName)

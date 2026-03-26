@@ -2,7 +2,7 @@
 
 import { EmergencyCardView } from '@/components/documents/EmergencyCardView'
 import { EmergencyCardPDFButton } from '@/components/documents/PDFGenerator'
-import type { EnhancedEmergencyCardData } from '@/services/document-generator'
+import type { EnhancedEmergencyCardData } from '@/types'
 
 type Props = {
   data: EnhancedEmergencyCardData

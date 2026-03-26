@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { EnhancedEmergencyCardData } from '@/services/document-generator'
-import type { EnhancedDoctorPrepData } from '@/services/document-generator'
+import type { EnhancedEmergencyCardData, EnhancedDoctorPrepData } from '@/types'
 
 // ── Emergency Card PDF ───────────────────────────────────────────
 
@@ -138,8 +137,7 @@ export function EmergencyCardPDFButton({ data, shareUrl }: EmergencyCardPDFProps
       if (shareUrl) {
         try {
           const QRCode = await import('qrcode')
-          const fullUrl = `${window.location.origin}${shareUrl}`
-          const qrDataUrl = await QRCode.toDataURL(fullUrl, { width: 100, margin: 1 })
+          const qrDataUrl = await QRCode.toDataURL(shareUrl, { width: 100, margin: 1 })
           if (y > 230) { doc.addPage(); y = 14 }
           doc.addImage(qrDataUrl, 'PNG', pageWidth - 40, y, 26, 26)
           doc.setFontSize(7)

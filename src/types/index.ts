@@ -1,6 +1,8 @@
 // HeartGuard Shared Types — Single Source of Truth
 // All cross-boundary types live here. Import from '@/types' everywhere.
 
+import type { EmergencyCardAIOutput } from '@/ai/document-schemas'
+
 // ── Risk & Classification ──────────────────────────────────────────
 
 export type RiskCategory = 'KNOWN_RISK' | 'POSSIBLE_RISK' | 'CONDITIONAL_RISK' | 'NOT_LISTED'
@@ -128,4 +130,14 @@ export type DoctorPrepData = {
   medicationsToAvoid: string[]
   saferAlternatives: AlternativeDrug[]
   generatedAt: string
+}
+
+// ── Enhanced Document Types ─────────────────────────────────────────
+
+export type EnhancedEmergencyCardData = EmergencyCardData & {
+  aiContent: EmergencyCardAIOutput
+}
+
+export type EnhancedDoctorPrepData = DoctorPrepData & {
+  procedureSpecificWarnings: string[]
 }

@@ -1,16 +1,20 @@
 import { generateObject } from 'ai'
 import { model } from '@/ai/client'
-import { emergencyCardAISchema, doctorPrepAISchema } from '@/ai/document-schemas'
-import type { EmergencyCardAIOutput } from '@/ai/document-schemas'
+import {
+  emergencyCardAISchema,
+  doctorPrepAISchema,
+  enhancedEmergencyCardDataSchema,
+  riskCategorySchema,
+  genotypeSchema,
+  cypDataSchema,
+} from '@/ai/document-schemas'
 import { buildEnhancedEmergencyCardPrompt, buildEnhancedDoctorPrepPrompt } from '@/ai/document-prompts'
 import { prisma } from '@/lib/prisma'
-import type { EmergencyCardData, DoctorPrepData, Genotype, CypData } from '@/types'
+import type { EnhancedEmergencyCardData, EnhancedDoctorPrepData, EmergencyCardData, DoctorPrepData } from '@/types'
+
+const defaultCyp = { metabolizedBy: [], inhibits: [], induces: [] }
 
 // ── Emergency Card Generation ────────────────────────────────────
-
-export type EnhancedEmergencyCardData = EmergencyCardData & {
-  aiContent: EmergencyCardAIOutput
-}
 
 export async function generateEmergencyCard(userId: string): Promise<EnhancedEmergencyCardData> {
   const user = await prisma.user.findUniqueOrThrow({
@@ -37,12 +41,12 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
     },
   })
 
-  const genotype = (user.genotype as Genotype) ?? null
+  const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
-    riskCategory: m.qtRisk,
+    riskCategory: riskCategorySchema.parse(m.qtRisk),
     isDTA: m.isDTA,
-    cyp: (m.cypData as CypData) ?? { metabolizedBy: [], inhibits: [], induces: [] },
+    cyp: cypDataSchema.catch(defaultCyp).parse(m.cypData),
   }))
 
   const prompt = buildEnhancedEmergencyCardPrompt(
@@ -62,9 +66,9 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
   return {
     patientName: user.name ?? 'Unknown Patient',
     genotype,
-    medications: user.medications.map((m) => ({
-      name: m.genericName,
-      riskCategory: m.qtRisk as EmergencyCardData['medications'][number]['riskCategory'],
+    medications: medications.map((m) => ({
+      name: m.name,
+      riskCategory: m.riskCategory satisfies EmergencyCardData['medications'][number]['riskCategory'],
       isDTA: m.isDTA,
     })),
     emergencyContacts: user.emergencyContacts,
@@ -76,10 +80,6 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
 }
 
 // ── Doctor Prep Generation ───────────────────────────────────────
-
-export type EnhancedDoctorPrepData = DoctorPrepData & {
-  procedureSpecificWarnings: string[]
-}
 
 export async function generateDoctorPrep(
   userId: string,
@@ -102,12 +102,12 @@ export async function generateDoctorPrep(
     },
   })
 
-  const genotype = (user.genotype as Genotype) ?? null
+  const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
-    riskCategory: m.qtRisk,
+    riskCategory: riskCategorySchema.parse(m.qtRisk),
     isDTA: m.isDTA,
-    cyp: (m.cypData as CypData) ?? { metabolizedBy: [], inhibits: [], induces: [] },
+    cyp: cypDataSchema.catch(defaultCyp).parse(m.cypData),
   }))
 
   const prompt = buildEnhancedDoctorPrepPrompt(
@@ -127,11 +127,11 @@ export async function generateDoctorPrep(
   return {
     patientName: user.name ?? 'Unknown Patient',
     genotype,
-    currentMedications: user.medications.map((m) => ({
-      name: m.genericName,
-      riskCategory: m.qtRisk as DoctorPrepData['currentMedications'][number]['riskCategory'],
+    currentMedications: medications.map((m) => ({
+      name: m.name,
+      riskCategory: m.riskCategory satisfies DoctorPrepData['currentMedications'][number]['riskCategory'],
       isDTA: m.isDTA,
-      cypProfile: (m.cypData as CypData) ?? { metabolizedBy: [], inhibits: [], induces: [] },
+      cypProfile: m.cyp,
     })),
     procedureType,
     drugSafetyBrief: aiContent.drugSafetyBrief,
@@ -147,35 +147,26 @@ export async function generateDoctorPrep(
 
 export async function saveSharedEmergencyCard(
   userId: string,
-  cardData: unknown,
+  rawCardData: unknown,
 ): Promise<{ slug: string }> {
-  const slug = crypto.randomUUID().slice(0, 8)
+  const cardData = enhancedEmergencyCardDataSchema.parse(rawCardData)
+  const slug = crypto.randomUUID()
 
   await prisma.sharedEmergencyCard.upsert({
     where: { userId },
-    update: {
-      slug,
-      cardData: JSON.parse(JSON.stringify(cardData)),
-    },
-    create: {
-      userId,
-      slug,
-      cardData: JSON.parse(JSON.stringify(cardData)),
-    },
+    update: { slug, cardData },
+    create: { userId, slug, cardData },
   })
 
   return { slug }
 }
 
-export async function getSharedEmergencyCard(slug: string) {
+export async function getSharedEmergencyCard(slug: string): Promise<EnhancedEmergencyCardData | null> {
   const card = await prisma.sharedEmergencyCard.findUnique({
     where: { slug },
-    select: {
-      cardData: true,
-      createdAt: true,
-    },
+    select: { cardData: true },
   })
 
   if (!card) return null
-  return card.cardData as EnhancedEmergencyCardData
+  return enhancedEmergencyCardDataSchema.parse(card.cardData)
 }

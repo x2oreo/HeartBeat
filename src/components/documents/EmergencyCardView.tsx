@@ -1,6 +1,6 @@
 'use client'
 
-import type { EnhancedEmergencyCardData } from '@/services/document-generator'
+import type { EnhancedEmergencyCardData } from '@/types'
 
 type Props = {
   data: EnhancedEmergencyCardData
@@ -18,11 +18,6 @@ function getRiskColor(riskCategory: string) {
     default:
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
   }
-}
-
-function getGenotypeLabel(genotype: string | null) {
-  if (!genotype) return 'Unknown'
-  return genotype
 }
 
 export function EmergencyCardView({ data, isPublic = false }: Props) {
@@ -50,7 +45,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         <span className="font-semibold">{data.patientName}</span>
         <span className="w-px h-4 bg-red-400" />
         <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
-          LQTS {getGenotypeLabel(data.genotype)}
+          LQTS {data.genotype ?? 'Unknown'}
         </span>
         {!isPublic && data.generatedAt && (
           <>

@@ -12,13 +12,12 @@ export function EmergencyCardClient() {
 
   async function handleShare() {
     const url = await share()
-    if (url) setShareUrl(url)
+    if (url) setShareUrl(`${window.location.origin}${url}`)
   }
 
   async function handleCopy() {
     if (!shareUrl) return
-    const fullUrl = `${window.location.origin}${shareUrl}`
-    await navigator.clipboard.writeText(fullUrl)
+    await navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -147,7 +146,7 @@ export function EmergencyCardClient() {
               </p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-sm bg-white dark:bg-neutral-900 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2 text-neutral-700 dark:text-neutral-300 truncate">
-                  {window.location.origin}{shareUrl}
+                  {shareUrl}
                 </code>
                 <button
                   onClick={handleCopy}

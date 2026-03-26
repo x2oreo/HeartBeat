@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { EnhancedEmergencyCardData, EnhancedDoctorPrepData } from '@/services/document-generator'
+import { z } from 'zod'
+import type { EnhancedEmergencyCardData, EnhancedDoctorPrepData } from '@/types'
+
+const shareResponseSchema = z.object({ slug: z.string(), url: z.string() })
 
 // ── Emergency Card Hook ──────────────────────────────────────────
 
@@ -9,7 +12,6 @@ export function useEmergencyCard() {
   const [cardData, setCardData] = useState<EnhancedEmergencyCardData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [shareSlug, setShareSlug] = useState<string | null>(null)
   const [isSharing, setIsSharing] = useState(false)
 
   const generate = useCallback(async () => {
@@ -23,7 +25,6 @@ export function useEmergencyCard() {
       }
       const data: EnhancedEmergencyCardData = await res.json()
       setCardData(data)
-      setShareSlug(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate emergency card')
     } finally {
@@ -31,7 +32,7 @@ export function useEmergencyCard() {
     }
   }, [])
 
-  const share = useCallback(async () => {
+  const share = useCallback(async (): Promise<string | undefined> => {
     if (!cardData) return
     setIsSharing(true)
     setError(null)
@@ -45,9 +46,8 @@ export function useEmergencyCard() {
         const body = await res.json().catch(() => ({ error: 'Unknown error' }))
         throw new Error(body.error ?? `Failed (${res.status})`)
       }
-      const { slug, url } = await res.json()
-      setShareSlug(slug)
-      return url as string
+      const { url } = shareResponseSchema.parse(await res.json())
+      return url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create share link')
       return undefined
@@ -56,7 +56,7 @@ export function useEmergencyCard() {
     }
   }, [cardData])
 
-  return { cardData, isGenerating, error, shareSlug, isSharing, generate, share }
+  return { cardData, isGenerating, error, isSharing, generate, share }
 }
 
 // ── Doctor Prep Hook ─────────────────────────────────────────────

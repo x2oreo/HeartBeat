@@ -1,14 +1,9 @@
 'use client'
 
-import type { EnhancedDoctorPrepData } from '@/services/document-generator'
+import type { EnhancedDoctorPrepData } from '@/types'
 
 type Props = {
   data: EnhancedDoctorPrepData
-}
-
-function getGenotypeLabel(genotype: string | null) {
-  if (!genotype) return 'Unknown'
-  return genotype
 }
 
 export function DoctorPrepView({ data }: Props) {
@@ -34,7 +29,7 @@ export function DoctorPrepView({ data }: Props) {
         <span className="font-semibold">{data.patientName}</span>
         <span className="w-px h-4 bg-blue-400" />
         <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
-          LQTS {getGenotypeLabel(data.genotype)}
+          LQTS {data.genotype ?? 'Unknown'}
         </span>
         {data.procedureType && (
           <>

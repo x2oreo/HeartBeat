@@ -44,3 +44,9 @@ next-env.d.ts
 
 # Misc
 .vercel
+
+# Xcode / watchOS
+HeartBeatWatch/Secrets.xcconfig
+HeartBeatWatch/*.xcodeproj/xcuserdata/
+HeartBeatWatch/*.xcworkspace/xcuserdata/
+HeartBeatWatch/DerivedData/

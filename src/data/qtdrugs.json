@@ -1,0 +1,408 @@
+[
+  {
+    "genericName": "ciprofloxacin",
+    "searchTerms": ["cipro", "ciproxin", "ciprobay", "ciprofloxacin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Fluoroquinolone antibiotic",
+    "primaryUse": "Bacterial infections (UTI, respiratory, skin)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr)",
+    "cyp": {
+      "metabolizedBy": ["CYP1A2", "CYP3A4"],
+      "inhibits": ["CYP1A2"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "moxifloxacin",
+    "searchTerms": ["avelox", "moxifloxacin", "vigamox"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Fluoroquinolone antibiotic",
+    "primaryUse": "Respiratory and skin infections",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); strongest QT effect of all fluoroquinolones",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "levofloxacin",
+    "searchTerms": ["levaquin", "levofloxacin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Fluoroquinolone antibiotic",
+    "primaryUse": "Respiratory, urinary, and skin infections",
+    "qtMechanism": "Blocks hERG potassium channel (IKr)",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "azithromycin",
+    "searchTerms": ["zithromax", "z-pack", "zpack", "azithromycin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Macrolide antibiotic",
+    "primaryUse": "Respiratory, ear, and skin infections",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); increases risk at higher doses",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "clarithromycin",
+    "searchTerms": ["biaxin", "clarithromycin", "klacid"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Macrolide antibiotic",
+    "primaryUse": "Respiratory and skin infections, H. pylori",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); also a strong CYP3A4 inhibitor raising levels of other drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "erythromycin",
+    "searchTerms": ["ery-tab", "erythrocin", "erythromycin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Macrolide antibiotic",
+    "primaryUse": "Respiratory and skin infections",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); strong CYP3A4 inhibitor",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ondansetron",
+    "searchTerms": ["zofran", "ondansetron"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "5-HT3 receptor antagonist (antiemetic)",
+    "primaryUse": "Nausea and vomiting prevention",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); dose-dependent QT prolongation",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP1A2", "CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "domperidone",
+    "searchTerms": ["motilium", "domperidone"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Dopamine antagonist (prokinetic)",
+    "primaryUse": "Nausea, vomiting, gastroparesis",
+    "qtMechanism": "Blocks hERG potassium channel (IKr)",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "haloperidol",
+    "searchTerms": ["haldol", "haloperidol"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Typical antipsychotic",
+    "primaryUse": "Schizophrenia, acute psychosis, agitation",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); risk increases with IV administration",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "methadone",
+    "searchTerms": ["dolophine", "methadone", "methadose"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Opioid analgesic",
+    "primaryUse": "Pain management, opioid dependence treatment",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); dose-dependent effect",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2B6", "CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sotalol",
+    "searchTerms": ["betapace", "sotalol", "sotylize"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class III antiarrhythmic / beta-blocker",
+    "primaryUse": "Atrial fibrillation, ventricular tachycardia",
+    "qtMechanism": "Blocks IKr potassium current (Class III effect); intentionally prolongs QT",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "amiodarone",
+    "searchTerms": ["cordarone", "pacerone", "amiodarone"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class III antiarrhythmic",
+    "primaryUse": "Ventricular and atrial arrhythmias",
+    "qtMechanism": "Blocks multiple ion channels including IKr; prolongs QT but lower TdP risk due to multi-channel block",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2C8"],
+      "inhibits": ["CYP2D6", "CYP3A4", "CYP2C9"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "droperidol",
+    "searchTerms": ["inapsine", "droperidol"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Butyrophenone antipsychotic / antiemetic",
+    "primaryUse": "Nausea prevention (post-operative), sedation",
+    "qtMechanism": "Blocks hERG potassium channel (IKr)",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "chlorpromazine",
+    "searchTerms": ["thorazine", "chlorpromazine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Typical antipsychotic (phenothiazine)",
+    "primaryUse": "Schizophrenia, nausea, hiccups",
+    "qtMechanism": "Blocks hERG potassium channel (IKr)",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP1A2"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "escitalopram",
+    "searchTerms": ["lexapro", "escitalopram", "cipralex"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "SSRI antidepressant",
+    "primaryUse": "Depression, generalized anxiety disorder",
+    "qtMechanism": "Dose-dependent QT prolongation; mechanism not fully characterized",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2C19"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "citalopram",
+    "searchTerms": ["celexa", "citalopram"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "SSRI antidepressant",
+    "primaryUse": "Depression",
+    "qtMechanism": "Dose-dependent hERG channel block; FDA max dose reduced to 40mg for QT concerns",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2C19"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "fluconazole",
+    "searchTerms": ["diflucan", "fluconazole"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Azole antifungal",
+    "primaryUse": "Fungal infections (candidiasis, cryptococcal)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); also CYP inhibitor raising levels of other QT drugs",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": ["CYP2C9", "CYP2C19", "CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ketoconazole",
+    "searchTerms": ["nizoral", "ketoconazole"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Azole antifungal",
+    "primaryUse": "Fungal infections (systemic, topical)",
+    "qtMechanism": "Strong CYP3A4 inhibitor; raises plasma levels of QT-prolonging drugs metabolized by CYP3A4",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "hydroxychloroquine",
+    "searchTerms": ["plaquenil", "hydroxychloroquine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Antimalarial / immunomodulator",
+    "primaryUse": "Lupus, rheumatoid arthritis, malaria",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); risk increases with long-term use",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2D6"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "diphenhydramine",
+    "searchTerms": ["benadryl", "diphenhydramine"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "First-generation antihistamine",
+    "primaryUse": "Allergies, insomnia, cold symptoms",
+    "qtMechanism": "Weak hERG channel block; risk primarily in overdose or with other QT drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "metoclopramide",
+    "searchTerms": ["reglan", "metoclopramide"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Dopamine antagonist (prokinetic / antiemetic)",
+    "primaryUse": "Nausea, gastroparesis, GERD",
+    "qtMechanism": "Weak hERG potassium channel block",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "quetiapine",
+    "searchTerms": ["seroquel", "quetiapine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic",
+    "primaryUse": "Schizophrenia, bipolar disorder, depression adjunct",
+    "qtMechanism": "Moderate hERG channel block; risk increases with other QT drugs or electrolyte imbalance",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "risperidone",
+    "searchTerms": ["risperdal", "risperidone"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic",
+    "primaryUse": "Schizophrenia, bipolar disorder, irritability in autism",
+    "qtMechanism": "Moderate hERG channel block",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "amoxicillin",
+    "searchTerms": ["amoxil", "amoxicillin", "augmentin"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Penicillin antibiotic",
+    "primaryUse": "Bacterial infections (ear, throat, urinary, respiratory)",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "metoprolol",
+    "searchTerms": ["lopressor", "toprol", "metoprolol"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Beta-blocker",
+    "primaryUse": "Hypertension, heart failure, LQTS treatment",
+    "qtMechanism": "No QT prolongation; beta-blockers are first-line treatment for LQTS",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "nadolol",
+    "searchTerms": ["corgard", "nadolol"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Beta-blocker (non-selective)",
+    "primaryUse": "Hypertension, LQTS treatment (preferred for LQT1/LQT2)",
+    "qtMechanism": "No QT prolongation; preferred beta-blocker for LQTS patients",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "propranolol",
+    "searchTerms": ["inderal", "propranolol"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Beta-blocker (non-selective)",
+    "primaryUse": "Hypertension, anxiety, tremor, LQTS treatment",
+    "qtMechanism": "No QT prolongation; commonly used for LQTS patients",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP1A2", "CYP2C19"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ibuprofen",
+    "searchTerms": ["advil", "motrin", "ibuprofen"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "NSAID",
+    "primaryUse": "Pain, fever, inflammation",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": ["CYP2C9"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "acetaminophen",
+    "searchTerms": ["tylenol", "paracetamol", "acetaminophen"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Analgesic / antipyretic",
+    "primaryUse": "Pain, fever",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": ["CYP2E1", "CYP1A2", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  }
+]

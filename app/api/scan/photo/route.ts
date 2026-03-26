@@ -3,8 +3,12 @@ import { z } from 'zod'
 import { getCurrentUser } from '@/lib/auth'
 import { scanDrugByPhoto } from '@/services/photo-scanner'
 
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB in bytes -> ~13.3M base64 chars
+
 const ScanPhotoBody = z.object({
-  image: z.string().min(100),
+  image: z.string()
+    .min(100, 'Image data too small')
+    .max(Math.ceil(MAX_IMAGE_SIZE * 4 / 3), 'Image too large. Please use a photo under 10MB.'),
 })
 
 export async function POST(request: NextRequest) {

@@ -85,6 +85,17 @@ export type ComboAnalysisResult = {
   genotypeConsiderations: string | null
 }
 
+// ── Pipeline Tracing ─────────────────────────────────────────────────
+
+export type PipelineStepStatus = 'HIT' | 'MISS' | 'SKIPPED' | 'ERROR'
+
+export type PipelineStep = {
+  name: string
+  status: PipelineStepStatus
+  durationMs: number
+  detail?: string
+}
+
 // ── Scan Results ───────────────────────────────────────────────────
 
 export type DrugEnrichment = {
@@ -115,6 +126,7 @@ export type ScanResult = {
   enrichment: DrugEnrichment | null
   dosage: string | null
   fuzzyMatch: FuzzyMatchInfo | null
+  pipelineTrace?: PipelineStep[]
 }
 
 export type PhotoScanResult = {

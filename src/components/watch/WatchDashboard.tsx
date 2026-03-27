@@ -398,7 +398,7 @@ export function WatchDashboard({ initialData }: WatchDashboardProps) {
 
       {/* Disclaimer */}
       <p className="text-[10px] text-text-tertiary text-center px-4 animate-fade-in-up" style={{ animationDelay: '540ms' }}>
-        HeartGuard is not a medical device. Always consult your cardiologist for medical decisions.
+        QTShield is not a medical device. Always consult your cardiologist for medical decisions.
       </p>
     </div>
   )

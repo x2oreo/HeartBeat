@@ -1,14 +1,14 @@
-# HeartGuard
+# QTShield
 
 ## Frontend Design Rule
 
 When building, modifying, or creating any frontend UI (pages, components, layouts, styles), ALWAYS use the `/frontend-design` skill FIRST before writing any code. This applies to any task involving React components, Tailwind styling, page layouts, or visual design work. The skill ensures production-grade, polished UI that avoids generic AI aesthetics.
 
-## What is HeartGuard?
+## What is QTShield?
 
-HeartGuard is an AI-powered medication safety app for people with Long QT Syndrome (LQTS). LQTS is a heart condition affecting 1 in 3,000-5,000 people where certain medications can cause fatal cardiac arrhythmias. Over 190 common medications (antibiotics, antidepressants, antihistamines, pain medications) can prolong the QT interval and trigger sudden cardiac death in these patients.
+QTShield is an AI-powered medication safety app for people with Long QT Syndrome (LQTS). LQTS is a heart condition affecting 1 in 3,000-5,000 people where certain medications can cause fatal cardiac arrhythmias. Over 190 common medications (antibiotics, antidepressants, antihistamines, pain medications) can prolong the QT interval and trigger sudden cardiac death in these patients.
 
-HeartGuard lets patients scan any medication before taking it and instantly see whether it's dangerous for them, whether it interacts with their current medications, and what safer alternatives exist.
+QTShield lets patients scan any medication before taking it and instantly see whether it's dangerous for them, whether it interacts with their current medications, and what safer alternatives exist.
 
 ## Core User Flow
 
@@ -108,7 +108,7 @@ prisma/
 middleware.ts                       # Supabase Auth — protects routes
 ```
 
-## Architecture: How AI Works in HeartGuard
+## Architecture: How AI Works in QTShield
 
 ### The Rule: Inject FACTS, Let Claude REASON
 
@@ -230,7 +230,7 @@ The middleware at `middleware.ts` handles Supabase Auth session refresh and rout
 **Public routes (no auth required):** `/`, `/login`, `/signup`, `/emergency-card/[slug]`
 **Protected routes (auth required):** everything under `/(protected)/`
 
-The emergency card public route is critical — ER doctors must access it without a HeartGuard account.
+The emergency card public route is critical — ER doctors must access it without a QTShield account.
 
 ## Environment Variables
 

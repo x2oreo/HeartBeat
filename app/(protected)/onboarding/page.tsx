@@ -209,7 +209,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-text-primary">Set Up HeartGuard</h1>
+          <h1 className="text-2xl font-bold text-text-primary">Set Up QTShield</h1>
           <p className="text-sm text-text-secondary mt-1">
             Personalize your medication safety profile
           </p>

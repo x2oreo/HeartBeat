@@ -40,7 +40,7 @@ export function ChatHeader({
 
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-[15px] font-semibold text-text-primary max-w-[220px]">
-          {activeTitle ?? 'HeartGuard AI'}
+          {activeTitle ?? 'QTShield AI'}
         </h1>
         <div className="flex items-center gap-1.5">
           <div className={`h-1.5 w-1.5 rounded-full ${isLoading ? 'bg-brand animate-pulse' : 'bg-emerald-500'}`} />

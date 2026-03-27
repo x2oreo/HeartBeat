@@ -95,9 +95,9 @@ export function WatchPairingFlow() {
               <span className="text-sm font-bold text-brand">1</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">Install HeartGuard on Apple Watch</p>
+              <p className="text-sm font-semibold text-text-primary">Install QTShield on Apple Watch</p>
               <p className="text-xs text-text-secondary mt-1 leading-relaxed">
-                Open the App Store on your Apple Watch or use the Watch app on your iPhone. Search for &quot;HeartGuard&quot; and install it.
+                Open the App Store on your Apple Watch or use the Watch app on your iPhone. Search for &quot;QTShield&quot; and install it.
               </p>
             </div>
           </div>
@@ -110,9 +110,9 @@ export function WatchPairingFlow() {
               <span className="text-sm font-bold text-brand">2</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">Open HeartGuard on Your Watch</p>
+              <p className="text-sm font-semibold text-text-primary">Open QTShield on Your Watch</p>
               <p className="text-xs text-text-secondary mt-1 leading-relaxed">
-                Launch the HeartGuard app on your Apple Watch. It will display a 6-digit pairing code on the screen.
+                Launch the QTShield app on your Apple Watch. It will display a 6-digit pairing code on the screen.
               </p>
             </div>
           </div>

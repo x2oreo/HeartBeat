@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { MobileBottomNav } from './MobileBottomNav'
 
 // ── Nav items ────────────────────────────────────────────────────────
@@ -122,14 +123,9 @@ export function DashboardLayout({ children }: Props) {
           {/* Logo */}
           <div className="h-14 flex items-center px-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-brand flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
-                  <path d="M24 4L6 14v12c0 12 8.4 23.2 18 26 9.6-2.8 18-14 18-26V14L24 4z" fill="white" fillOpacity="0.25"/>
-                  <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+              <Image src="/qtshield-logo.png" alt="QTShield" width={28} height={28} className="rounded-lg" />
               <span className="text-sm font-bold text-text-primary tracking-tight">
-                HeartGuard
+                QTShield
               </span>
             </div>
           </div>

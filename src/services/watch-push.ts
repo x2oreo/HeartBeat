@@ -59,7 +59,7 @@ export async function notifyWatch(
     })
 
     const notification = new apn.Notification()
-    notification.topic = 'com.heartguard.watchapp'
+    notification.topic = 'com.qtshield.watchapp'
     notification.contentAvailable = true
 
     if (payload.type === 'drug-alert') {

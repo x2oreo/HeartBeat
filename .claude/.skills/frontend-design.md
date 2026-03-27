@@ -1,6 +1,6 @@
-# HeartGuard Design System
+# QTShield Design System
 
-You are designing UI for **HeartGuard** — a medical safety app for people with Long QT Syndrome. Every design decision must serve one truth: **this app helps people avoid medications that could kill them.**
+You are designing UI for **QTShield** — a medical safety app for people with Long QT Syndrome. Every design decision must serve one truth: **this app helps people avoid medications that could kill them.**
 
 Before writing any code, internalize this system completely. Then implement with precision.
 
@@ -8,7 +8,7 @@ Before writing any code, internalize this system completely. Then implement with
 
 ## Design Philosophy: "Clinical Calm"
 
-HeartGuard sits at the intersection of **medical urgency** and **daily wellness**. The design must feel:
+QTShield sits at the intersection of **medical urgency** and **daily wellness**. The design must feel:
 - **Trustworthy** — like a world-class hospital, not a startup experiment
 - **Calm under pressure** — users may be stressed, scared, or in an ER
 - **Instantly readable** — risk level visible in under 1 second
@@ -320,7 +320,7 @@ Every scan result and document must include:
 
 ## Implementation Checklist
 
-When building any HeartGuard page or component:
+When building any QTShield page or component:
 - [ ] Works at 375px width (mobile-first)
 - [ ] All touch targets >= 44px
 - [ ] Risk colors follow the exact system above

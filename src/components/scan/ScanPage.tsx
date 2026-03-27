@@ -719,7 +719,7 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
         Add to My Medications
       </h3>
       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-        Save this medication so HeartGuard checks future scans against it.
+        Save this medication so QTShield checks future scans against it.
       </p>
 
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">

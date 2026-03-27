@@ -121,7 +121,7 @@ export async function triggerSOS(
   const emergencyInfo: CountryEmergencyInfo = getEmergencyInfo(effectiveCountryCode)
 
   const patientName =
-    [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
+    [user.firstName, user.lastName].filter(Boolean).join(' ') || 'QTShield Patient'
   const timestamp = alert.triggeredAt.toLocaleString('en-GB', {
     timeZone: 'Europe/Sofia',
     dateStyle: 'short',
@@ -160,7 +160,7 @@ export async function triggerSOS(
   // Compose messages
   const smsBody = composeSMS(patientName, user.genotype, alertData, qtMeds, mapsUrl, cardUrl, timestamp, emergencyInfo)
   const voiceMessage = composeVoiceMessage(patientName, user.genotype, alertData, qtMeds, emergencyInfo)
-  const emailSubject = `EMERGENCY: HeartGuard SOS Alert for ${patientName}`
+  const emailSubject = `EMERGENCY: QTShield SOS Alert for ${patientName}`
   const emailHtml = composeEmailHtml(
     patientName,
     user.genotype,
@@ -346,7 +346,7 @@ function composeSMS(
   const genotypeStr = genotype && genotype !== 'UNKNOWN' ? ` ${genotype}` : ''
   const manual = isManualSOS(alert)
 
-  let msg = `** HEARTGUARD SOS ALERT **\n\n`
+  let msg = `** QTSHIELD SOS ALERT **\n\n`
 
   // Emergency services line — placed first so it is visible without scrolling
   msg += `CALL AMBULANCE: ${emergencyInfo.ambulance} (${emergencyInfo.countryName})`
@@ -381,7 +381,7 @@ function composeSMS(
   }
 
   msg += `Time: ${timestamp}\n\n`
-  msg += `This is an automated emergency alert from HeartGuard. Please respond immediately.`
+  msg += `This is an automated emergency alert from QTShield. Please respond immediately.`
 
   return msg
 }
@@ -451,7 +451,7 @@ function composeVoiceMessage(
 
   // Repeat the critical part
   msg += `Again: ${patientName} needs immediate help. Ambulance: ${spokenDigits(emergencyInfo.ambulance)}. `
-  msg += `This is an automated alert from HeartGuard.`
+  msg += `This is an automated alert from QTShield.`
 
   return msg
 }
@@ -574,7 +574,7 @@ function composeEmailHtml(
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: #ef4444; color: white; padding: 20px; border-radius: 12px 12px 0 0; text-align: center;">
     <h1 style="margin: 0; font-size: 24px;">EMERGENCY ALERT</h1>
-    <p style="margin: 8px 0 0; opacity: 0.9; font-size: 16px;">HeartGuard SOS</p>
+    <p style="margin: 8px 0 0; opacity: 0.9; font-size: 16px;">QTShield SOS</p>
     ${genotypeNote}
   </div>
   <div style="border: 2px solid #ef4444; border-top: none; border-radius: 0 0 12px 12px; padding: 24px;">
@@ -594,7 +594,7 @@ function composeEmailHtml(
     ${cardSection}
 
     <p style="margin-top: 24px; color: #666; font-size: 13px; text-align: center;">
-      This is an automated emergency alert from HeartGuard.<br>
+      This is an automated emergency alert from QTShield.<br>
       <strong>Please respond immediately and contact the patient.</strong>
     </p>
   </div>

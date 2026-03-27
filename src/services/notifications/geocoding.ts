@@ -43,7 +43,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
     const res = await fetch(url, {
       headers: {
         // Nominatim requires a descriptive User-Agent: https://operations.osmfoundation.org/policies/nominatim/
-        'User-Agent': 'HeartGuard/1.0 (emergency-medical-alert-app; contact@heartguard.app)',
+        'User-Agent': 'QTShield/1.0 (emergency-medical-alert-app; contact@qtshield.app)',
         'Accept-Language': 'en',
         Accept: 'application/json',
       },
@@ -101,7 +101,7 @@ export async function reverseGeocodeWithCountry(
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1`
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'HeartGuard/1.0 (emergency-medical-alert-app; contact@heartguard.app)',
+        'User-Agent': 'QTShield/1.0 (emergency-medical-alert-app; contact@qtshield.app)',
         'Accept-Language': 'en',
         Accept: 'application/json',
       },

@@ -1,4 +1,4 @@
-// HeartGuard Shared Types — Single Source of Truth
+// QTShield Shared Types — Single Source of Truth
 // All cross-boundary types live here. Import from '@/types' everywhere.
 
 import type { EmergencyCardAIOutput } from '@/ai/document-schemas'

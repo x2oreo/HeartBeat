@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep } from '@/types'
+import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep, PipelineStepStatus } from '@/types'
 import { useDrugSearch } from '@/hooks/use-drug-search'
 import type { DrugSuggestion } from '@/hooks/use-drug-search'
 import { useDrugScan } from '@/hooks/use-drug-scan'
@@ -188,13 +188,13 @@ function sourceBadgeStyle(source: ScanResult['source']): string {
     case 'CREDIBLEMEDS_VERIFIED':
     case 'CREDIBLEMEDS_API':
     case 'MULTI_SOURCE':
-      return 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'
+      return 'bg-brand-light text-brand'
     case 'BG_VERIFIED':
-      return 'bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-300'
+      return 'bg-teal-light text-teal'
     case 'AI_ENRICHED':
-      return 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'
+      return 'bg-coral-light text-coral-deep'
     case 'AI_ASSESSED':
-      return 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
+      return 'bg-risk-caution-bg text-risk-caution-text'
   }
 }
 
@@ -206,8 +206,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
     <div className="space-y-4">
       {/* Fuzzy match banner */}
       {result.fuzzyMatch && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+        <div className="rounded-xl border border-brand/20 bg-brand-light p-3">
+          <p className="text-sm text-brand-deep">
             Showing results for <strong>{result.fuzzyMatch.matchedName}</strong>
             {result.fuzzyMatch.originalQuery !== result.fuzzyMatch.matchedName && (
               <> (you searched for &ldquo;{result.fuzzyMatch.originalQuery}&rdquo;)</>
@@ -218,8 +218,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
 
       {/* AI-only warning */}
       {result.source === 'AI_ASSESSED' && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+        <div className="rounded-xl border border-risk-caution/20 bg-risk-caution-bg p-3">
+          <p className="text-sm font-medium text-risk-caution-text">
             This drug was not found in any verified medical database. This assessment is based on AI analysis only. Please consult your cardiologist.
           </p>
         </div>
@@ -256,8 +256,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
           </div>
           {result.dosage && (
             <div>
-              <dt className="text-xs text-neutral-500 dark:text-neutral-400">Dosage</dt>
-              <dd className="text-neutral-800 dark:text-neutral-200">{result.dosage}</dd>
+              <dt className="text-xs text-text-secondary">Dosage</dt>
+              <dd className="text-text-primary">{result.dosage}</dd>
             </div>
           )}
           {result.qtMechanism && (
@@ -272,12 +272,12 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             {sourceLabel(result.source)}
           </span>
           {result.enrichment && result.enrichment.fdaTorsadesReports !== null && result.enrichment.fdaTorsadesReports > 0 && (
-            <span className="inline-block rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/60 dark:text-red-300">
+            <span className="inline-block rounded-md bg-risk-danger-bg px-2 py-0.5 text-xs font-medium text-risk-danger-text">
               {result.enrichment.fdaTorsadesReports} FDA TdP reports
             </span>
           )}
           {result.enrichment && result.enrichment.dataSources.length > 1 && (
-            <span className="inline-block rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+            <span className="inline-block rounded-md bg-surface px-2 py-0.5 text-xs font-medium text-text-secondary">
               {result.enrichment.dataSources.length} data sources
             </span>
           )}
@@ -383,52 +383,47 @@ function PipelineStepList({ steps, animate = false }: { steps: PipelineStep[]; a
           style={animate ? { animationDelay: `${i * 60}ms` } : undefined}
         >
           {i < steps.length - 1 && (
-            <div className="absolute left-[9px] top-[22px] bottom-0 w-px bg-neutral-200 dark:bg-neutral-700" />
+            <div className="absolute left-[9px] top-[22px] bottom-0 w-px bg-neutral-200" />
           )}
-          <div className="relative z-10 mt-[5px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-white dark:bg-neutral-900">
+          <div className="relative z-10 mt-[5px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-white">
             {step.status === 'HIT' && (
-              <div className="h-[18px] w-[18px] rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center">
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400">&#10003;</span>
+              <div className="h-[18px] w-[18px] rounded-full bg-risk-safe-bg flex items-center justify-center">
+                <span className="text-[11px] text-risk-safe-text">&#10003;</span>
               </div>
             )}
             {step.status === 'MISS' && (
-              <div className="h-[18px] w-[18px] rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <span className="text-[11px] text-neutral-400">&mdash;</span>
+              <div className="h-[18px] w-[18px] rounded-full bg-surface flex items-center justify-center">
+                <span className="text-[11px] text-text-tertiary">&mdash;</span>
               </div>
             )}
             {step.status === 'SKIPPED' && (
-              <div className="h-[18px] w-[18px] rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <span className="text-[10px] text-neutral-400">&#8226;</span>
+              <div className="h-[18px] w-[18px] rounded-full bg-surface flex items-center justify-center">
+                <span className="text-[10px] text-text-tertiary">&#8226;</span>
               </div>
             )}
             {step.status === 'ERROR' && (
-              <div className="h-[18px] w-[18px] rounded-full bg-red-100 dark:bg-red-900/60 flex items-center justify-center">
-                <span className="text-[11px] text-red-500">&#10005;</span>
+              <div className="h-[18px] w-[18px] rounded-full bg-risk-danger-bg flex items-center justify-center">
+                <span className="text-[11px] text-risk-danger-text">&#10005;</span>
               </div>
             )}
           </div>
           <div className="flex-1 pb-3 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">{step.name}</span>
+              <span className="text-xs font-medium text-text-primary">{step.name}</span>
               <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                 step.status === 'HIT'
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
+                  ? 'bg-risk-safe-bg text-risk-safe-text'
                   : step.status === 'ERROR'
-                    ? 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300'
-                    : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                    ? 'bg-risk-danger-bg text-risk-danger-text'
+                    : 'bg-surface text-text-secondary'
               }`}>{step.status}</span>
-              <span className="font-mono text-[10px] text-neutral-400 dark:text-neutral-500">
+              <span className="font-mono text-[10px] text-text-tertiary">
                 {step.durationMs > 1000 ? `${(step.durationMs / 1000).toFixed(1)}s` : `${step.durationMs}ms`}
               </span>
             </div>
             {step.detail && (
-              <p className="group/detail relative mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400 leading-tight max-h-[1.2em] overflow-hidden hover:max-h-none hover:overflow-visible cursor-default">
+              <p className="mt-0.5 text-[11px] text-text-secondary leading-tight">
                 {step.detail}
-                {step.detail.length > 80 && (
-                  <span className="absolute right-0 bottom-0 bg-gradient-to-l from-white via-white to-transparent dark:from-neutral-900 dark:via-neutral-900 pl-6 pr-1 text-[10px] text-neutral-400 group-hover/detail:hidden">
-                    more
-                  </span>
-                )}
               </p>
             )}
           </div>
@@ -438,6 +433,30 @@ function PipelineStepList({ steps, animate = false }: { steps: PipelineStep[]; a
   )
 }
 
+function stepStatusIcon(status: PipelineStepStatus) {
+  switch (status) {
+    case 'HIT':
+      return <span className="text-risk-safe">&#10003;</span>
+    case 'MISS':
+      return <span className="text-text-tertiary">&mdash;</span>
+    case 'SKIPPED':
+      return <span className="text-text-tertiary">&#8226;</span>
+    case 'ERROR':
+      return <span className="text-risk-danger">&#10005;</span>
+  }
+}
+
+function stepStatusColor(status: PipelineStepStatus) {
+  switch (status) {
+    case 'HIT':
+      return 'border-risk-safe/20'
+    case 'ERROR':
+      return 'border-risk-danger/20'
+    default:
+      return 'border-separator-light'
+  }
+}
+
 function CompletedPipelineView({ steps: rawSteps }: { steps: PipelineStep[] }) {
   const steps = rawSteps.filter((s) => !HIDDEN_PIPELINE_STEPS.has(s.name))
   const [open, setOpen] = useState(false)
@@ -445,37 +464,79 @@ function CompletedPipelineView({ steps: rawSteps }: { steps: PipelineStep[] }) {
   const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+    <div className="rounded-xl border border-separator-light bg-surface-raised print:hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2">
-          <div className="h-[18px] w-[18px] rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center">
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400">&#10003;</span>
-          </div>
-          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Verified with {hitCount} source{hitCount !== 1 ? 's' : ''}
-          </span>
-          <span className="text-xs text-neutral-400 dark:text-neutral-500">
-            {totalMs > 1000 ? `${(totalMs / 1000).toFixed(1)}s` : `${totalMs}ms`}
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span className="text-sm font-medium text-text-primary">
+            How we verified this
           </span>
         </div>
-        <svg
-          className={`h-4 w-4 text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-text-tertiary">
+            {hitCount}/{steps.length} sources &middot; {totalMs > 1000 ? `${(totalMs / 1000).toFixed(1)}s` : `${totalMs}ms`}
+          </span>
+          <svg
+            className={`h-4 w-4 text-text-tertiary transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </button>
 
       {open && (
-        <div className="border-t border-neutral-100 px-4 pb-4 pt-3 dark:border-neutral-800">
-          <PipelineStepList steps={steps} />
+        <div className="border-t border-separator-light px-4 pb-4 pt-3">
+          <div className="space-y-2">
+            {steps.map((step, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-3 rounded-lg border px-3 py-2 ${stepStatusColor(step.status)}`}
+              >
+                <div className="mt-0.5 w-5 text-center text-sm font-bold leading-none">
+                  {stepStatusIcon(step.status)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-text-primary">
+                      {step.name}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                        step.status === 'HIT'
+                          ? 'bg-risk-safe-bg text-risk-safe-text'
+                          : step.status === 'ERROR'
+                            ? 'bg-risk-danger-bg text-risk-danger-text'
+                            : 'bg-surface text-text-secondary'
+                      }`}>
+                        {step.status}
+                      </span>
+                      <span className="font-mono text-[10px] text-text-tertiary">
+                        {step.durationMs > 1000 ? `${(step.durationMs / 1000).toFixed(1)}s` : `${step.durationMs}ms`}
+                      </span>
+                    </div>
+                  </div>
+                  {step.detail && (
+                    <p className="mt-0.5 text-[11px] text-text-secondary">
+                      {step.detail}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] text-text-tertiary">
+            Pipeline: Local DB &rarr; Fuzzy Match &rarr; RxNorm &rarr; CredibleMeds &rarr; FDA FAERS &rarr; AI Analysis
+          </p>
         </div>
       )}
     </div>

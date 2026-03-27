@@ -49,7 +49,7 @@ export function LoginPage() {
           },
         })
         if (error) throw error
-        setMessage('Check your email for a confirmation link.')
+        router.push('/')
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email)
         if (error) throw error

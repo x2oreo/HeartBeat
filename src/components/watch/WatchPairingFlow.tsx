@@ -13,7 +13,7 @@ type PairingStatus = {
 export function WatchPairingFlow() {
   const router = useRouter()
   const [code, setCode] = useState('')
-  const [status, setStatus] = useState<PairingStatus | null>(null)
+  const [, setStatus] = useState<PairingStatus | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)

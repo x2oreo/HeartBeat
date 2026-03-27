@@ -21,7 +21,9 @@ function getRiskColor(riskCategory: string) {
 }
 
 export function EmergencyCardView({ data, isPublic = false }: Props) {
-  const { aiContent } = data
+  const aiContent = data.aiContent
+
+  if (!aiContent) return null
 
   return (
     <div className="max-w-2xl mx-auto">

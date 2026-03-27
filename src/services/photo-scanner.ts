@@ -3,7 +3,8 @@ import { model } from '@/ai/client'
 import { DetectedDrugsSchema } from '@/ai/scan-schemas'
 import { buildPhotoScanPrompt } from '@/ai/prompts'
 import { scanDrugByText } from '@/services/drug-scanner'
-import type { PhotoScanResult } from '@/types'
+import type { OnStepCallback } from '@/services/drug-resolver'
+import type { PhotoScanResult, PipelineStep } from '@/types'
 
 /**
  * Detect if a base64 string is a HEIC/HEIF image by checking magic bytes.
@@ -48,14 +49,23 @@ async function convertHeicToJpegServer(base64: string): Promise<string> {
 export async function scanDrugByPhoto(
   imageBase64: string,
   userId: string,
+  onStep?: OnStepCallback,
 ): Promise<PhotoScanResult> {
+  function emitStep(step: PipelineStep) {
+    onStep?.(step)
+  }
+
   // Convert HEIC to JPEG if needed (HEIC is not supported by all vision APIs)
   let processedImage = imageBase64
   if (isHeicBase64(imageBase64)) {
+    const tHeic = Date.now()
     processedImage = await convertHeicToJpegServer(imageBase64)
+    emitStep({ name: 'Processing Image', status: 'HIT', durationMs: Date.now() - tHeic, detail: 'Converted image format for analysis' })
   }
 
   // Step 1: Use Claude Vision to detect drug names from the image
+  const tVision = Date.now()
+  emitStep({ name: 'Reading Medication Label', status: 'HIT', durationMs: 0, detail: 'AI is scanning the photo...' })
   const { object: detected } = await generateObject({
     model,
     schema: DetectedDrugsSchema,
@@ -70,6 +80,7 @@ export async function scanDrugByPhoto(
     ],
     temperature: 0,
   })
+  emitStep({ name: 'Reading Medication Label', status: 'HIT', durationMs: Date.now() - tVision, detail: detected.drugs.length > 0 ? `Found: ${detected.drugs.map((d) => d.name).join(', ')}` : 'Could not read any drug names' })
 
   // If image is unreadable, return early
   if (detected.imageQuality === 'UNREADABLE') {
@@ -101,7 +112,7 @@ export async function scanDrugByPhoto(
   )
 
   const results = await Promise.allSettled(
-    drugNames.map((name) => scanDrugByText(name, userId, drugDosageMap.get(name))),
+    drugNames.map((name) => scanDrugByText(name, userId, drugDosageMap.get(name), onStep)),
   )
 
   const scanResults = results

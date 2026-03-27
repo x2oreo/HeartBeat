@@ -26,7 +26,7 @@ export async function getCurrentUser() {
     create: {
       supabaseId: supabaseUser.id,
       email: supabaseUser.email ?? '',
-      name: supabaseUser.user_metadata?.full_name ?? null,
+      first_name: supabaseUser.user_metadata?.full_name ?? null,
     },
   })
 

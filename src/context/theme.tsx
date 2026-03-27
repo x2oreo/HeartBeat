@@ -8,12 +8,18 @@ type ThemeContextType = { theme: Theme; toggle: () => void }
 const ThemeContext = createContext<ThemeContextType>({ theme: 'light', toggle: () => {} })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light'
+  const [theme, setTheme] = useState<Theme>('light')
+
+  useEffect(() => {
     const stored = localStorage.getItem('theme')
-    if (stored === 'dark' || stored === 'light') return stored
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  })
+    const resolved: Theme =
+      stored === 'dark' || stored === 'light'
+        ? stored
+        : window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+    setTheme(resolved) // eslint-disable-line react-hooks/set-state-in-effect
+  }, [])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')

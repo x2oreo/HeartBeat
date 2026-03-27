@@ -8,19 +8,24 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid()) @db.Uuid
-  supabaseId String   @unique @map("supabase_id")
-  email      String
-  name       String?
-  genotype   String?  // LQT1, LQT2, LQT3, OTHER, UNKNOWN
-  onboarded  Boolean  @default(false)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  medications       Medication[]
-  scanLogs          ScanLog[]
-  emergencyContacts EmergencyContact[]
-  sharedCards       SharedEmergencyCard[]
+  id                    String                  @id @default(uuid()) @db.Uuid
+  supabaseId            String                  @unique @map("supabase_id")
+  email                 String
+  genotype              String?
+  onboarded             Boolean                 @default(false)
+  createdAt             DateTime                @default(now()) @map("created_at")
+  updatedAt             DateTime                @updatedAt @map("updated_at")
+  first_name            String?
+  last_name             String?
+  api_tokens            api_tokens[]
+  doctor_prep_documents doctor_prep_documents[]
+  emergencyContacts     EmergencyContact[]
+  health_alerts         health_alerts[]
+  health_metrics        health_metrics[]
+  medications           Medication[]
+  scanLogs              ScanLog[]
+  sharedCards           SharedEmergencyCard?
+  watch_devices         watch_devices?
 
   @@map("users")
 }
@@ -31,13 +36,13 @@ model Medication {
   genericName String   @map("generic_name")
   brandName   String?  @map("brand_name")
   dosage      String?
-  qtRisk      String   @map("qt_risk") // KNOWN_RISK, POSSIBLE_RISK, CONDITIONAL_RISK, NOT_LISTED
+  frequency   String?
+  qtRisk      String   @map("qt_risk")
   isDTA       Boolean  @default(false) @map("is_dta")
   cypData     Json?    @map("cyp_data")
   active      Boolean  @default(true)
   addedAt     DateTime @default(now()) @map("added_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("medications")
@@ -50,39 +55,158 @@ model ScanLog {
   genericName  String   @map("generic_name")
   riskCategory String   @map("risk_category")
   comboRisk    String?  @map("combo_risk")
-  scanType     String   @map("scan_type") // TEXT, PHOTO
+  scanType     String   @map("scan_type")
   alternatives Json?
   fullResult   Json?    @map("full_result")
   createdAt    DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("scan_logs")
 }
 
 model EmergencyContact {
-  id           String @id @default(uuid()) @db.Uuid
-  userId       String @map("user_id") @db.Uuid
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @map("user_id") @db.Uuid
   name         String
   phone        String
-  relationship String // cardiologist, family, friend
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relationship String
+  email        String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("emergency_contacts")
 }
 
 model SharedEmergencyCard {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @map("user_id") @db.Uuid
-  slug      String   @unique
-  cardData  Json     @map("card_data")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @unique @map("user_id") @db.Uuid
+  slug       String   @unique
+  cardData   Json     @map("card_data")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updated_at DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("shared_emergency_cards")
 }
 
+model BgDrug {
+  id        String  @id @default(uuid()) @db.Uuid
+  inn       String
+  brandName String  @map("brand_name")
+  atcCode   String? @map("atc_code")
+
+  @@index([inn])
+  @@index([brandName])
+  @@map("bg_drugs")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model api_tokens {
+  id         String    @id @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String    @unique
+  label      String    @default("watch")
+  last_used  DateTime?
+  expires_at DateTime?
+  created_at DateTime  @default(now())
+  users      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model doctor_prep_documents {
+  id               String   @id @db.Uuid
+  user_id          String   @db.Uuid
+  doctor_specialty String
+  custom_specialty String?
+  language         String
+  custom_language  String?
+  document_data    Json
+  created_at       DateTime @default(now())
+  users            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model health_alerts {
+  id                String   @id @db.Uuid
+  user_id           String   @db.Uuid
+  risk_level        String
+  heart_rate        Float
+  hrv               Float
+  stress_level      String
+  is_asleep         Boolean
+  irregular_rhythm  Boolean
+  message           String
+  acknowledged      Boolean  @default(false)
+  notified_contacts Boolean  @default(false)
+  triggered_at      DateTime
+  created_at        DateTime @default(now())
+  latitude          Float?
+  longitude         Float?
+  users             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, triggered_at])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model health_metrics {
+  id               String   @id @db.Uuid
+  created_at       DateTime @default(now())
+  active_energy    Float
+  heart_rate       Float
+  hrv              Float
+  irregular_rhythm Boolean
+  is_asleep        Boolean
+  recorded_at      DateTime
+  resting_hr       Float
+  risk_level       String
+  rr_interval_ms   Float
+  steps            Float
+  stress_level     String
+  user_id          String   @db.Uuid
+  users            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, recorded_at])
+  @@index([user_id, risk_level])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pairing_codes {
+  id         String   @id @db.Uuid
+  user_id    String   @db.Uuid
+  code       String   @unique
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([code])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model watch_devices {
+  id              String   @id @db.Uuid
+  user_id         String   @unique @db.Uuid
+  apns_token      String?
+  monitoring_mode String   @default("normal")
+  last_seen       DateTime
+  created_at      DateTime @default(now())
+  updated_at      DateTime
+  users           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model notification_logs {
+  id         String   @id @db.Uuid
+  alert_id   String   @db.Uuid
+  contact_id String   @db.Uuid
+  channel    String
+  status     String
+  error      String?
+  sent_at    DateTime @default(now())
+
+  @@index([alert_id])
+}

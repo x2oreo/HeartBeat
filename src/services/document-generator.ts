@@ -20,7 +20,8 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: {
-      name: true,
+      first_name: true,
+      last_name: true,
       genotype: true,
       medications: {
         where: { active: true },
@@ -41,6 +42,7 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
     },
   })
 
+  const patientName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Unknown Patient'
   const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
@@ -50,7 +52,7 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
   }))
 
   const prompt = buildEnhancedEmergencyCardPrompt(
-    user.name ?? 'Unknown Patient',
+    patientName,
     genotype,
     medications,
     user.emergencyContacts,
@@ -64,7 +66,7 @@ export async function generateEmergencyCard(userId: string): Promise<EnhancedEme
   })
 
   return {
-    patientName: user.name ?? 'Unknown Patient',
+    patientName,
     genotype,
     medications: medications.map((m) => ({
       name: m.name,
@@ -88,7 +90,8 @@ export async function generateDoctorPrep(
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: {
-      name: true,
+      first_name: true,
+      last_name: true,
       genotype: true,
       medications: {
         where: { active: true },
@@ -102,6 +105,7 @@ export async function generateDoctorPrep(
     },
   })
 
+  const patientName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Unknown Patient'
   const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
@@ -111,7 +115,7 @@ export async function generateDoctorPrep(
   }))
 
   const prompt = buildEnhancedDoctorPrepPrompt(
-    user.name ?? 'Unknown Patient',
+    patientName,
     genotype,
     medications,
     procedureType,
@@ -125,7 +129,7 @@ export async function generateDoctorPrep(
   })
 
   return {
-    patientName: user.name ?? 'Unknown Patient',
+    patientName,
     genotype,
     currentMedications: medications.map((m) => ({
       name: m.name,
@@ -152,10 +156,11 @@ export async function saveSharedEmergencyCard(
   const cardData = enhancedEmergencyCardDataSchema.parse(rawCardData)
   const slug = crypto.randomUUID()
 
+  const now = new Date()
   await prisma.sharedEmergencyCard.upsert({
     where: { userId },
-    update: { slug, cardData },
-    create: { userId, slug, cardData },
+    update: { slug, cardData, updated_at: now },
+    create: { userId, slug, cardData, updated_at: now },
   })
 
   return { slug }

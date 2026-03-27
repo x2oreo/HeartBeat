@@ -5,7 +5,9 @@
       "Bash(ls:*)",
       "Bash(npm uninstall:*)",
       "WebSearch",
-      "Bash(grep '\"\"types\"\"' /Users/flychuban/Desktop/HeartBeat/node_modules/heic-convert/package.json)"
+      "Bash(grep '\"\"types\"\"' /Users/flychuban/Desktop/HeartBeat/node_modules/heic-convert/package.json)",
+      "WebFetch(domain:data.egov.bg)",
+      "WebFetch(domain:ncpr.bg)"
     ]
   },
   "enableAllProjectMcpServers": true,

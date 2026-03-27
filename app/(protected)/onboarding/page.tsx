@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import type { RiskCategory, Genotype, DrugSearchResult } from '@/types'
+import type { RiskCategory, Genotype, AutocompleteSuggestion } from '@/types'
 
 // ── Types ───────────────────────────────────────────────────────────
 
 type MedEntry = {
   genericName: string
-  riskCategory: RiskCategory
+  riskCategory: RiskCategory | null
   isDTA: boolean
 }
 
@@ -35,7 +35,7 @@ const RISK_COLORS: Record<RiskCategory, { bg: string; text: string; label: strin
   KNOWN_RISK: { bg: 'bg-red-100 dark:bg-red-950', text: 'text-red-700 dark:text-red-400', label: 'Known Risk' },
   POSSIBLE_RISK: { bg: 'bg-yellow-100 dark:bg-yellow-950', text: 'text-yellow-700 dark:text-yellow-400', label: 'Possible Risk' },
   CONDITIONAL_RISK: { bg: 'bg-orange-100 dark:bg-orange-950', text: 'text-orange-700 dark:text-orange-400', label: 'Conditional' },
-  NOT_LISTED: { bg: 'bg-green-100 dark:bg-green-950', text: 'text-green-700 dark:text-green-400', label: 'Not Listed' },
+  NOT_LISTED: { bg: 'bg-green-100 dark:bg-green-950', text: 'text-green-700 dark:text-green-400', label: 'Safe' },
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -69,7 +69,14 @@ function StepIndicator({ current }: { current: number }) {
   )
 }
 
-function RiskBadge({ riskCategory }: { riskCategory: RiskCategory }) {
+function RiskBadge({ riskCategory }: { riskCategory: RiskCategory | null }) {
+  if (riskCategory === null) {
+    return (
+      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+        Not Evaluated
+      </span>
+    )
+  }
   const style = RISK_COLORS[riskCategory]
   return (
     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
@@ -92,7 +99,7 @@ export default function OnboardingPage() {
   // Step 2
   const [medications, setMedications] = useState<MedEntry[]>([])
   const [medQuery, setMedQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<DrugSearchResult[]>([])
+  const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
   const medInputRef = useRef<HTMLInputElement>(null)
@@ -113,9 +120,9 @@ export default function OnboardingPage() {
     }
     setSearchLoading(true)
     try {
-      const res = await fetch(`/api/medications/search?q=${encodeURIComponent(query)}`)
+      const res = await fetch(`/api/drugs/autocomplete?q=${encodeURIComponent(query)}`)
       if (res.ok) {
-        const data: DrugSearchResult[] = await res.json()
+        const data: AutocompleteSuggestion[] = await res.json()
         setSuggestions(data)
       }
     } catch {
@@ -149,7 +156,7 @@ export default function OnboardingPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  function addMedication(drug: DrugSearchResult) {
+  function addMedication(drug: AutocompleteSuggestion) {
     if (medications.some((m) => m.genericName === drug.genericName)) return
     setMedications((prev) => [
       ...prev,
@@ -166,7 +173,7 @@ export default function OnboardingPage() {
     if (!name || medications.some((m) => m.genericName.toLowerCase() === name.toLowerCase())) return
     setMedications((prev) => [
       ...prev,
-      { genericName: name, riskCategory: 'NOT_LISTED', isDTA: false },
+      { genericName: name, riskCategory: null, isDTA: false },
     ])
     setMedQuery('')
     setSuggestions([])

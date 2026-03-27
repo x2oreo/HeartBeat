@@ -53,6 +53,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Streaming routes: skip middleware response wrapping (it buffers the stream)
+  // Auth is handled inside the route handler itself via getCurrentUser()
+  if (pathname.startsWith('/api/scan/text/stream') || pathname.startsWith('/api/scan/photo/stream')) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(

@@ -100,7 +100,7 @@ export default async function HomePage() {
   const totalMeds = medications.length
   const qtMeds = medications.filter((m) => m.qtRisk !== 'NOT_LISTED')
   const dtaMeds = medications.filter((m) => m.isDTA)
-  const firstName = user.name?.split(' ')[0] ?? 'there'
+  const firstName = user.first_name ?? 'there'
 
   // CYP conflict detection (pure computation, no AI)
   const medsWithCyp = medications.map((m) => ({

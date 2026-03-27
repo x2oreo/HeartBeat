@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep, PipelineStepStatus } from '@/types'
 import { useDrugSearch } from '@/hooks/use-drug-search'
 import type { DrugSuggestion } from '@/hooks/use-drug-search'
 import { useDrugScan } from '@/hooks/use-drug-scan'
+import { useMedications } from '@/hooks/use-medications'
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -52,13 +53,17 @@ function comboColor(level: ComboRiskLevel) {
   return 'bg-[#EAFBF0] text-[#1B7A34]'
 }
 
-function suggestionRiskBadge(category: RiskCategory) {
+function suggestionRiskBadge(category: RiskCategory | null) {
   if (category === 'KNOWN_RISK')
     return <span className="ml-auto shrink-0 rounded-full bg-[#FFEDEC] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#C41E16]">Known Risk</span>
   if (category === 'POSSIBLE_RISK')
     return <span className="ml-auto shrink-0 rounded-full bg-[#FFF5E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#8A5600]">Possible Risk</span>
   if (category === 'CONDITIONAL_RISK')
     return <span className="ml-auto shrink-0 rounded-full bg-[#FFF5E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#8A5600]">Conditional</span>
+  if (category === 'NOT_LISTED')
+    return <span className="ml-auto shrink-0 rounded-full bg-[#EAFBF0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#1B7A34]">Safe</span>
+  if (category === null)
+    return <span className="ml-auto shrink-0 rounded-full bg-[#F2F2F7] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">Not Evaluated</span>
   return null
 }
 
@@ -80,23 +85,100 @@ function readFileAsBase64(file: File): Promise<string> {
 
 // ── Components ──────────────────────────────────────────────────────
 
-function LoadingSkeleton() {
+function ExpandableText({ text, className, lines = 2 }: { text: string; className?: string; lines?: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const clampClass = lines === 2 ? 'line-clamp-2' : lines === 3 ? 'line-clamp-3' : 'line-clamp-1'
+  const isLong = text.length > 100
+
+  if (!isLong) return <p className={className ?? ''}>{text}</p>
+
   return (
-    <div className="mt-6 space-y-4 animate-pulse">
-      <div className="h-28 rounded-2xl bg-separator-light" />
-      <div className="h-5 w-2/3 rounded bg-separator-light" />
-      <div className="h-5 w-1/2 rounded bg-separator-light" />
-      <div className="h-40 rounded-2xl bg-separator-light" />
+    <div>
+      <p className={`${className ?? ''} ${expanded ? '' : clampClass}`}>
+        {text}
+      </p>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+      >
+        {expanded ? 'Read less' : 'Read more'}
+        <svg
+          className={`h-3 w-3 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+function Spinner() {
+  return (
+    <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-blue-500 dark:border-neutral-600 dark:border-t-blue-400" />
+  )
+}
+
+const HIDDEN_PIPELINE_STEPS = new Set(['FDA Safety Reports'])
+
+function LivePipelineTracker({ steps, loading }: { steps: PipelineStep[]; loading: boolean }) {
+  steps = steps.filter((s) => !HIDDEN_PIPELINE_STEPS.has(s.name))
+  const [visibleCount, setVisibleCount] = useState(0)
+
+  useEffect(() => {
+    if (steps.length === 0) return
+    if (visibleCount < steps.length) {
+      const timer = setTimeout(() => {
+        setVisibleCount((c) => c + 1)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [visibleCount, steps.length])
+
+  const visibleSteps = steps.slice(0, visibleCount)
+  const stillRevealing = visibleCount < steps.length
+
+  if (steps.length === 0 && !loading) return null
+
+  return (
+    <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+      <div className="flex items-center gap-2 mb-3">
+        {(loading || stillRevealing) && <Spinner />}
+        {!loading && !stillRevealing && (
+          <div className="h-4 w-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center">
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">&#10003;</span>
+          </div>
+        )}
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          {loading || stillRevealing ? 'Analyzing medication...' : 'Verification complete'}
+        </h3>
+      </div>
+      <PipelineStepList steps={visibleSteps} animate />
+      {(loading || stillRevealing) && (
+        <div className="flex items-center gap-3 mt-1">
+          <div className="relative z-10 flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+            <Spinner />
+          </div>
+          <span className="text-xs text-neutral-400 dark:text-neutral-500 animate-pulse">
+            {stillRevealing ? steps[visibleCount]?.name ?? 'Processing...' : 'Processing...'}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
 
 function sourceLabel(source: ScanResult['source']): string {
   switch (source) {
-    case 'CREDIBLEMEDS_VERIFIED': return 'Verified by CredibleMeds'
-    case 'CREDIBLEMEDS_API': return 'CredibleMeds API'
-    case 'MULTI_SOURCE': return 'Multi-Source Verified'
-    case 'AI_ENRICHED': return 'AI + External Data'
+    case 'CREDIBLEMEDS_VERIFIED': return 'US Database (CredibleMeds)'
+    case 'CREDIBLEMEDS_API': return 'US Database (CredibleMeds API)'
+    case 'MULTI_SOURCE': return 'US Database (Multi-Source)'
+    case 'BG_VERIFIED': return 'BG Database (Positive Drug List)'
+    case 'AI_ENRICHED': return 'AI Assessment + External Data'
     case 'AI_ASSESSED': return 'AI Assessment Only'
   }
 }
@@ -107,6 +189,8 @@ function sourceBadgeStyle(source: ScanResult['source']): string {
     case 'CREDIBLEMEDS_API':
     case 'MULTI_SOURCE':
       return 'bg-brand-light text-brand'
+    case 'BG_VERIFIED':
+      return 'bg-teal-light text-teal'
     case 'AI_ENRICHED':
       return 'bg-coral-light text-coral-deep'
     case 'AI_ASSESSED':
@@ -158,7 +242,7 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
 
       {/* Drug info */}
       <div className="rounded-2xl bg-surface-raised p-5 card-shadow">
-        <h3 className="text-[15px] font-semibold text-text-primary">
+        <h3 className="text-[15px] font-semibold text-text-primary capitalize">
           {result.genericName}
         </h3>
         <dl className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
@@ -179,7 +263,7 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
           {result.qtMechanism && (
             <div className="sm:col-span-2">
               <dt className="text-[13px] text-text-secondary">QT Mechanism</dt>
-              <dd className="text-text-primary">{result.qtMechanism}</dd>
+              <dd><ExpandableText text={result.qtMechanism} className="text-text-primary" lines={1} /></dd>
             </div>
           )}
         </dl>
@@ -211,9 +295,7 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
               {result.comboAnalysis.comboRiskLevel}
             </span>
           </div>
-          <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-            {result.comboAnalysis.summary}
-          </p>
+          <ExpandableText text={result.comboAnalysis.summary} className="mt-2 text-sm text-text-secondary leading-relaxed" />
 
           {result.comboAnalysis.interactions.length > 0 && (
             <div className="mt-3">
@@ -226,9 +308,7 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
                     <p className="font-medium text-text-primary">
                       {interaction.drugA} + {interaction.drugB}
                     </p>
-                    <p className="mt-0.5 text-text-secondary">
-                      {interaction.mechanism}
-                    </p>
+                    <ExpandableText text={interaction.mechanism} className="mt-0.5 text-text-secondary" lines={1} />
                   </li>
                 ))}
               </ul>
@@ -238,9 +318,7 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
           {result.comboAnalysis.genotypeConsiderations && (
             <div className="mt-3 rounded-xl bg-brand-light p-3">
               <p className="text-[11px] font-semibold text-brand-deep uppercase tracking-wider">Genotype Note</p>
-              <p className="mt-0.5 text-sm text-brand-deep">
-                {result.comboAnalysis.genotypeConsiderations}
-              </p>
+              <ExpandableText text={result.comboAnalysis.genotypeConsiderations} className="mt-0.5 text-sm text-brand-deep" />
             </div>
           )}
         </div>
@@ -255,13 +333,11 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
           <ul className="mt-2 space-y-2">
             {result.comboAnalysis.alternatives.map((alt, i) => (
               <li key={i} className="rounded-xl bg-[#EAFBF0] p-3">
-                <p className="font-medium text-[#1B7A34]">
+                <p className="font-medium text-[#1B7A34] capitalize">
                   {alt.genericName}
                 </p>
                 <p className="text-xs text-[#34C759]">{alt.drugClass}</p>
-                <p className="mt-1 text-sm text-[#1B7A34]">
-                  {alt.whySafer}
-                </p>
+                <ExpandableText text={alt.whySafer} className="mt-1 text-sm text-[#1B7A34]" lines={1} />
               </li>
             ))}
           </ul>
@@ -297,6 +373,66 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
   )
 }
 
+function PipelineStepList({ steps, animate = false }: { steps: PipelineStep[]; animate?: boolean }) {
+  return (
+    <div className="space-y-0">
+      {steps.map((step, i) => (
+        <div
+          key={i}
+          className={`flex items-start gap-3 relative ${animate ? 'animate-[fadeSlideIn_0.3s_ease-out_both]' : ''}`}
+          style={animate ? { animationDelay: `${i * 60}ms` } : undefined}
+        >
+          {i < steps.length - 1 && (
+            <div className="absolute left-[9px] top-[22px] bottom-0 w-px bg-neutral-200" />
+          )}
+          <div className="relative z-10 mt-[5px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-white">
+            {step.status === 'HIT' && (
+              <div className="h-[18px] w-[18px] rounded-full bg-risk-safe-bg flex items-center justify-center">
+                <span className="text-[11px] text-risk-safe-text">&#10003;</span>
+              </div>
+            )}
+            {step.status === 'MISS' && (
+              <div className="h-[18px] w-[18px] rounded-full bg-surface flex items-center justify-center">
+                <span className="text-[11px] text-text-tertiary">&mdash;</span>
+              </div>
+            )}
+            {step.status === 'SKIPPED' && (
+              <div className="h-[18px] w-[18px] rounded-full bg-surface flex items-center justify-center">
+                <span className="text-[10px] text-text-tertiary">&#8226;</span>
+              </div>
+            )}
+            {step.status === 'ERROR' && (
+              <div className="h-[18px] w-[18px] rounded-full bg-risk-danger-bg flex items-center justify-center">
+                <span className="text-[11px] text-risk-danger-text">&#10005;</span>
+              </div>
+            )}
+          </div>
+          <div className="flex-1 pb-3 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-text-primary">{step.name}</span>
+              <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                step.status === 'HIT'
+                  ? 'bg-risk-safe-bg text-risk-safe-text'
+                  : step.status === 'ERROR'
+                    ? 'bg-risk-danger-bg text-risk-danger-text'
+                    : 'bg-surface text-text-secondary'
+              }`}>{step.status}</span>
+              <span className="font-mono text-[10px] text-text-tertiary">
+                {step.durationMs > 1000 ? `${(step.durationMs / 1000).toFixed(1)}s` : `${step.durationMs}ms`}
+              </span>
+            </div>
+            {step.detail && (
+              <p className="mt-0.5 text-[11px] text-text-secondary leading-tight">
+                {step.detail}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function stepStatusIcon(status: PipelineStepStatus) {
   switch (status) {
     case 'HIT':
@@ -321,10 +457,11 @@ function stepStatusColor(status: PipelineStepStatus) {
   }
 }
 
-function PipelineView({ steps }: { steps: PipelineStep[] }) {
+function CompletedPipelineView({ steps: rawSteps }: { steps: PipelineStep[] }) {
+  const steps = rawSteps.filter((s) => !HIDDEN_PIPELINE_STEPS.has(s.name))
   const [open, setOpen] = useState(false)
-  const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
   const hitCount = steps.filter((s) => s.status === 'HIT').length
+  const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
 
   return (
     <div className="rounded-xl border border-separator-light bg-surface-raised print:hidden">
@@ -416,13 +553,131 @@ function Disclaimer() {
   )
 }
 
+const FREQUENCY_PERIODS = ['day', 'week', 'month'] as const
+
+function formatFrequency(times: string, period: string): string {
+  if (!times || !period) return ''
+  const n = parseInt(times, 10)
+  if (!n || n < 1) return ''
+  return `${n}x/${period}`
+}
+
+function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: () => void }) {
+  const { addMedication } = useMedications()
+  const [dosage, setDosage] = useState(result.dosage ?? '')
+  const [freqTimes, setFreqTimes] = useState('')
+  const [freqPeriod, setFreqPeriod] = useState<string>('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSave() {
+    setSaving(true)
+    setError(null)
+    const frequency = formatFrequency(freqTimes, freqPeriod)
+    try {
+      await addMedication({
+        drugName: result.genericName,
+        dosage: dosage.trim() || undefined,
+        frequency: frequency || undefined,
+      })
+      setSaved(true)
+      onAdded()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add medication')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (saved) {
+    return (
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30 print:hidden">
+        <div className="flex items-center gap-2">
+          <span className="text-emerald-600 dark:text-emerald-400">&#10003;</span>
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300 capitalize">
+            {result.genericName} added to your medications
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+      <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+        Add to My Medications
+      </h3>
+      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+        Save this medication so HeartGuard checks future scans against it.
+      </p>
+
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+            Dosage
+          </label>
+          <input
+            type="text"
+            value={dosage}
+            onChange={(e) => setDosage(e.target.value)}
+            placeholder="e.g. 500mg"
+            className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+            Frequency
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="1"
+              max="99"
+              value={freqTimes}
+              onChange={(e) => setFreqTimes(e.target.value)}
+              placeholder="e.g. 2"
+              className="w-16 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+            />
+            <span className="flex items-center text-sm text-neutral-400">per</span>
+            <select
+              value={freqPeriod}
+              onChange={(e) => setFreqPeriod(e.target.value)}
+              className="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+            >
+              <option value="">...</option>
+              {FREQUENCY_PERIODS.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>
+      )}
+
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        className="mt-3 w-full rounded-xl bg-neutral-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+      >
+        {saving ? 'Adding...' : 'Add to My Medications'}
+      </button>
+    </div>
+  )
+}
+
 // ── Main Page ───────────────────────────────────────────────────────
 
 export function ScanPage() {
   const { query, setQuery, suggestions, loading: searchLoading } = useDrugSearch()
-  const { result, photoResult, loading: scanLoading, error, scanByText, scanByPhoto, reset } = useDrugScan()
+  const { result, photoResult, loading: scanLoading, error, liveSteps, scanByText, scanByPhoto, reset } = useDrugScan()
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -449,12 +704,20 @@ export function ScanPage() {
       const file = e.target.files?.[0]
       if (!file) return
       setPhotoError(null)
+
+      if (file.size > 10 * 1024 * 1024) {
+        setPhotoError('Image is too large (max 10MB). Please use a smaller photo.')
+        e.target.value = ''
+        return
+      }
+
+      setPhotoPreview(URL.createObjectURL(file))
       try {
         const base64 = await readFileAsBase64(file)
         scanByPhoto(base64)
-      } catch (err) {
-        console.error('Image read failed:', err)
+      } catch {
         setPhotoError('Could not read image. Please try again or type the medication name.')
+        setPhotoPreview(null)
       }
       e.target.value = ''
     },
@@ -464,6 +727,7 @@ export function ScanPage() {
   const handleNewScan = useCallback(() => {
     reset()
     setQuery('')
+    setPhotoPreview(null)
     inputRef.current?.focus()
   }, [reset, setQuery])
 
@@ -536,11 +800,11 @@ export function ScanPage() {
                       className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-surface"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-text-primary">
+                        <p className="font-medium text-text-primary capitalize">
                           {s.genericName}
                         </p>
                         <p className="truncate text-xs text-text-secondary">
-                          {s.drugClass}
+                          {s.drugClass ?? (s.source === 'BG_POSITIVE_LIST' ? '🇧🇬 Bulgarian drug' : s.source === 'RXNORM' ? 'From RxNorm' : '')}
                           {s.brandNames.length > 0 && ` · ${s.brandNames.join(', ')}`}
                         </p>
                       </div>
@@ -587,31 +851,48 @@ export function ScanPage() {
 
       </div>
 
-      {/* Scan loading */}
-      {scanLoading && <LoadingSkeleton />}
+      {/* Live pipeline tracker — shown during scanning */}
+      {scanLoading && <LivePipelineTracker steps={liveSteps} loading />}
 
-      {/* Error */}
+      {/* Error with any pipeline steps that were collected */}
       {error && (
-        <div className="mt-6 rounded-2xl border border-[#FF3B30]/20 bg-[#FFEDEC] p-4">
-          <p className="text-sm font-medium text-[#C41E16]">{error}</p>
-          <button
-            type="button"
-            onClick={handleNewScan}
-            className="mt-2 text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
-          >
-            Try again
-          </button>
-        </div>
+        <>
+          {liveSteps.length > 0 && <LivePipelineTracker steps={liveSteps} loading={false} />}
+          <div className="mt-6 rounded-2xl border border-[#FF3B30]/20 bg-[#FFEDEC] p-4">
+            <p className="text-sm font-medium text-[#C41E16]">{error}</p>
+            <button
+              type="button"
+              onClick={handleNewScan}
+              className="mt-2 text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
+            >
+              Try again
+            </button>
+          </div>
+        </>
       )}
 
       {/* Text scan result */}
       {result && (
         <div className="mt-6 space-y-4">
-          <ResultCard result={result} />
           {result.pipelineTrace && result.pipelineTrace.length > 0 && (
-            <PipelineView steps={result.pipelineTrace} />
+            <CompletedPipelineView steps={result.pipelineTrace} />
           )}
+          <ResultCard result={result} />
+          <AddToMedications result={result} onAdded={() => {}} />
           <Disclaimer />
+        </div>
+      )}
+
+      {/* Photo preview */}
+      {photoPreview && (scanLoading || photoResult || photoError) && (
+        <div className="mt-4 rounded-xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">Uploaded image</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photoPreview}
+            alt="Uploaded medication photo"
+            className="w-full max-h-48 rounded-lg object-contain bg-neutral-50 dark:bg-neutral-800"
+          />
         </div>
       )}
 
@@ -619,6 +900,13 @@ export function ScanPage() {
       {photoError && (
         <div className="mt-6 rounded-2xl border border-[#FF3B30]/20 bg-[#FFEDEC] p-4">
           <p className="text-sm font-medium text-[#C41E16]">{photoError}</p>
+          <button
+            type="button"
+            onClick={() => { setPhotoError(null); setPhotoPreview(null); fileInputRef.current?.click() }}
+            className="mt-2 text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
+          >
+            Try another photo
+          </button>
         </div>
       )}
 
@@ -637,10 +925,11 @@ export function ScanPage() {
           </div>
           {photoResult.scanResults.map((scanResult, i) => (
             <div key={i} className="space-y-3">
-              <ResultCard result={scanResult} showActions={i === photoResult.scanResults.length - 1} />
               {scanResult.pipelineTrace && scanResult.pipelineTrace.length > 0 && (
-                <PipelineView steps={scanResult.pipelineTrace} />
+                <CompletedPipelineView steps={scanResult.pipelineTrace} />
               )}
+              <ResultCard result={scanResult} showActions={i === photoResult.scanResults.length - 1} />
+              <AddToMedications result={scanResult} onAdded={() => {}} />
             </div>
           ))}
           <Disclaimer />

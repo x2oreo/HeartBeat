@@ -10,7 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed": "node prisma/seed.mjs",
+    "db:seed:force": "node prisma/seed.mjs --force",
+    "db:import-bg": "node import-bg-drugs.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",

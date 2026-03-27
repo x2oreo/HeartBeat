@@ -1,7 +1,38 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node ./import-bg-drugs.mjs)"
+      "Bash(node ./import-bg-drugs.mjs)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://www.bda.bg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://opendata.government.bg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://www.ema.europa.eu/en/medicines\")",
+      "WebSearch",
+      "WebFetch(domain:www.bda.bg)",
+      "WebFetch(domain:ncpr.bg)",
+      "WebFetch(domain:www.ema.europa.eu)",
+      "WebFetch(domain:portal.ncpr.bg)",
+      "WebFetch(domain:data.egov.bg)",
+      "Bash(curl -s -L 'https://data.egov.bg/data/resourceView/eddb1a7f-9848-4f1f-950a-67d4d5ad5755')",
+      "Bash(curl -s -L 'https://data.egov.bg/data/resourceView/238674e0-796c-41e0-88c0-65c08cef2319')",
+      "Bash(curl -s -L -o /tmp/bda_main.html -w \"%{http_code} %{url_effective}\" \"https://www.bda.bg/bg/%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B8/%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B8-%D0%BD%D0%B0-%D0%BB%D0%B5%D0%BA%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%B8-%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D0%B8\")",
+      "Bash(curl -s -L -o /tmp/bda_home.html -w \"%{http_code} %{url_effective}\" \"https://www.bda.bg/bg\")",
+      "Bash(curl -s -L -o /tmp/bda_en.html -w \"%{http_code} %{url_effective}\" \"https://www.bda.bg/en\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s 'https://data.egov.bg/resource/download/eddb1a7f-9848-4f1f-950a-67d4d5ad5755/csv')",
+      "Bash(curl -s 'https://data.egov.bg/resource/download/238674e0-796c-41e0-88c0-65c08cef2319/csv' -o /tmp/dataset2.csv)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -L -o /tmp/ial_register.xlsx -w \"%{http_code} %{size_download}\" \"https://www.bda.bg/images/stories/documents/registers/Register_Lekarstva/IAL_Register_02_2026.xlsx\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s -L -o /tmp/eu_register.xlsx -w \"%{http_code} %{size_download}\" \"https://www.bda.bg/images/stories/documents/registers/Register_Lekarstva/Centrally%20Authorised%20Products_02_2026.xlsx\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s -L -o /tmp/parallel_import.xlsx -w \"%{http_code} %{size_download}\" \"https://www.bda.bg/images/stories/documents/bdias/parallel%20import/PARALLEL%20IMPORT%2012-03-2026.xlsx\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s 'https://data.egov.bg/resource/download/238674e0-796c-41e0-88c0-65c08cef2319/csv')",
+      "Bash(curl -s 'https://data.egov.bg/resource/download/eddb1a7f-9848-4f1f-950a-67d4d5ad5755/json')",
+      "Bash(pip3 install:*)",
+      "Bash(xxd)",
+      "Bash(python3 -c \":*)",
+      "Read(//private/tmp/**)",
+      "Bash(node -e \"const XLSX = require\\(''xlsx''\\); console.log\\(''xlsx version:'', XLSX.version\\)\")",
+      "Bash(node import-bg-drugs.mjs)",
+      "Bash(find /Users/kristiyankulekov/Documents/GitHub/HeartBeat -name *migration* -type f)",
+      "Bash(find /Users/kristiyankulekov/Documents/GitHub/HeartBeat -maxdepth 3 -name seed* -o -name *init*db*)"
     ]
   }
 }

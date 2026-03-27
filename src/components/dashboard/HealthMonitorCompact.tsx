@@ -17,7 +17,8 @@ const riskAccent: Record<WatchRiskLevel, string> = {
 }
 
 export function HealthMonitorCompact({ heartRateHistory, watchPaired }: HealthMonitorCompactProps) {
-  const { latestMetric, isConnected } = useHealthStream()
+  const { latestMetric, connectionStatus } = useHealthStream()
+  const isConnected = connectionStatus === 'live'
 
   // Merge live data onto historical sparkline
   const chartData = [...heartRateHistory]

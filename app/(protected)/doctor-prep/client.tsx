@@ -5,101 +5,32 @@ import { useDoctorPrep } from '@/hooks/use-documents'
 import { DoctorPrepView } from '@/components/documents/DoctorPrepView'
 import { DoctorPrepPDFButton } from '@/components/documents/PDFGenerator'
 import { DocumentThumbnail } from '@/components/documents/DocumentThumbnail'
+import { DoctorPrepPipelineTracker } from '@/components/documents/DoctorPrepPipelineTracker'
+import {
+  Heart, Smile, UserPlus, Scissors, Syringe,
+  Brain, Ear, Stethoscope, Hand, Eye,
+} from 'lucide-react'
 import type { DoctorSpecialty, DocumentLanguage, SavedDoctorPrepDocumentWithPreview } from '@/types'
 
-// ── Specialty Icons (SVG paths) ──────────────────────────────────
+// ── Specialty Icons ──────────────────────────────────────────────
+
+const SPECIALTY_ICONS: Record<string, React.ComponentType<{ className?: string; color?: string; strokeWidth?: number }>> = {
+  Cardiologist: Heart,
+  Dentist: Smile,
+  'General Practitioner': UserPlus,
+  Surgeon: Scissors,
+  Anesthesiologist: Syringe,
+  Psychiatrist: Brain,
+  ENT: Ear,
+  Gastroenterologist: Stethoscope,
+  Dermatologist: Hand,
+  Ophthalmologist: Eye,
+  Other: Stethoscope,
+}
 
 function SpecialtyIcon({ specialty, className = 'w-6 h-6' }: { specialty: DoctorSpecialty | string; className?: string }) {
-  const props = { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.5 }
-
-  switch (specialty) {
-    case 'Cardiologist':
-      return (
-        <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-        </svg>
-      )
-    case 'Dentist':
-      return (
-        <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-2.5 0-4.5 1-5.5 2.5S5 8.5 5 10c0 2 .5 3.5 1.5 5s1.5 4 1.5 6h2c0-1 .5-3 2-3s2 2 2 3h2c0-2 .5-4.5 1.5-6s1.5-3 1.5-5c0-1.5-.5-3-1.5-4.5S14.5 3 12 3z" />
-        </svg>
-      )
-    case 'General Practitioner':
-      return (
-        <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M18 10v4m2-2h-4" />
-        </svg>
-      )
-    case 'Surgeon':
-      return (
-        <svg {...props}>
-          {/* Scalpel icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 3.75L4.5 13.5c-.75.75-.75 2.25.75 3s2.25.75 3-.75l6-9.75" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 3.75l3 3-2.25 2.25" />
-        </svg>
-      )
-    case 'Anesthesiologist':
-      return (
-        <svg {...props}>
-          {/* Syringe/injection icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 4.5l-2 2m0 0l-3.5 3.5m3.5-3.5l2-2m-2 2l-2-2M14 10l-7 7-2.25 2.25M14 10l-1.5-1.5M7 17l-1.25 1.25" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 11.5l3 3M8 13l3 3M6.5 14.5l3 3" />
-        </svg>
-      )
-    case 'Psychiatrist':
-      return (
-        <svg {...props}>
-          {/* Brain icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75v16.5" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75c-1.5 0-3 .75-3.75 2-.5 1-.25 2.25.25 3-.75.25-1.75 1-2 2.25-.25 1.25.25 2.5 1 3.25-.5.75-.75 2-.25 3.25.5 1.25 1.75 2 3 2.25.5.25 1.25.25 1.75.25" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75c1.5 0 3 .75 3.75 2 .5 1 .25 2.25-.25 3 .75.25 1.75 1 2 2.25.25 1.25-.25 2.5-1 3.25.5.75.75 2 .25 3.25-.5 1.25-1.75 2-3 2.25-.5.25-1.25.25-1.75.25" />
-        </svg>
-      )
-    case 'ENT':
-      return (
-        <svg {...props}>
-          {/* Ear icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18c0 1.657 1.343 3 3 3s3-1.343 3-3v-1.5c0-.828.672-1.5 1.5-1.5s1.5-.672 1.5-1.5V12c0-3.866-3.134-7-7-7S1 8.134 1 12" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 00-3-3" />
-        </svg>
-      )
-    case 'Gastroenterologist':
-      return (
-        <svg {...props}>
-          {/* Stomach icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 5.5c0-1.38-1.12-2.5-2.5-2.5H9a3 3 0 00-3 3v3c0 2.5 1.5 4 3 5s2 2.5 2 4.5v0c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V16" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 5.5v5c0 1.5-.5 3-2 4" />
-        </svg>
-      )
-    case 'Dermatologist':
-      return (
-        <svg {...props}>
-          {/* Hand/skin icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0v5.1m3.15-6.6v3m0 0v2.1m0-2.1a1.575 1.575 0 013.15 0v2.1m0 0v2.4a6.3 6.3 0 01-6.3 6.3H9.75a6.3 6.3 0 01-6.3-6.3v-2.4c0-.87.705-1.575 1.575-1.575h.9" />
-          <circle cx="10" cy="14" r="0.75" fill="currentColor" stroke="none" />
-          <circle cx="13" cy="12.5" r="0.5" fill="currentColor" stroke="none" />
-        </svg>
-      )
-    case 'Ophthalmologist':
-      return (
-        <svg {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
-    default: // 'Other'
-      return (
-        <svg {...props}>
-          {/* Stethoscope icon */}
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 4.5v3a4.5 4.5 0 009 0v-3" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.5h3M17.25 4.5h-3" />
-          <circle cx="18.75" cy="12" r="2.25" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 14.25v1.5a4.5 4.5 0 01-4.5 4.5h-1.5a4.5 4.5 0 01-4.5-4.5v-1.5" />
-        </svg>
-      )
-  }
+  const Icon = SPECIALTY_ICONS[specialty] ?? Stethoscope
+  return <Icon className={className} strokeWidth={1.5} />
 }
 
 // ── Specialty Accent Colors ──────────────────────────────────────
@@ -182,6 +113,7 @@ export function DoctorPrepClient() {
     prepData,
     isGenerating,
     error,
+    liveSteps,
     fetchDocuments,
     generate,
     loadDocument,
@@ -426,38 +358,7 @@ export function DoctorPrepClient() {
 
         {/* Generation in progress */}
         {isGenerating && (
-          <div className="animate-fade-in-up">
-            <div className="bg-surface-raised rounded-2xl card-shadow overflow-hidden">
-              {/* Shimmer header */}
-              <div className="h-16 bg-brand-light shimmer-bg" />
-              <div className="p-6 space-y-4">
-                <div className="animate-pulse space-y-3">
-                  <div className="h-5 bg-separator-light rounded-lg w-2/3" />
-                  <div className="h-4 bg-surface rounded-lg w-full" />
-                  <div className="h-4 bg-surface rounded-lg w-full" />
-                  <div className="h-4 bg-surface rounded-lg w-4/5" />
-                </div>
-                <div className="animate-pulse space-y-3 pt-2">
-                  <div className="h-5 bg-separator-light rounded-lg w-1/3" />
-                  <div className="h-20 bg-surface rounded-xl" />
-                </div>
-                <div className="animate-pulse space-y-3 pt-2">
-                  <div className="h-5 bg-separator-light rounded-lg w-2/5" />
-                  <div className="h-14 bg-surface rounded-xl" />
-                  <div className="h-14 bg-surface rounded-xl" />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 mt-5">
-              <svg className="w-4 h-4 text-brand animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              <p className="text-sm text-text-secondary font-medium">
-                Generating your doctor preparation document...
-              </p>
-            </div>
-          </div>
+          <DoctorPrepPipelineTracker steps={liveSteps} isGenerating={isGenerating} error={error} />
         )}
 
         {/* Error */}

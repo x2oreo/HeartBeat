@@ -208,13 +208,18 @@ function buildProhibitedDrugsSummary(drugs: ProhibitedDrug[]): string {
 
 // ── Doctor Prep Generation ───────────────────────────────────────
 
+export type DocPrepStepCallback = (step: import('@/types').PipelineStep) => void
+
 export async function generateDoctorPrep(
   userId: string,
   doctorSpecialty: DoctorSpecialty,
   customSpecialty: string | null,
   language: DocumentLanguage,
   customLanguage: string | null,
+  onStep?: DocPrepStepCallback,
 ): Promise<DoctorPrepData> {
+  const t0 = Date.now()
+
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: {
@@ -242,11 +247,28 @@ export async function generateDoctorPrep(
     cyp: parseCypData(m.cypData),
   }))
 
+  onStep?.({
+    name: 'Loading patient profile',
+    status: 'HIT',
+    durationMs: Date.now() - t0,
+    detail: `${patientName} — ${medications.length} active medication${medications.length !== 1 ? 's' : ''}`,
+  })
+
+  const t1 = Date.now()
   const prohibitedDrugs = getProhibitedDrugs()
   const prohibitedSummary = buildProhibitedDrugsSummary(prohibitedDrugs)
+
+  onStep?.({
+    name: 'Building prohibited drugs list',
+    status: 'HIT',
+    durationMs: Date.now() - t1,
+    detail: `${prohibitedDrugs.length} drugs flagged`,
+  })
+
   const resolvedSpecialty = doctorSpecialty === 'Other' && customSpecialty ? customSpecialty : doctorSpecialty
   const resolvedLanguage = language === 'Other' && customLanguage ? customLanguage : language
 
+  const t2 = Date.now()
   const prompt = buildEnhancedDoctorPrepPrompt(
     patientName,
     genotype,
@@ -256,6 +278,14 @@ export async function generateDoctorPrep(
     prohibitedSummary,
   )
 
+  onStep?.({
+    name: 'Preparing prompt for AI',
+    status: 'HIT',
+    durationMs: Date.now() - t2,
+    detail: `Specialty: ${resolvedSpecialty} — Language: ${resolvedLanguage}`,
+  })
+
+  const t3 = Date.now()
   const { object: aiContent } = await generateObject({
     model,
     schema: doctorPrepAISchema,
@@ -263,6 +293,14 @@ export async function generateDoctorPrep(
     temperature: 0,
   })
 
+  onStep?.({
+    name: 'AI analysis complete',
+    status: 'HIT',
+    durationMs: Date.now() - t3,
+    detail: `${aiContent.medicationsToAvoid.length} to avoid, ${aiContent.saferAlternatives.length} alternatives, ${aiContent.specialtyWarnings.length} warnings`,
+  })
+
+  const t4 = Date.now()
   const documentData: DoctorPrepData = {
     patientName,
     genotype,
@@ -299,6 +337,13 @@ export async function generateDoctorPrep(
       documentData,
     },
     select: { id: true },
+  })
+
+  onStep?.({
+    name: 'Saving document',
+    status: 'HIT',
+    durationMs: Date.now() - t4,
+    detail: 'Document saved to your account',
   })
 
   return { ...documentData, id: saved.id }

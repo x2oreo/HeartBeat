@@ -206,6 +206,12 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
       const { default: jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       const pageWidth = doc.internal.pageSize.getWidth()
+      const CONTENT_WIDTH = pageWidth - 30
+      const LINE_HEIGHT = 4
+      const LINE_HEIGHT_SM = 3.5
+      const PAGE_BREAK = 250
+      doc.setCharSpace(0)
+      doc.setLineHeightFactor(1.15)
       let y = 0
 
       // Blue header
@@ -228,8 +234,8 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         doc.setFontSize(9)
         doc.setFont('helvetica', 'normal')
         doc.setTextColor(30, 64, 175)
-        const synLines = doc.splitTextToSize(data.syndromeExplanation, pageWidth - 28)
-        const synHeight = synLines.length * 4 + 8
+        const synLines = doc.splitTextToSize(data.syndromeExplanation, CONTENT_WIDTH)
+        const synHeight = synLines.length * LINE_HEIGHT + 8
         doc.rect(10, y, pageWidth - 20, synHeight, 'F')
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(8)
@@ -245,15 +251,15 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
       doc.setFontSize(9)
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(30, 64, 175)
-      const briefLines = doc.splitTextToSize(data.drugSafetyBrief, pageWidth - 28)
-      const briefHeight = briefLines.length * 4 + 8
+      const briefLines = doc.splitTextToSize(data.drugSafetyBrief, CONTENT_WIDTH)
+      const briefHeight = briefLines.length * LINE_HEIGHT + 8
       doc.rect(10, y, pageWidth - 20, briefHeight, 'F')
       doc.text(briefLines, 14, y + 6)
       y += briefHeight + 4
 
       // Current medications with implications
       if (data.currentMedications.length > 0) {
-        if (y > 240) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -261,7 +267,7 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         y += 8
 
         for (const med of data.currentMedications) {
-          if (y > 255) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(9)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(40, 40, 40)
@@ -273,9 +279,9 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
           if (impl) {
             doc.setFont('helvetica', 'normal')
             doc.setTextColor(80, 80, 80)
-            const implLines = doc.splitTextToSize(impl.implication, pageWidth - 28)
+            const implLines = doc.splitTextToSize(impl.implication, CONTENT_WIDTH)
             doc.text(implLines, 14, y + 8)
-            y += implLines.length * 4 + 10
+            y += implLines.length * LINE_HEIGHT + 10
           } else {
             y += 6
           }
@@ -285,7 +291,7 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
 
       // Medications to avoid
       if (data.medicationsToAvoid.length > 0) {
-        if (y > 240) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -293,24 +299,24 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         y += 8
 
         for (const med of data.medicationsToAvoid) {
-          if (y > 255) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(9)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(180, 40, 40)
-          const avoidNameLines = doc.splitTextToSize(`${med.genericName} (${med.drugClass})`, pageWidth - 28)
+          const avoidNameLines = doc.splitTextToSize(`${med.genericName} (${med.drugClass})`, CONTENT_WIDTH)
           doc.text(avoidNameLines, 14, y + 4)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(100, 60, 60)
-          const reasonLines = doc.splitTextToSize(med.reason, pageWidth - 28)
-          doc.text(reasonLines, 14, y + 4 + avoidNameLines.length * 4)
-          y += avoidNameLines.length * 4 + reasonLines.length * 4 + 6
+          const reasonLines = doc.splitTextToSize(med.reason, CONTENT_WIDTH)
+          doc.text(reasonLines, 14, y + 4 + avoidNameLines.length * LINE_HEIGHT)
+          y += avoidNameLines.length * LINE_HEIGHT + reasonLines.length * LINE_HEIGHT + 6
         }
         y += 2
       }
 
       // Safer alternatives
       if (data.saferAlternatives.length > 0) {
-        if (y > 240) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -318,23 +324,23 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         y += 8
 
         for (const alt of data.saferAlternatives) {
-          if (y > 255) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(9)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(21, 128, 61)
           doc.text(alt.genericName, 14, y + 4)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(80, 80, 80)
-          const altDetailLines = doc.splitTextToSize(`(${alt.drugClass}) — ${alt.whySafer}`, pageWidth - 28)
+          const altDetailLines = doc.splitTextToSize(`(${alt.drugClass}) — ${alt.whySafer}`, CONTENT_WIDTH)
           doc.text(altDetailLines, 14, y + 8)
-          y += altDetailLines.length * 4 + 8
+          y += altDetailLines.length * LINE_HEIGHT + 8
         }
         y += 4
       }
 
       // Specialty warnings
       if (data.specialtyWarnings.length > 0) {
-        if (y > 240) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -342,20 +348,20 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         y += 8
 
         for (const warning of data.specialtyWarnings) {
-          if (y > 260) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(9)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(180, 100, 0)
-          const lines = doc.splitTextToSize(`\u26A0 ${warning}`, pageWidth - 28)
+          const lines = doc.splitTextToSize(`\u26A0 ${warning}`, CONTENT_WIDTH)
           doc.text(lines, 14, y + 4)
-          y += lines.length * 4 + 2
+          y += lines.length * LINE_HEIGHT + 2
         }
         y += 2
       }
 
       // Questions for doctor
       if (data.questionsForDoctor.length > 0) {
-        if (y > 240) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -363,20 +369,20 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
         y += 8
 
         data.questionsForDoctor.forEach((q, i) => {
-          if (y > 260) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(9)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(60, 60, 60)
-          const lines = doc.splitTextToSize(`${i + 1}. ${q}`, pageWidth - 28)
+          const lines = doc.splitTextToSize(`${i + 1}. ${q}`, CONTENT_WIDTH)
           doc.text(lines, 14, y + 4)
-          y += lines.length * 4 + 2
+          y += lines.length * LINE_HEIGHT + 2
         })
         y += 2
       }
 
       // Prohibited drugs — compact grouped list
       if (data.prohibitedDrugs.length > 0) {
-        if (y > 230) { doc.addPage(); y = 14 }
+        if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
         doc.setTextColor(0, 0, 0)
         doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
@@ -392,7 +398,7 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
 
         for (const [cls, drugs] of byClass) {
           const names = drugs.map(d => d.isDTA ? `${d.genericName} (DTA)` : d.genericName)
-          if (y > 260) { doc.addPage(); y = 14 }
+          if (y > PAGE_BREAK) { doc.addPage(); y = 14 }
           doc.setFontSize(8)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(100, 100, 100)
@@ -402,9 +408,9 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
           doc.setTextColor(180, 40, 40)
           doc.setFontSize(8)
           const drugsText = names.join(', ')
-          const drugLines = doc.splitTextToSize(drugsText, pageWidth - 28)
+          const drugLines = doc.splitTextToSize(drugsText, CONTENT_WIDTH)
           doc.text(drugLines, 14, y + 3)
-          y += drugLines.length * 3.5 + 4
+          y += drugLines.length * LINE_HEIGHT_SM + 4
         }
       }
 

@@ -1,6 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  Info, ShieldCheck, Pill, XCircle, CircleCheck,
+  AlertTriangle, HelpCircle, Ban, ChevronDown, FileText,
+} from 'lucide-react'
 import type { DoctorPrepData } from '@/types'
 import { groupDrugsByClass } from '@/lib/drug-utils'
 
@@ -15,16 +19,16 @@ const RISK_COLORS: Record<string, { bg: string; text: string; border: string; la
   NOT_LISTED: { bg: 'bg-[#EAFBF0]', text: 'text-[#1B7A34]', border: 'border-[#34C759]/20', label: 'Not Listed' },
 }
 
-// Section wrapper with colored left accent
-function Section({ accentColor, children, className = '' }: {
+function Section({ accentColor, children, className = '', delay = 0 }: {
   accentColor: string
   children: React.ReactNode
   className?: string
+  delay?: number
 }) {
   return (
     <div
-      className={`bg-surface-raised rounded-xl card-shadow overflow-hidden ${className}`}
-      style={{ borderLeft: `3px solid ${accentColor}` }}
+      className={`bg-surface-raised rounded-2xl card-shadow overflow-hidden animate-fade-in-up ${className}`}
+      style={{ borderLeft: `3px solid ${accentColor}`, animationDelay: `${delay}ms` }}
     >
       {children}
     </div>
@@ -37,9 +41,9 @@ function SectionHeader({ icon, title, count }: {
   count?: number
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-4 pt-4 pb-2">
+    <div className="flex items-center gap-2.5 px-5 pt-5 pb-2">
       <span className="flex-shrink-0">{icon}</span>
-      <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">{title}</h2>
+      <h2 className="text-[13px] font-semibold text-text-primary">{title}</h2>
       {count !== undefined && (
         <span className="text-[10px] font-bold text-text-tertiary bg-surface px-1.5 py-0.5 rounded-md">
           {count}
@@ -61,6 +65,8 @@ export function DoctorPrepView({ data }: Props) {
 
   const prohibitedByClass = groupDrugsByClass(data.prohibitedDrugs)
 
+  let sectionIndex = 0
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       {/* ── Document Header ─────────────────────────────────────── */}
@@ -68,9 +74,7 @@ export function DoctorPrepView({ data }: Props) {
         <div className="px-5 py-5 sm:px-6">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              <FileText className="w-6 h-6 text-white" strokeWidth={1.5} />
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-tight">Doctor Visit Preparation</h1>
@@ -79,7 +83,6 @@ export function DoctorPrepView({ data }: Props) {
           </div>
         </div>
 
-        {/* Patient info chips */}
         <div className="bg-brand-deep px-5 py-3 sm:px-6 flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-white">{data.patientName}</span>
           <span className="w-px h-4 bg-white/20" />
@@ -99,16 +102,12 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Syndrome Explanation ─────────────────────────────────── */}
       {data.syndromeExplanation && (
-        <Section accentColor="#3478F6" className="animate-fade-in-up" >
+        <Section accentColor="#3478F6" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-              </svg>
-            }
+            icon={<Info className="w-4 h-4 text-brand" strokeWidth={2} />}
             title="About This Patient's Condition"
           />
-          <div className="px-4 pb-4">
+          <div className="px-5 pb-5">
             <p className="text-sm text-text-secondary leading-relaxed">
               {data.syndromeExplanation}
             </p>
@@ -117,16 +116,12 @@ export function DoctorPrepView({ data }: Props) {
       )}
 
       {/* ── Drug Safety Brief ───────────────────────────────────── */}
-      <Section accentColor="#1A56C4" className="animate-fade-in-up">
+      <Section accentColor="#1A56C4" delay={(++sectionIndex) * 80}>
         <SectionHeader
-          icon={
-            <svg className="w-4 h-4 text-brand-deep" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-          }
+          icon={<ShieldCheck className="w-4 h-4 text-brand-deep" strokeWidth={2} />}
           title="Drug Safety Brief"
         />
-        <div className="px-4 pb-4">
+        <div className="px-5 pb-5">
           <p className="text-sm text-text-secondary leading-relaxed">
             {data.drugSafetyBrief}
           </p>
@@ -135,17 +130,13 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Current Medications ──────────────────────────────────── */}
       {data.currentMedications.length > 0 && (
-        <Section accentColor="#3478F6" className="animate-fade-in-up">
+        <Section accentColor="#3478F6" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l.8 3.45c.2.866-.531 1.75-1.414 1.75H4.814c-.883 0-1.614-.884-1.414-1.75l.8-3.45" />
-              </svg>
-            }
+            icon={<Pill className="w-4 h-4 text-brand" strokeWidth={2} />}
             title="Current Medications"
             count={data.currentMedications.length}
           />
-          <div className="px-4 pb-4 space-y-2">
+          <div className="px-5 pb-5 space-y-2">
             {data.currentMedications.map((med, i) => {
               const risk = RISK_COLORS[med.riskCategory] ?? RISK_COLORS.NOT_LISTED
               const implication = data.medicationImplications.find(
@@ -180,17 +171,13 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Medications to Avoid ─────────────────────────────────── */}
       {data.medicationsToAvoid.length > 0 && (
-        <Section accentColor="#FF3B30" className="animate-fade-in-up">
+        <Section accentColor="#FF3B30" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-[#FF3B30]" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-              </svg>
-            }
+            icon={<XCircle className="w-4 h-4 text-[#FF3B30]" strokeWidth={2} />}
             title="Medications to Avoid"
             count={data.medicationsToAvoid.length}
           />
-          <div className="px-4 pb-4 space-y-2.5">
+          <div className="px-5 pb-5 space-y-2.5">
             {data.medicationsToAvoid.map((med) => (
               <div key={med.genericName} className="bg-[#FFEDEC]/50 rounded-lg px-3.5 py-2.5">
                 <div className="flex items-center gap-2">
@@ -206,17 +193,13 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Safer Alternatives ───────────────────────────────────── */}
       {data.saferAlternatives.length > 0 && (
-        <Section accentColor="#34C759" className="animate-fade-in-up">
+        <Section accentColor="#34C759" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-[#34C759]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
+            icon={<CircleCheck className="w-4 h-4 text-[#34C759]" strokeWidth={2} />}
             title="Safer Alternatives"
             count={data.saferAlternatives.length}
           />
-          <div className="px-4 pb-4 space-y-2">
+          <div className="px-5 pb-5 space-y-2">
             {data.saferAlternatives.map((alt) => (
               <div key={alt.genericName} className="bg-[#EAFBF0]/50 rounded-lg px-3.5 py-2.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -232,22 +215,16 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Specialty Warnings ───────────────────────────────────── */}
       {data.specialtyWarnings.length > 0 && (
-        <Section accentColor="#FF9F0A" className="animate-fade-in-up">
+        <Section accentColor="#FF9F0A" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-[#FF9F0A]" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-              </svg>
-            }
+            icon={<AlertTriangle className="w-4 h-4 text-[#FF9F0A]" strokeWidth={2} />}
             title={`Warnings for ${resolvedSpecialty}`}
             count={data.specialtyWarnings.length}
           />
-          <div className="px-4 pb-4 space-y-2">
+          <div className="px-5 pb-5 space-y-2">
             {data.specialtyWarnings.map((warning, i) => (
               <div key={i} className="flex gap-2.5 bg-[#FFF5E0]/60 rounded-lg px-3.5 py-2.5">
-                <svg className="w-4 h-4 text-[#FF9F0A] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                </svg>
+                <AlertTriangle className="w-4 h-4 text-[#FF9F0A] flex-shrink-0 mt-0.5" strokeWidth={2} />
                 <span className="text-sm text-[#8A5600] leading-relaxed">{warning}</span>
               </div>
             ))}
@@ -257,17 +234,13 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Questions for Doctor ─────────────────────────────────── */}
       {data.questionsForDoctor.length > 0 && (
-        <Section accentColor="#8B5CF6" className="animate-fade-in-up">
+        <Section accentColor="#8B5CF6" delay={(++sectionIndex) * 80}>
           <SectionHeader
-            icon={
-              <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-              </svg>
-            }
+            icon={<HelpCircle className="w-4 h-4 text-purple-500" strokeWidth={2} />}
             title="Questions for Your Doctor"
             count={data.questionsForDoctor.length}
           />
-          <div className="px-4 pb-4">
+          <div className="px-5 pb-5">
             <ol className="space-y-2">
               {data.questionsForDoctor.map((question, i) => (
                 <li key={i} className="flex gap-3 group">
@@ -284,35 +257,31 @@ export function DoctorPrepView({ data }: Props) {
 
       {/* ── Prohibited Drugs (collapsible) ───────────────────────── */}
       {data.prohibitedDrugs.length > 0 && (
-        <div className="bg-surface-raised rounded-xl card-shadow overflow-hidden animate-fade-in-up" style={{ borderLeft: '3px solid #FF3B30' }}>
+        <div
+          className="bg-surface-raised rounded-2xl card-shadow overflow-hidden animate-fade-in-up"
+          style={{ borderLeft: '3px solid #FF3B30', animationDelay: `${(++sectionIndex) * 80}ms` }}
+        >
           <button
             onClick={() => setProhibitedOpen(!prohibitedOpen)}
-            className="w-full flex items-center justify-between px-4 py-3.5 text-left cursor-pointer hover:bg-surface/50 transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 text-left cursor-pointer hover:bg-surface/50 transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <svg className="w-4 h-4 text-[#FF3B30]" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-              </svg>
-              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+              <Ban className="w-4 h-4 text-[#FF3B30]" strokeWidth={2} />
+              <h2 className="text-[13px] font-semibold text-text-primary">
                 All Prohibited Drugs
               </h2>
               <span className="text-[10px] font-bold text-[#C41E16] bg-[#FFEDEC] px-1.5 py-0.5 rounded-md">
                 {data.prohibitedDrugs.length}
               </span>
             </div>
-            <svg
+            <ChevronDown
               className={`w-4 h-4 text-text-tertiary transition-transform duration-200 ${prohibitedOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
               strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
+            />
           </button>
 
           {prohibitedOpen && (
-            <div className="px-4 pb-4 animate-expand">
+            <div className="px-5 pb-5 animate-expand">
               <div className="space-y-3 pt-1">
                 {Array.from(prohibitedByClass.entries()).map(([drugClass, drugs]) => (
                   <div key={drugClass}>
@@ -345,7 +314,7 @@ export function DoctorPrepView({ data }: Props) {
       )}
 
       {/* ── Disclaimer ──────────────────────────────────────────── */}
-      <div className="rounded-xl bg-surface/80 p-4 animate-fade-in-up">
+      <div className="rounded-2xl bg-surface/80 p-5 animate-fade-in-up" style={{ animationDelay: `${(++sectionIndex) * 80}ms` }}>
         <p className="text-xs text-text-tertiary text-center leading-relaxed">
           AI-generated reference only. This document does not replace professional medical advice.
           Always consult with your physician before making medication changes.

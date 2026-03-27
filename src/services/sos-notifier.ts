@@ -602,6 +602,144 @@ function composeEmailHtml(
 </html>`
 }
 
+// ── Test SOS ──────────────────────────────────────────────────────────
+//
+// Sends real-format SOS notifications (same compose functions, same structure)
+// to all emergency contacts using a realistic simulated cardiac event.
+// Messages are prefixed with a [TEST] banner so recipients know it's a drill.
+
+export type TestSOSResult = {
+  notified: boolean
+  contactsReached: number
+  /** The exact SMS text that was sent (identical across all contacts) */
+  smsText: string
+  /** The exact voice script that was read aloud (identical across all contacts) */
+  voiceScript: string
+  /** Email subject line */
+  emailSubject: string
+  perContact: {
+    contact: string
+    phone: string
+    email: string | null
+    sms: { success: boolean; error?: string }
+    voice: { success: boolean; error?: string }
+    email_channel: { success: boolean; error?: string }
+  }[]
+}
+
+export async function triggerTestSOS(userId: string): Promise<TestSOSResult> {
+  const [user, contacts, emergencyCard] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        firstName: true,
+        lastName: true,
+        genotype: true,
+        email: true,
+        country: true,
+        medications: {
+          where: { active: true },
+          select: { genericName: true, brandName: true, qtRisk: true },
+          orderBy: { addedAt: 'desc' },
+        },
+      },
+    }),
+    prisma.emergencyContact.findMany({
+      where: { userId },
+      select: { id: true, name: true, phone: true, email: true },
+    }),
+    prisma.sharedEmergencyCard.findFirst({
+      where: { userId },
+      select: { slug: true },
+      orderBy: { createdAt: 'desc' },
+    }),
+  ])
+
+  if (!user) return { notified: false, contactsReached: 0, smsText: '', voiceScript: '', emailSubject: '', perContact: [] }
+  if (contacts.length === 0) return { notified: false, contactsReached: 0, smsText: '', voiceScript: '', emailSubject: '', perContact: [] }
+
+  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
+  const emergencyInfo = getEmergencyInfo(user.country ?? null)
+  const cardUrl = emergencyCard?.slug ? `${getAppBaseUrl()}/emergency-card/${emergencyCard.slug}` : null
+  const qtMeds = user.medications.filter(
+    (m) => m.qtRisk === 'KNOWN_RISK' || m.qtRisk === 'POSSIBLE_RISK' || m.qtRisk === 'CONDITIONAL_RISK',
+  )
+  const timestamp = new Date().toLocaleString('en-GB', {
+    timeZone: 'Europe/Sofia',
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+
+  // Realistic cardiac event as detected by Apple Watch
+  const simulatedAlert: AlertData = {
+    heartRate: 187,
+    hrv: 12,
+    irregularRhythm: true,
+    message: 'Dangerous cardiac event detected by Apple Watch',
+    riskLevel: 'ELEVATED',
+    stressLevel: 'HIGH',
+    isAsleep: false,
+    latitude: null,
+    longitude: null,
+    address: null,
+    accuracy: null,
+    locationCached: false,
+  }
+
+  const TEST_BANNER_SMS = '[TEST — THIS IS A DRILL. No action needed.]\n\n'
+  const TEST_BANNER_VOICE = 'THIS IS A TEST. No action needed. '
+
+  const rawSms = composeSMS(patientName, user.genotype, simulatedAlert, qtMeds, null, cardUrl, timestamp, emergencyInfo)
+  const rawVoice = composeVoiceMessage(patientName, user.genotype, simulatedAlert, qtMeds, emergencyInfo)
+  const emailSubject = `[TEST] HeartGuard SOS Alert for ${patientName}`
+  const rawEmailHtml = composeEmailHtml(patientName, user.genotype, simulatedAlert, qtMeds, null, cardUrl, timestamp, emergencyInfo)
+
+  const smsText = TEST_BANNER_SMS + rawSms
+  const voiceScript = TEST_BANNER_VOICE + rawVoice
+
+  // Inject test banner into email HTML — insert after the opening <body> tag content
+  const emailHtml = rawEmailHtml.replace(
+    '<h1 style="margin: 0; font-size: 24px;">EMERGENCY ALERT</h1>',
+    '<p style="margin: 0 0 8px; font-size: 13px; background: #fef9c3; color: #713f12; padding: 6px 10px; border-radius: 6px; font-weight: 700;">TEST — THIS IS A DRILL. No action needed.</p><h1 style="margin: 0; font-size: 24px;">EMERGENCY ALERT</h1>',
+  )
+
+  const perContact: TestSOSResult['perContact'] = []
+  let contactsReached = 0
+
+  await Promise.all(
+    contacts.map(async (contact) => {
+      const [sms, voice, email_channel] = await Promise.all([
+        sendSMS(contact.phone, smsText),
+        makeVoiceCall(contact.phone, voiceScript),
+        contact.email
+          ? sendAlertEmail(contact.email, emailSubject, emailHtml)
+          : Promise.resolve({ success: false, error: 'No email configured for this contact' }),
+      ])
+
+      const reached = sms.success || voice.success || (contact.email ? email_channel.success : false)
+      if (reached) contactsReached++
+
+      perContact.push({
+        contact: contact.name,
+        phone: contact.phone,
+        email: contact.email ?? null,
+        sms,
+        voice,
+        email_channel,
+      })
+    }),
+  )
+
+  return {
+    notified: contactsReached > 0,
+    contactsReached,
+    smsText,
+    voiceScript,
+    emailSubject,
+    perContact,
+  }
+}
+
 function buildEmailLocationSection(alert: AlertData, mapsUrl: string | null): string {
   if (!mapsUrl) {
     return `

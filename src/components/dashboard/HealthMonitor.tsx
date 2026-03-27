@@ -255,7 +255,7 @@ async function getLiveLocation(): Promise<GeolocationPosition | null> {
   })
 }
 
-function SOSButton() {
+export function SOSButton() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<SOSResult | null>(null)

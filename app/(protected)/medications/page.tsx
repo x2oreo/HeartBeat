@@ -175,7 +175,7 @@ export default function MedicationsPage() {
   }
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-3 py-5 md:px-4 md:py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
         {/* Header */}
@@ -307,7 +307,7 @@ export default function MedicationsPage() {
                     ) : (
                       <button
                         onClick={() => setConfirmRemoveId(med.id)}
-                        className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-1 shrink-0"
+                        className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
                         aria-label={`Remove ${med.genericName}`}
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

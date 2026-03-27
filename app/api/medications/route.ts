@@ -18,7 +18,6 @@ export async function GET() {
       genericName: true,
       brandName: true,
       dosage: true,
-      frequency: true,
       qtRisk: true,
       isDTA: true,
       addedAt: true,
@@ -34,7 +33,6 @@ export async function GET() {
 const postSchema = z.object({
   drugName: z.string().min(2).max(200),
   dosage: z.string().max(100).optional(),
-  frequency: z.string().max(100).optional(),
 })
 
 export async function POST(request: Request) {
@@ -47,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { drugName, dosage, frequency } = parsed.data
+  const { drugName, dosage } = parsed.data
   const drugInfo = lookupDrug(drugName)
 
   const medication = await prisma.medication.create({
@@ -56,7 +54,6 @@ export async function POST(request: Request) {
       genericName: drugInfo?.genericName ?? drugName.trim(),
       brandName: drugInfo?.brandNames[0] ?? null,
       dosage: dosage ?? null,
-      frequency: frequency ?? null,
       qtRisk: drugInfo?.riskCategory ?? 'NOT_LISTED',
       isDTA: drugInfo?.isDTA ?? false,
       cypData: drugInfo?.cyp ?? undefined,
@@ -66,7 +63,6 @@ export async function POST(request: Request) {
       genericName: true,
       brandName: true,
       dosage: true,
-      frequency: true,
       qtRisk: true,
       isDTA: true,
       addedAt: true,

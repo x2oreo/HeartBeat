@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RiskCategory, Genotype, AutocompleteSuggestion } from '@/types'
 import PhoneInput from '@/components/PhoneInput'
 import { parseE164, validateNationalNumber } from '@/lib/phone-countries'
+import { DrugSearchInput } from '@/components/shared/DrugSearchInput'
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -28,8 +29,6 @@ const GENOTYPE_OPTIONS: { value: Genotype; label: string; description: string }[
   { value: 'LQT1', label: 'LQT1', description: 'Triggered by exercise and swimming' },
   { value: 'LQT2', label: 'LQT2', description: 'Triggered by sudden noises and emotional stress' },
   { value: 'LQT3', label: 'LQT3', description: 'Events occur during sleep or rest' },
-  { value: 'OTHER', label: 'Other', description: 'Another LQTS variant or acquired LQTS' },
-  { value: 'UNKNOWN', label: "I don't know", description: 'General LQTS safety guidelines will be used' },
 ]
 
 const RELATIONSHIP_OPTIONS = ['Cardiologist', 'Family', 'Friend']
@@ -101,13 +100,6 @@ export default function OnboardingPage() {
 
   // Step 2
   const [medications, setMedications] = useState<MedEntry[]>([])
-  const [medQuery, setMedQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [searchLoading, setSearchLoading] = useState(false)
-  const medInputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   // Step 3
   const [contacts, setContacts] = useState<ContactEntry[]>([
@@ -116,71 +108,20 @@ export default function OnboardingPage() {
 
   // ── Drug Search ─────────────────────────────────────────────────
 
-  const fetchSuggestions = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setSuggestions([])
-      return
-    }
-    setSearchLoading(true)
-    try {
-      const res = await fetch(`/api/drugs/autocomplete?q=${encodeURIComponent(query)}`)
-      if (res.ok) {
-        const data: AutocompleteSuggestion[] = await res.json()
-        setSuggestions(data)
-      }
-    } catch {
-      // Silently fail — autocomplete is non-critical
-    } finally {
-      setSearchLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => fetchSuggestions(medQuery), 250)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [medQuery, fetchSuggestions])
-
-  // Close suggestions on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(e.target as Node) &&
-        medInputRef.current &&
-        !medInputRef.current.contains(e.target as Node)
-      ) {
-        setShowSuggestions(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
   function addMedication(drug: AutocompleteSuggestion) {
     if (medications.some((m) => m.genericName === drug.genericName)) return
     setMedications((prev) => [
       ...prev,
       { genericName: drug.genericName, riskCategory: drug.riskCategory, isDTA: drug.isDTA },
     ])
-    setMedQuery('')
-    setSuggestions([])
-    setShowSuggestions(false)
-    medInputRef.current?.focus()
   }
 
-  function addCustomMedication() {
-    const name = medQuery.trim()
+  function addCustomMedication(name: string) {
     if (!name || medications.some((m) => m.genericName.toLowerCase() === name.toLowerCase())) return
     setMedications((prev) => [
       ...prev,
       { genericName: name, riskCategory: null, isDTA: false },
     ])
-    setMedQuery('')
-    setSuggestions([])
-    setShowSuggestions(false)
   }
 
   function removeMedication(genericName: string) {
@@ -342,82 +283,11 @@ export default function OnboardingPage() {
               We&apos;ll check each medication for QT prolongation risk.
             </p>
 
-            {/* Search input */}
-            <div className="relative">
-              <input
-                ref={medInputRef}
-                type="text"
-                value={medQuery}
-                onChange={(e) => {
-                  setMedQuery(e.target.value)
-                  setShowSuggestions(true)
-                }}
-                onFocus={() => {
-                  if (suggestions.length > 0) setShowSuggestions(true)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    if (suggestions.length > 0) {
-                      addMedication(suggestions[0])
-                    } else if (medQuery.trim()) {
-                      addCustomMedication()
-                    }
-                  }
-                }}
-                placeholder="Search medication name..."
-                className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
-              />
-              {searchLoading && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-
-              {/* Suggestions dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden"
-                >
-                  {suggestions.map((drug) => (
-                    <button
-                      key={drug.genericName}
-                      type="button"
-                      onClick={() => addMedication(drug)}
-                      className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center justify-between"
-                    >
-                      <div>
-                        <span className="font-medium text-text-primary">
-                          {drug.genericName}
-                        </span>
-                        {drug.brandNames.length > 0 && (
-                          <span className="text-xs text-text-tertiary ml-2">
-                            ({drug.brandNames.slice(0, 2).join(', ')})
-                          </span>
-                        )}
-                      </div>
-                      <RiskBadge riskCategory={drug.riskCategory} />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* "Add as custom" when no suggestions match */}
-              {showSuggestions && medQuery.trim().length >= 2 && suggestions.length === 0 && !searchLoading && (
-                <div className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={addCustomMedication}
-                    className="w-full text-left px-4 py-3 hover:bg-surface transition-colors"
-                  >
-                    <span className="text-text-secondary">
-                      Add &quot;{medQuery.trim()}&quot; as medication
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <DrugSearchInput
+              onSelect={addMedication}
+              onAddCustom={addCustomMedication}
+              placeholder="Search medication name..."
+            />
 
             {/* Medication list */}
             {medications.length > 0 && (

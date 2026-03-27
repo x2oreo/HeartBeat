@@ -104,7 +104,7 @@ export function PipelineTrace({ steps }: { steps: PipelineStep[] }) {
             ))}
           </div>
           <p className="mt-3 text-[10px] text-neutral-400">
-            Pipeline: Local DB &rarr; Fuzzy Match &rarr; RxNorm &rarr; CredibleMeds &rarr; FDA FAERS &rarr; AI Analysis
+            Pipeline: Local DB &rarr; Fuzzy Match &rarr; BG Database &rarr; AI Analysis
           </p>
         </div>
       )}

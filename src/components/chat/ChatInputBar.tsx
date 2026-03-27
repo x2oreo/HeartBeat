@@ -2,18 +2,25 @@
 
 import { useRef, useCallback } from 'react'
 
-function readFileAsBase64(file: File): Promise<string> {
+function convertToJpegBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result
-      if (typeof result !== 'string') return reject(new Error('Failed to read file'))
-      const base64 = result.split(',')[1]
-      if (!base64) return reject(new Error('Empty file'))
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { URL.revokeObjectURL(url); return reject(new Error('Canvas not supported')) }
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+      const base64 = dataUrl.split(',')[1]
+      if (!base64) return reject(new Error('Empty image'))
       resolve(base64)
     }
-    reader.onerror = () => reject(new Error('Failed to read file'))
-    reader.readAsDataURL(file)
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')) }
+    img.src = url
   })
 }
 
@@ -47,7 +54,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const base64 = await readFileAsBase64(file)
+      const base64 = await convertToJpegBase64(file)
       onImageUpload(base64)
     } catch {
       console.error('Failed to read image')
@@ -60,7 +67,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
       <form
         id="chat-form"
         onSubmit={onSubmit}
-        className="mx-auto flex max-w-2xl items-end gap-2 px-4 py-3"
+        className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-3"
       >
         {/* Image upload */}
         <button

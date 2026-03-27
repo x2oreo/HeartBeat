@@ -78,6 +78,7 @@ export async function POST(request: Request) {
   // The Zod schema validates structure; cast to UIMessage for the AI SDK
   const messages = parsed.data.messages as unknown as UIMessage[]
   const conversationId = parsed.data.conversationId
+  const imageBase64 = typeof body.imageBase64 === 'string' ? body.imageBase64 as string : null
 
   // Create or load conversation
   let convId: string
@@ -129,6 +130,23 @@ export async function POST(request: Request) {
   }
 
   const modelMessages = await convertToModelMessages(messages)
+
+  // If the client sent an image, inject it into the last user message
+  if (imageBase64) {
+    for (let i = modelMessages.length - 1; i >= 0; i--) {
+      const msg = modelMessages[i]
+      if (msg.role === 'user') {
+        const existingContent = Array.isArray(msg.content)
+          ? msg.content
+          : [{ type: 'text' as const, text: msg.content }]
+        msg.content = [
+          ...existingContent,
+          { type: 'file' as const, data: imageBase64, mediaType: 'image/jpeg' as const },
+        ]
+        break
+      }
+    }
+  }
 
   const result = streamText({
     model,

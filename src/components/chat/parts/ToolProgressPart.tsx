@@ -4,11 +4,9 @@ const TOOL_LABELS: Record<string, { title: string; steps: string[] }> = {
   scan_drug: {
     title: 'Checking medication safety...',
     steps: [
-      'Searching medication database',
+      'Searching US drug safety database',
       'Checking similar drug names',
-      'Resolving with RxNorm',
-      'Checking CredibleMeds verified data',
-      'Querying FDA adverse event reports',
+      'Searching Bulgarian drug database',
       'Analyzing drug interactions',
     ],
   },

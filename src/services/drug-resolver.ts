@@ -80,52 +80,18 @@ function buildEnrichment(
 
 async function fetchEnrichmentWithTrace(
   genericName: string,
-  trace: PipelineStep[],
-  onStep?: OnStepCallback,
+  _trace: PipelineStep[],
+  _onStep?: OnStepCallback,
 ): Promise<{
   credibleMedsData: CredibleMedsResult | null
   fdaSignal: OpenFDASignal | null
   rxnormData: RxNormResult | null
 }> {
-  function emitStep(step: PipelineStep) {
-    trace.push(step)
-    onStep?.(step)
-  }
-
-  const t = Date.now()
   const [credibleMedsData, fdaSignal, rxnormData] = await Promise.all([
     lookupCredibleMeds(genericName).catch(() => null),
     getTorsadesSignal(genericName).catch(() => null),
     resolveDrugName(genericName).catch(() => null),
   ])
-  const d = Date.now() - t
-
-  emitStep({
-    name: 'QT Risk Verification',
-    status: credibleMedsData ? 'HIT' : 'MISS',
-    durationMs: d,
-    detail: credibleMedsData
-      ? `Risk level confirmed: ${credibleMedsData.riskCategory.replace('_', ' ').toLowerCase()}`
-      : 'No additional risk data found',
-  })
-
-  emitStep({
-    name: 'FDA Safety Reports',
-    status: fdaSignal && fdaSignal.torsadesReportCount > 0 ? 'HIT' : 'MISS',
-    durationMs: d,
-    detail: fdaSignal && fdaSignal.torsadesReportCount > 0
-      ? `${fdaSignal.torsadesReportCount} heart rhythm adverse event reports found`
-      : 'No adverse event reports found',
-  })
-
-  emitStep({
-    name: 'Drug Name Resolution',
-    status: rxnormData ? 'HIT' : 'MISS',
-    durationMs: d,
-    detail: rxnormData
-      ? `Identified as "${rxnormData.genericName}"`
-      : 'Already identified',
-  })
 
   return { credibleMedsData, fdaSignal, rxnormData }
 }
@@ -277,41 +243,11 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
   })
 
   // ── Step 3: RxNorm + CredibleMeds + OpenFDA in parallel ─────────
-  const t3 = Date.now()
   const [rxnormResult, directCredibleMeds, directFdaSignal] = await Promise.all([
     resolveDrugName(normalized).catch(() => null),
     lookupCredibleMeds(normalized).catch(() => null),
     getTorsadesSignal(normalized).catch(() => null),
   ])
-  const d3 = Date.now() - t3
-
-  // Add individual trace entries for each external API
-  emitStep({
-    name: 'Drug Name Resolution',
-    status: rxnormResult ? 'HIT' : 'MISS',
-    durationMs: d3,
-    detail: rxnormResult
-      ? `Identified as "${rxnormResult.genericName}"`
-      : 'Could not identify drug name',
-  })
-
-  emitStep({
-    name: 'QT Risk Verification',
-    status: directCredibleMeds ? 'HIT' : 'MISS',
-    durationMs: d3,
-    detail: directCredibleMeds
-      ? `Risk level confirmed: ${directCredibleMeds.riskCategory.replace('_', ' ').toLowerCase()}`
-      : 'No additional risk data found',
-  })
-
-  emitStep({
-    name: 'FDA Safety Reports',
-    status: directFdaSignal && directFdaSignal.torsadesReportCount > 0 ? 'HIT' : 'MISS',
-    durationMs: d3,
-    detail: directFdaSignal && directFdaSignal.torsadesReportCount > 0
-      ? `${directFdaSignal.torsadesReportCount} heart rhythm adverse event reports found`
-      : 'No adverse event reports found',
-  })
 
   if (rxnormResult) {
     const resolvedLocalEntry = lookupDrug(rxnormResult.genericName)

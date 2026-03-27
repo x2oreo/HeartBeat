@@ -57,15 +57,6 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/history',
-    label: 'Scan History',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
     href: '/emergency-card',
     label: 'Emergency Card',
     icon: (

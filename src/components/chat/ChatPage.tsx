@@ -15,6 +15,8 @@ export function ChatPage() {
   const [input, setInput] = useState('')
   const [showHistory, setShowHistory] = useState(true)
   const conversationIdRef = useRef<string | null>(null)
+  const [messageImages, setMessageImages] = useState<Map<string, string>>(() => new Map())
+  const pendingImageRef = useRef<string | null>(null)
 
   const {
     conversations,
@@ -29,12 +31,15 @@ export function ChatPage() {
     setConversationId(id)
   }, [])
 
-  // Custom fetch that captures X-Conversation-Id from response headers
+  // Custom fetch that captures X-Conversation-Id from response headers.
+  // We strip the abort signal so the server finishes even if the user navigates away —
+  // this ensures onFinish fires and the message gets persisted to DB.
   const customFetch = useCallback(async (
     input: RequestInfo | URL,
     init?: RequestInit,
   ): Promise<Response> => {
-    const response = await globalThis.fetch(input, init)
+    const { signal: _signal, ...rest } = init ?? {}
+    const response = await globalThis.fetch(input, rest)
     const convId = response.headers.get('X-Conversation-Id')
     if (convId && convId !== conversationIdRef.current) {
       updateConversationId(convId)
@@ -43,7 +48,8 @@ export function ChatPage() {
     return response
   }, [updateConversationId, fetchConversations])
 
-  // Transport is created once; body reads from ref at call time
+  // Transport is created once; body callback reads ref at call time (not during render)
+  /* eslint-disable react-hooks/refs */
   const transport = useMemo(
     () => new DefaultChatTransport({
       api: '/api/chat',
@@ -52,6 +58,7 @@ export function ChatPage() {
     }),
     [customFetch],
   )
+  /* eslint-enable react-hooks/refs */
 
   const {
     messages,
@@ -64,10 +71,36 @@ export function ChatPage() {
 
   const isLoading = status === 'submitted' || status === 'streaming'
   const scrollRef = useRef<HTMLDivElement>(null)
+  const userScrolledAway = useRef(false)
 
-  // Auto-scroll to bottom on new messages
+  // Track whether the user has scrolled away from the bottom
   useEffect(() => {
-    if (scrollRef.current) {
+    const el = scrollRef.current
+    if (!el) return
+    function onScroll() {
+      if (!el) return
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      userScrolledAway.current = distanceFromBottom > 80
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Associate pending image with the user message once it appears
+  useEffect(() => {
+    if (pendingImageRef.current && messages.length > 0) {
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+      if (lastUserMsg && !messageImages.has(lastUserMsg.id)) {
+        const img = pendingImageRef.current
+        pendingImageRef.current = null
+        setMessageImages((prev) => new Map(prev).set(lastUserMsg.id, img))
+      }
+    }
+  }, [messages, messageImages])
+
+  // Auto-scroll to bottom on new messages, only if user hasn't scrolled away
+  useEffect(() => {
+    if (scrollRef.current && !userScrolledAway.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [messages])
@@ -114,36 +147,12 @@ export function ChatPage() {
 
   const handleImageUpload = useCallback(async (base64: string) => {
     setInput('')
-    try {
-      const response = await fetch('/api/scan/photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64 }),
-      })
-
-      if (!response.ok) {
-        const err = await response.json()
-        throw new Error((err as { error?: string }).error ?? 'Photo scan failed')
-      }
-
-      const photoResult = await response.json() as { detectedDrugNames?: string[] }
-
-      if (photoResult.detectedDrugNames && photoResult.detectedDrugNames.length > 0) {
-        const drugList = photoResult.detectedDrugNames.join(', ')
-        await sendMessage({
-          text: `📸 I scanned a photo and detected: ${drugList}.\n\nPlease analyze these medications for safety.`,
-        })
-      } else {
-        await sendMessage({
-          text: '📸 I scanned a photo but couldn\'t detect any medications clearly. Could you tell me which medications are shown?',
-        })
-      }
-    } catch (err) {
-      console.error('Photo scan failed:', err)
-      await sendMessage({
-        text: '❌ Photo scan failed. Could you type the medication name instead?',
-      })
-    }
+    pendingImageRef.current = base64
+    await sendMessage({
+      text: 'I took a photo of a medication. Please read the drug name(s) from the image and check if they are safe for me.',
+    }, {
+      body: { imageBase64: base64 },
+    })
   }, [sendMessage])
 
   const handleFormSubmit = useCallback((e: React.FormEvent) => {
@@ -178,7 +187,7 @@ export function ChatPage() {
             {messages.length === 0 ? (
               <WelcomeMessage onQuickAction={handleQuickAction} />
             ) : (
-              <ChatMessageList messages={messages} isLoading={isLoading} />
+              <ChatMessageList messages={messages} isLoading={isLoading} messageImages={messageImages} />
             )}
           </div>
         </div>

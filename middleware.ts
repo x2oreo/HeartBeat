@@ -83,6 +83,19 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Public routes that don't require authentication
+  // Watch API routes that use bearer token auth (not Supabase cookies).
+  // /api/watch/stream and /api/watch/pair use Supabase session auth.
+  const watchBearerPaths = [
+    '/api/watch/health-data',
+    '/api/watch/alert',
+    '/api/watch/register-device',
+    '/api/watch/config',
+    '/api/watch/auth/token',
+  ]
+  if (watchBearerPaths.some((p) => pathname.startsWith(p))) {
+    return supabaseResponse
+  }
+
   const isPublicPath =
     pathname === '/' ||
     pathname === '/login' ||

@@ -8,7 +8,7 @@ type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0
 
 const emergencyContactSchema = z.object({
   name: z.string().min(1).max(100),
-  phone: z.string().min(1).max(30),
+  phone: z.string().min(8).max(16).regex(/^\+\d{7,15}$/, 'Phone must be in E.164 format'),
   relationship: z.string().min(1).max(50),
 })
 
@@ -54,7 +54,8 @@ export async function POST(request: Request) {
         create: {
           supabaseId: supabaseUser.id,
           email: supabaseUser.email ?? '',
-          first_name: supabaseUser.user_metadata?.full_name ?? null,
+          firstName: supabaseUser.user_metadata?.first_name ?? null,
+          lastName: supabaseUser.user_metadata?.last_name ?? null,
           genotype,
           onboarded: true,
         },

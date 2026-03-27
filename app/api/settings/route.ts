@@ -9,11 +9,20 @@ export async function GET() {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  return NextResponse.json({ email: user.email, genotype: user.genotype })
+  return NextResponse.json({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    genotype: user.genotype,
+  })
 }
 
 const patchSchema = z.object({
-  genotype: z.enum(['LQT1', 'LQT2', 'LQT3', 'OTHER', 'UNKNOWN']),
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  genotype: z.enum(['LQT1', 'LQT2', 'LQT3', 'OTHER', 'UNKNOWN']).optional(),
+}).refine(data => data.firstName || data.lastName || data.genotype, {
+  message: 'At least one field must be provided',
 })
 
 export async function PATCH(request: Request) {
@@ -26,9 +35,14 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
+  const data: Record<string, string> = {}
+  if (parsed.data.firstName !== undefined) data.firstName = parsed.data.firstName.trim()
+  if (parsed.data.lastName !== undefined) data.lastName = parsed.data.lastName.trim()
+  if (parsed.data.genotype !== undefined) data.genotype = parsed.data.genotype
+
   await prisma.user.update({
     where: { id: user.id },
-    data: { genotype: parsed.data.genotype },
+    data,
   })
 
   return NextResponse.json({ success: true })

@@ -10,6 +10,8 @@ const shareCardSchema = z.object({
     name: z.string(),
     riskCategory: z.string(),
     isDTA: z.boolean(),
+    dosage: z.string().optional(),
+    brandName: z.string().optional(),
   })),
   emergencyContacts: z.array(z.object({
     name: z.string(),
@@ -35,7 +37,12 @@ const shareCardSchema = z.object({
       name: z.string(),
       warning: z.string(),
     })),
-  }),
+  }).optional(),
+  patientPhoto: z.string().optional(),
+  personalNotes: z.object({
+    en: z.string(),
+    bg: z.string(),
+  }).optional(),
 }).passthrough()
 
 export async function POST(request: Request) {

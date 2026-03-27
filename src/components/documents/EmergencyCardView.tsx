@@ -10,18 +10,20 @@ type Props = {
 function getRiskColor(riskCategory: string) {
   switch (riskCategory) {
     case 'KNOWN_RISK':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      return 'bg-[#FFEDEC] text-[#C41E16]'
     case 'POSSIBLE_RISK':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      return 'bg-[#FFF5E0] text-[#8A5600]'
     case 'CONDITIONAL_RISK':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+      return 'bg-[#FFF5E0] text-[#8A5600]'
     default:
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      return 'bg-[#EAFBF0] text-[#1B7A34]'
   }
 }
 
 export function EmergencyCardView({ data, isPublic = false }: Props) {
-  const { aiContent } = data
+  const aiContent = data.aiContent
+
+  if (!aiContent) return null
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -58,14 +60,14 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
       </div>
 
       {/* Card Body */}
-      <div className="bg-white dark:bg-neutral-900 border border-t-0 border-neutral-200 dark:border-neutral-700 rounded-b-2xl overflow-hidden">
+      <div className="bg-surface-raised border border-t-0 border-separator-light rounded-b-2xl overflow-hidden">
         {/* Critical Warning */}
-        <div className="mx-4 mt-4 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl">
+        <div className="mx-4 mt-4 p-4 bg-[#FFEDEC] border border-[#FF3B30]/20 rounded-xl">
           <div className="flex gap-2">
-            <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-[#FF3B30] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
             </svg>
-            <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+            <p className="text-sm font-semibold text-[#C41E16]">
               {aiContent.criticalWarning}
             </p>
           </div>
@@ -74,21 +76,21 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         {/* Drugs to Avoid */}
         {aiContent.drugsToAvoidByCategory.length > 0 && (
           <div className="px-4 pt-5">
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
+            <h2 className="text-[11px] font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#FF3B30]" />
               Drugs to Avoid
             </h2>
             <div className="space-y-3">
               {aiContent.drugsToAvoidByCategory.map((cat) => (
-                <div key={cat.category} className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3">
-                  <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">
+                <div key={cat.category} className="bg-surface rounded-xl p-3">
+                  <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                     {cat.category}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {cat.drugs.map((drug) => (
                       <span
                         key={drug}
-                        className="inline-block bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded-md"
+                        className="inline-block bg-[#FFEDEC] text-[#C41E16] text-xs font-medium px-2 py-0.5 rounded-full"
                       >
                         {drug}
                       </span>
@@ -103,17 +105,17 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         {/* Safe ER Medications */}
         {aiContent.safeERMedications.length > 0 && (
           <div className="px-4 pt-5">
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
+            <h2 className="text-[11px] font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#34C759]" />
               Safe ER Medications
             </h2>
-            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3 space-y-2">
+            <div className="bg-[#EAFBF0] border border-[#34C759]/20 rounded-xl p-3 space-y-2">
               {aiContent.safeERMedications.map((med) => (
                 <div key={med.name} className="flex gap-2 text-sm">
-                  <span className="font-semibold text-green-800 dark:text-green-300 whitespace-nowrap">
+                  <span className="font-semibold text-[#1B7A34] whitespace-nowrap">
                     {med.name}
                   </span>
-                  <span className="text-green-700 dark:text-green-400">— {med.notes}</span>
+                  <span className="text-[#1B7A34]/80">— {med.notes}</span>
                 </div>
               ))}
             </div>
@@ -123,17 +125,17 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         {/* Emergency Protocol */}
         {aiContent.emergencyProtocolSteps.length > 0 && (
           <div className="px-4 pt-5">
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
+            <h2 className="text-[11px] font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-brand" />
               Emergency Protocol
             </h2>
             <ol className="space-y-2">
               {aiContent.emergencyProtocolSteps.map((step, i) => (
                 <li key={i} className="flex gap-3 text-sm">
-                  <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-brand-light text-brand-deep flex items-center justify-center text-xs font-bold flex-shrink-0">
                     {i + 1}
                   </span>
-                  <span className="text-neutral-700 dark:text-neutral-300 pt-0.5">{step}</span>
+                  <span className="text-text-secondary pt-0.5">{step}</span>
                 </li>
               ))}
             </ol>
@@ -143,7 +145,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         {/* Current Medications */}
         {data.medications.length > 0 && (
           <div className="px-4 pt-5">
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <h2 className="text-[11px] font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-purple-500" />
               Current Medications
             </h2>
@@ -154,16 +156,16 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
                 )
                 return (
                   <div key={i} className="flex items-start gap-2 text-sm">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${getRiskColor(med.riskCategory)}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${getRiskColor(med.riskCategory)}`}>
                       {med.name}
                     </span>
                     {med.isDTA && (
-                      <span className="text-xs bg-red-600 text-white px-1.5 py-0.5 rounded font-medium flex-shrink-0">
+                      <span className="text-xs bg-[#FF3B30] text-white px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
                         DTA
                       </span>
                     )}
                     {aiNote && (
-                      <span className="text-neutral-500 dark:text-neutral-400 text-xs pt-0.5">
+                      <span className="text-text-tertiary text-xs pt-0.5">
                         {aiNote.warning}
                       </span>
                     )}
@@ -177,24 +179,24 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         {/* Emergency Contacts */}
         {data.emergencyContacts.length > 0 && (
           <div className="px-4 pt-5">
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-neutral-400" />
+            <h2 className="text-[11px] font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-text-tertiary" />
               Emergency Contacts
             </h2>
             <div className="space-y-2">
               {data.emergencyContacts.map((contact, i) => (
-                <div key={i} className="flex items-center justify-between text-sm bg-neutral-50 dark:bg-neutral-800 rounded-lg px-3 py-2">
+                <div key={i} className="flex items-center justify-between text-sm bg-surface rounded-xl px-3 py-2">
                   <div>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <span className="font-medium text-text-primary">
                       {contact.name}
                     </span>
-                    <span className="text-neutral-400 dark:text-neutral-500 ml-2 text-xs capitalize">
+                    <span className="text-text-tertiary ml-2 text-xs capitalize">
                       {contact.relationship}
                     </span>
                   </div>
                   <a
                     href={`tel:${contact.phone}`}
-                    className="text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                    className="text-brand font-medium hover:underline"
                   >
                     {contact.phone}
                   </a>
@@ -205,8 +207,8 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
         )}
 
         {/* Disclaimer */}
-        <div className="mx-4 mt-5 mb-4 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+        <div className="mx-4 mt-5 mb-4 p-3 bg-surface rounded-xl">
+          <p className="text-xs text-text-tertiary text-center">
             AI-generated reference only. Always consult the patient&apos;s cardiologist before administering medications.
             Generated by HeartGuard on {new Date(data.generatedAt).toLocaleDateString()}.
           </p>

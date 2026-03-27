@@ -4,8 +4,6 @@ import { useRef, useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '../lib/supabase/client'
-import { useTheme } from '../context/theme'
-import { SunIcon, MoonIcon } from './icons'
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -72,6 +70,15 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    href: '/doctor-prep',
+    label: 'Doctor Prep',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
 ]
 
 const BOTTOM_NAV = {
@@ -95,7 +102,6 @@ type Props = {
 export function DashboardLayout({ email, children }: Props) {
   const router = useRouter()
   const pathname = usePathname()
-  const { theme, toggle } = useTheme()
   const initials = getInitials(email)
   const hue = getAvatarColor(email)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -118,13 +124,13 @@ export function DashboardLayout({ email, children }: Props) {
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-white dark:bg-neutral-950 p-2"
+      className="flex h-screen overflow-hidden bg-surface p-2"
       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      <div className="flex flex-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden">
+      <div className="flex flex-1 bg-white rounded-2xl overflow-hidden card-shadow">
 
         {/* Sidebar */}
-        <aside className="w-52 shrink-0 flex flex-col">
+        <aside className="w-52 shrink-0 flex flex-col bg-surface-raised border-r border-separator-light">
 
           {/* Logo */}
           <div className="h-14 flex items-center px-4">
@@ -135,7 +141,7 @@ export function DashboardLayout({ email, children }: Props) {
                   <polyline points="13,28 18,28 20.5,23 23,33 25.5,19 28,31 30.5,25 33,28 37,28" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+              <span className="text-sm font-bold text-text-primary tracking-tight">
                 HeartGuard
               </span>
             </div>
@@ -149,11 +155,11 @@ export function DashboardLayout({ email, children }: Props) {
                 href={item.href}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                   isActive(item.href)
-                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-neutral-900 dark:hover:text-neutral-100'
+                    ? 'bg-brand-light text-text-primary shadow-xs'
+                    : 'text-text-secondary hover:bg-surface hover:text-text-primary'
                 }`}
               >
-                <span className={isActive(item.href) ? 'text-brand' : 'text-neutral-400 dark:text-neutral-500'}>
+                <span className={isActive(item.href) ? 'text-brand' : 'text-text-tertiary'}>
                   {item.icon}
                 </span>
                 {item.label}
@@ -161,31 +167,21 @@ export function DashboardLayout({ email, children }: Props) {
             ))}
           </nav>
 
-          {/* Bottom nav: settings + theme */}
+          {/* Bottom nav: settings */}
           <div className="px-2 pb-3 space-y-0.5">
             <Link
               href={BOTTOM_NAV.href}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 isActive(BOTTOM_NAV.href)
-                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-xs'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-neutral-900 dark:hover:text-neutral-100'
+                  ? 'bg-brand-light text-text-primary shadow-xs'
+                  : 'text-text-secondary hover:bg-surface hover:text-text-primary'
               }`}
             >
-              <span className={isActive(BOTTOM_NAV.href) ? 'text-brand' : 'text-neutral-400 dark:text-neutral-500'}>
+              <span className={isActive(BOTTOM_NAV.href) ? 'text-brand' : 'text-text-tertiary'}>
                 {BOTTOM_NAV.icon}
               </span>
               {BOTTOM_NAV.label}
             </Link>
-            <button
-              onClick={toggle}
-              title="Toggle theme"
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors bg-transparent border-0 cursor-pointer"
-            >
-              <span className="text-neutral-400 dark:text-neutral-500">
-                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-              </span>
-              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            </button>
           </div>
         </aside>
 
@@ -193,29 +189,29 @@ export function DashboardLayout({ email, children }: Props) {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
           {/* Topbar */}
-          <header className="h-14 shrink-0 flex items-center justify-end px-4">
+          <header className="h-14 shrink-0 flex items-center justify-end px-4 border-b border-separator-light">
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setProfileOpen((o) => !o)}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white select-none cursor-pointer border-0 ring-2 ring-transparent hover:ring-neutral-300 dark:hover:ring-neutral-600 transition-all"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white select-none cursor-pointer border-0 ring-2 ring-transparent hover:ring-separator transition-all"
                 style={{ background: `hsl(${hue} 60% 45%)` }}
               >
                 {initials}
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 top-9 w-52 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-100 dark:border-neutral-700 py-1 z-50">
-                  <div className="px-3 py-2.5 border-b border-neutral-100 dark:border-neutral-700">
-                    <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                <div className="absolute right-0 top-9 w-52 bg-surface-raised rounded-xl shadow-lg border border-separator-light py-1 z-50">
+                  <div className="px-3 py-2.5 border-b border-separator-light">
+                    <p className="text-xs font-semibold text-text-primary truncate">
                       {email.split('@')[0]}
                     </p>
-                    <p className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+                    <p className="text-[11px] text-text-tertiary truncate mt-0.5">
                       {email}
                     </p>
                   </div>
                   <button
                     onClick={async () => { await createClient().auth.signOut(); router.push('/login') }}
-                    className="w-full text-left px-3 py-2 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors cursor-pointer bg-transparent border-0"
+                    className="w-full text-left px-3 py-2 text-xs text-text-secondary hover:bg-surface hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0"
                   >
                     Sign out
                   </button>
@@ -225,7 +221,7 @@ export function DashboardLayout({ email, children }: Props) {
           </header>
 
           {/* Content */}
-          <main className="flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-950 mx-2 mb-2 rounded-xl">
+          <main className="flex-1 overflow-auto bg-surface">
             {children}
           </main>
         </div>

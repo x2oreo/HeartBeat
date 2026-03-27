@@ -1,21 +1,20 @@
 import type { Metadata } from 'next'
-import { ThemeProvider } from '@/context/theme'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
+  title: 'HeartGuard',
   manifest: '/manifest.webmanifest',
 }
 
 export const viewport = {
-  themeColor: '#171717',
+  themeColor: '#F2F2F7',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        {children}
       </body>
     </html>
   )

@@ -61,10 +61,12 @@ export function WatchDashboard({ initialData }: WatchDashboardProps) {
 
   const dashData = data ?? initialData
 
-  // Live values from SSE, fall back to latest historical
-  const currentHR = latestMetric?.heartRate ? Math.round(latestMetric.heartRate) : null
-  const currentHRV = latestMetric?.hrv ? Math.round(latestMetric.hrv) : null
-  const currentRestingHR = latestMetric?.restingHR ? Math.round(latestMetric.restingHR) : null
+  // Live values from SSE, fall back to latest historical point when watch is offline
+  const lastHRPoint = dashData.metrics.heartRate.at(-1)
+  const lastHRVPoint = dashData.metrics.hrv.at(-1)
+  const currentHR = latestMetric?.heartRate ? Math.round(latestMetric.heartRate) : (lastHRPoint ? lastHRPoint.hr : null)
+  const currentHRV = latestMetric?.hrv ? Math.round(latestMetric.hrv) : (lastHRVPoint ? lastHRVPoint.hrv : null)
+  const currentRestingHR = latestMetric?.restingHR ? Math.round(latestMetric.restingHR) : dashData.todayStats.avgHR
   const currentRisk = latestMetric?.riskLevel ?? 'NORMAL'
   const currentStress = latestMetric?.stressLevel ?? 'CALM'
 

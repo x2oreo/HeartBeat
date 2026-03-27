@@ -91,6 +91,9 @@ export async function middleware(request: NextRequest) {
     '/api/watch/register-device',
     '/api/watch/config',
     '/api/watch/auth/token',
+    '/api/watch/pair/init',
+    '/api/watch/pair/poll',
+    '/api/watch/unpair',
   ]
   if (watchBearerPaths.some((p) => pathname.startsWith(p))) {
     return supabaseResponse

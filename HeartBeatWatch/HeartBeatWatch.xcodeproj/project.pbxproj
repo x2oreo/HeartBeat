@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		188F6F56BE9FF30A60A4D5CD /* WatchAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCC606BED27275246D3965A /* WatchAPIClient.swift */; };
 		21A348D7DC37A9129FE22264 /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4AA0DDE421980CC5FCAE07F /* HealthKitManager.swift */; };
 		2D06A487442BA13C2BDAA183 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A349C9A79B3F317E3630B573 /* Models.swift */; };
+		3E615E7667EC3E3BF95CBB9A /* PairingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E930E93EF144EBC836FD641 /* PairingView.swift */; };
 		5672A407110527C3D6972D50 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6E807E184A853D8B53771282 /* Assets.xcassets */; };
 		60077549B4FB69FF949B3488 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE11525FFCE25FACFCD628A /* ContentView.swift */; };
+		70B66A5695FE9F19873625FD /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6634B2D9B510D4FD7DB9D58B /* KeychainHelper.swift */; };
 		8AD73ADB9AFA434F386F0E18 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DE4413F002A4BF8B05BF93E /* HealthKit.framework */; };
 		BE9A92198065BCC9F32DC0CC /* HeartBeatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEC06241F405D368EDCC4E7 /* HeartBeatApp.swift */; };
 /* End PBXBuildFile section */
@@ -18,11 +21,14 @@
 /* Begin PBXFileReference section */
 		1DE4413F002A4BF8B05BF93E /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		32887C4C6B60909FEBF7E9D9 /* HeartBeat Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HeartBeat Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6634B2D9B510D4FD7DB9D58B /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		6E807E184A853D8B53771282 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7E930E93EF144EBC836FD641 /* PairingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingView.swift; sourceTree = "<group>"; };
 		8EE11525FFCE25FACFCD628A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A23B054BE306E44558387F9B /* HeartBeat_Watch_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HeartBeat_Watch_App.entitlements; sourceTree = "<group>"; };
 		A349C9A79B3F317E3630B573 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		B4AA0DDE421980CC5FCAE07F /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
+		BBCC606BED27275246D3965A /* WatchAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAPIClient.swift; sourceTree = "<group>"; };
 		CCEC06241F405D368EDCC4E7 /* HeartBeatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartBeatApp.swift; sourceTree = "<group>"; };
 		D1565206083EECAC191F3209 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -48,7 +54,10 @@
 				A23B054BE306E44558387F9B /* HeartBeat_Watch_App.entitlements */,
 				CCEC06241F405D368EDCC4E7 /* HeartBeatApp.swift */,
 				D1565206083EECAC191F3209 /* Info.plist */,
+				6634B2D9B510D4FD7DB9D58B /* KeychainHelper.swift */,
 				A349C9A79B3F317E3630B573 /* Models.swift */,
+				7E930E93EF144EBC836FD641 /* PairingView.swift */,
+				BBCC606BED27275246D3965A /* WatchAPIClient.swift */,
 			);
 			path = "HeartBeat Watch App";
 			sourceTree = "<group>";
@@ -108,8 +117,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = B96030506F786CB3A40650E4 /* Build configuration list for PBXProject "HeartBeatWatch" */;
 			developmentRegion = en;
@@ -149,7 +156,10 @@
 				60077549B4FB69FF949B3488 /* ContentView.swift in Sources */,
 				21A348D7DC37A9129FE22264 /* HealthKitManager.swift in Sources */,
 				BE9A92198065BCC9F32DC0CC /* HeartBeatApp.swift in Sources */,
+				70B66A5695FE9F19873625FD /* KeychainHelper.swift in Sources */,
 				2D06A487442BA13C2BDAA183 /* Models.swift in Sources */,
+				3E615E7667EC3E3BF95CBB9A /* PairingView.swift in Sources */,
+				188F6F56BE9FF30A60A4D5CD /* WatchAPIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,6 +288,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "HeartBeat Watch App/HeartBeat_Watch_App.entitlements";
+				DEVELOPMENT_TEAM = D3D57AR8M9;
 				INFOPLIST_FILE = "HeartBeat Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.heartbeat.watch;
 				SDKROOT = watchos;
@@ -293,6 +304,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "HeartBeat Watch App/HeartBeat_Watch_App.entitlements";
+				DEVELOPMENT_TEAM = D3D57AR8M9;
 				INFOPLIST_FILE = "HeartBeat Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.heartbeat.watch;
 				SDKROOT = watchos;

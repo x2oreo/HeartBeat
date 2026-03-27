@@ -8,6 +8,10 @@ const sosSchema = z.object({
   alertId: z.string().uuid().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  /** GPS accuracy in metres from browser Geolocation API. */
+  accuracy: z.number().positive().optional(),
+  /** True when coordinates come from a localStorage cache, not a live GPS fix. */
+  locationCached: z.boolean().optional(),
 })
 
 export async function POST(request: Request) {
@@ -19,7 +23,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Invalid input', details: parsed.error.flatten() },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -54,7 +58,11 @@ export async function POST(request: Request) {
     }
   }
 
-  const result = await triggerSOS(user.id, alertId, { bypassCooldown: true })
+  const result = await triggerSOS(user.id, alertId, {
+    bypassCooldown: true,
+    locationAccuracy: parsed.data.accuracy,
+    locationCached: parsed.data.locationCached,
+  })
 
   return NextResponse.json({
     success: true,

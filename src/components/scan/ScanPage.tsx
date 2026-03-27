@@ -2,10 +2,22 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep, PipelineStepStatus } from '@/types'
-import { useDrugSearch } from '@/hooks/use-drug-search'
-import type { DrugSuggestion } from '@/hooks/use-drug-search'
 import { useDrugScan } from '@/hooks/use-drug-scan'
 import { useMedications } from '@/hooks/use-medications'
+import { DrugSearchInput } from '@/components/shared/DrugSearchInput'
+
+// ── History types ────────────────────────────────────────────────────
+
+type ScanHistoryEntry = {
+  id: string
+  drugName: string
+  genericName: string
+  riskCategory: string
+  comboRisk: string | null
+  scanType: string
+  createdAt: string
+  fullResult: ScanResult | null
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -53,19 +65,6 @@ function comboColor(level: ComboRiskLevel) {
   return 'bg-[#EAFBF0] text-[#1B7A34]'
 }
 
-function suggestionRiskBadge(category: RiskCategory | null) {
-  if (category === 'KNOWN_RISK')
-    return <span className="ml-auto shrink-0 rounded-full bg-[#FFEDEC] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#C41E16]">Known Risk</span>
-  if (category === 'POSSIBLE_RISK')
-    return <span className="ml-auto shrink-0 rounded-full bg-[#FFF5E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#8A5600]">Possible Risk</span>
-  if (category === 'CONDITIONAL_RISK')
-    return <span className="ml-auto shrink-0 rounded-full bg-[#FFF5E0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#8A5600]">Conditional</span>
-  if (category === 'NOT_LISTED')
-    return <span className="ml-auto shrink-0 rounded-full bg-[#EAFBF0] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#1B7A34]">Safe</span>
-  if (category === null)
-    return <span className="ml-auto shrink-0 rounded-full bg-[#F2F2F7] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">Not Evaluated</span>
-  return null
-}
 
 function readFileAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -553,6 +552,117 @@ function Disclaimer() {
   )
 }
 
+// ── History constants ────────────────────────────────────────────────
+
+const HIST_RISK_DOT: Record<string, string> = {
+  KNOWN_RISK: 'bg-[#FF3B30]',
+  POSSIBLE_RISK: 'bg-[#FF9F0A]',
+  CONDITIONAL_RISK: 'bg-[#FF9F0A]',
+  NOT_LISTED: 'bg-[#34C759]',
+}
+
+const HIST_RISK_LABEL: Record<string, string> = {
+  KNOWN_RISK: 'Known Risk',
+  POSSIBLE_RISK: 'Possible Risk',
+  CONDITIONAL_RISK: 'Conditional',
+  NOT_LISTED: 'Safe',
+}
+
+const HIST_RISK_TEXT: Record<string, string> = {
+  KNOWN_RISK: 'text-[#C41E16]',
+  POSSIBLE_RISK: 'text-[#8A5600]',
+  CONDITIONAL_RISK: 'text-[#8A5600]',
+  NOT_LISTED: 'text-[#1B7A34]',
+}
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diff = now - then
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+function ScanHistory({ onSelect }: { onSelect: (entry: ScanHistoryEntry) => void }) {
+  const [history, setHistory] = useState<ScanHistoryEntry[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/scan/history')
+      .then((r) => r.json())
+      .then((data) => { setHistory(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="mt-6 space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 rounded-xl bg-surface-raised animate-pulse" />
+        ))}
+      </div>
+    )
+  }
+
+  if (history.length === 0) {
+    return (
+      <div className="mt-8 text-center">
+        <svg className="w-10 h-10 text-text-tertiary mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="text-sm text-text-secondary">No scans yet</p>
+        <p className="text-xs text-text-tertiary mt-0.5">Search for a medication above to get started</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-5">
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">Recent Scans</h2>
+        <span className="text-xs text-text-tertiary">{history.length} scan{history.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div className="space-y-1.5">
+        {history.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            onClick={() => onSelect(entry)}
+            className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-surface-raised hover:bg-surface transition-colors text-left group"
+          >
+            <div className={`w-2 h-2 rounded-full shrink-0 ${HIST_RISK_DOT[entry.riskCategory] ?? 'bg-text-tertiary'}`} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-primary truncate capitalize">
+                {entry.genericName || entry.drugName}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`text-xs font-medium ${HIST_RISK_TEXT[entry.riskCategory] ?? 'text-text-secondary'}`}>
+                  {HIST_RISK_LABEL[entry.riskCategory] ?? entry.riskCategory}
+                </span>
+                {entry.comboRisk && (
+                  <span className="text-[10px] text-text-tertiary">· Combo: {entry.comboRisk}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] text-text-tertiary">{timeAgo(entry.createdAt)}</span>
+              <svg className="w-3.5 h-3.5 text-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const FREQUENCY_PERIODS = ['day', 'week', 'month'] as const
 
 function formatFrequency(times: string, period: string): string {
@@ -673,30 +783,22 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
 // ── Main Page ───────────────────────────────────────────────────────
 
 export function ScanPage() {
-  const { query, setQuery, suggestions, loading: searchLoading } = useDrugSearch()
   const { result, photoResult, loading: scanLoading, error, liveSteps, scanByText, scanByPhoto, reset } = useDrugScan()
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [query, setQuery] = useState('')
+  const [resetSignal, setResetSignal] = useState(0)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [historyResult, setHistoryResult] = useState<ScanResult | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleScan = useCallback(
     (drugName: string) => {
       if (!drugName.trim()) return
-      setShowSuggestions(false)
+      setHistoryResult(null)
       scanByText(drugName.trim())
     },
     [scanByText],
-  )
-
-  const handleSelectSuggestion = useCallback(
-    (suggestion: DrugSuggestion) => {
-      setQuery(suggestion.genericName)
-      setShowSuggestions(false)
-      scanByText(suggestion.genericName)
-    },
-    [setQuery, scanByText],
   )
 
   const handlePhotoCapture = useCallback(
@@ -704,6 +806,7 @@ export function ScanPage() {
       const file = e.target.files?.[0]
       if (!file) return
       setPhotoError(null)
+      setHistoryResult(null)
 
       if (file.size > 10 * 1024 * 1024) {
         setPhotoError('Image is too large (max 10MB). Please use a smaller photo.')
@@ -724,14 +827,27 @@ export function ScanPage() {
     [scanByPhoto],
   )
 
-  const handleNewScan = useCallback(() => {
+  const hasResult = result !== null || photoResult !== null
+
+  const handleHistorySelect = useCallback((entry: ScanHistoryEntry) => {
+    if (entry.fullResult) {
+      setHistoryResult(entry.fullResult)
+    } else {
+      // Re-scan if no stored result
+      scanByText(entry.genericName || entry.drugName)
+    }
+  }, [scanByText])
+
+  const showingResult = hasResult || historyResult !== null
+  const displayedResult = result ?? historyResult
+
+  const handleNewScanWithHistory = useCallback(() => {
     reset()
-    setQuery('')
+    setHistoryResult(null)
+    setResetSignal((n) => n + 1)
     setPhotoPreview(null)
     inputRef.current?.focus()
-  }, [reset, setQuery])
-
-  const hasResult = result !== null || photoResult !== null
+  }, [reset])
 
   return (
     <div className="mx-auto max-w-lg px-3 md:px-4">
@@ -748,73 +864,14 @@ export function ScanPage() {
       {/* Search + Camera */}
       <div className="relative print:hidden">
         <div className="flex gap-2">
-          {/* Search input */}
-          <div className="relative flex-1">
-            <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            {searchLoading && (
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-separator border-t-text-secondary" />
-              </div>
-            )}
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Search medication name..."
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                setShowSuggestions(true)
-                if (hasResult) reset()
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => {
-                setTimeout(() => setShowSuggestions(false), 150)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleScan(query)
-                if (e.key === 'Escape') setShowSuggestions(false)
-              }}
-              className="h-12 w-full rounded-xl border-[1.5px] border-separator bg-surface-raised pl-10 pr-4 text-[15px] text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10"
-              disabled={scanLoading}
-            />
-
-            {/* Autocomplete dropdown */}
-            {showSuggestions && suggestions.length > 0 && !scanLoading && (
-              <ul
-                className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-separator-light bg-surface-raised shadow-lg"
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {suggestions.map((s) => (
-                  <li key={s.genericName}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSuggestion(s)}
-                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-surface"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-text-primary capitalize">
-                          {s.genericName}
-                        </p>
-                        <p className="truncate text-xs text-text-secondary">
-                          {s.drugClass ?? (s.source === 'BG_POSITIVE_LIST' ? '🇧🇬 Bulgarian drug' : s.source === 'RXNORM' ? 'From RxNorm' : '')}
-                          {s.brandNames.length > 0 && ` · ${s.brandNames.join(', ')}`}
-                        </p>
-                      </div>
-                      {suggestionRiskBadge(s.riskCategory)}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <DrugSearchInput
+            onSelect={(s) => handleScan(s.genericName)}
+            onSubmit={handleScan}
+            onQueryChange={(q) => { setQuery(q); if (hasResult) reset() }}
+            disabled={scanLoading}
+            inputRef={inputRef}
+            resetSignal={resetSignal}
+          />
 
           {/* Scan button */}
           <button
@@ -851,6 +908,11 @@ export function ScanPage() {
 
       </div>
 
+      {/* Scan history — shown when idle (no result, not loading, no error) */}
+      {!showingResult && !scanLoading && !error && !photoPreview && (
+        <ScanHistory onSelect={handleHistorySelect} />
+      )}
+
       {/* Live pipeline tracker — shown during scanning */}
       {scanLoading && <LivePipelineTracker steps={liveSteps} loading />}
 
@@ -862,7 +924,7 @@ export function ScanPage() {
             <p className="text-sm font-medium text-[#C41E16]">{error}</p>
             <button
               type="button"
-              onClick={handleNewScan}
+              onClick={handleNewScanWithHistory}
               className="mt-2 text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
             >
               Try again
@@ -871,14 +933,14 @@ export function ScanPage() {
         </>
       )}
 
-      {/* Text scan result */}
-      {result && (
+      {/* Text scan result (from live scan or history) */}
+      {displayedResult && (
         <div className="mt-6 space-y-4">
-          {result.pipelineTrace && result.pipelineTrace.length > 0 && (
-            <CompletedPipelineView steps={result.pipelineTrace} />
+          {displayedResult.pipelineTrace && displayedResult.pipelineTrace.length > 0 && (
+            <CompletedPipelineView steps={displayedResult.pipelineTrace} />
           )}
-          <ResultCard result={result} />
-          <AddToMedications result={result} onAdded={() => {}} />
+          <ResultCard result={displayedResult} />
+          <AddToMedications result={displayedResult} onAdded={() => {}} />
           <Disclaimer />
         </div>
       )}
@@ -937,11 +999,11 @@ export function ScanPage() {
       )}
 
       {/* New scan button when result is shown */}
-      {hasResult && (
+      {showingResult && (
         <div className="mt-4 print:hidden">
           <button
             type="button"
-            onClick={handleNewScan}
+            onClick={handleNewScanWithHistory}
             className="w-full rounded-xl border-[1.5px] border-separator py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface hover:border-brand hover:text-brand"
           >
             Scan Another Medication

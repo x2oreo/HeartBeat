@@ -430,3 +430,20 @@ export type WatchDashboardData = {
     monitoringMode: string
   }
 }
+
+// ── Chat Conversations ─────────────────────────────────────────────
+
+export type ConversationSummary = {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+}
+
+export type ConversationMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: string
+}

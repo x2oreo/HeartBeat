@@ -41,6 +41,26 @@ final class HealthKitManager: NSObject, ObservableObject {
     private var workoutSession: HKWorkoutSession?
     private var workoutBuilder: HKLiveWorkoutBuilder?
 
+    // MARK: - Remote debug logging (sends to Mac on same WiFi)
+    // Run on Mac: python3 ~/hk_log_server.py
+    private let remoteLogURL = URL(string: "http://10.1.85.215:4567/log")!
+
+    private func remoteLog(_ msg: String) {
+        let line = "[\(timestamp())] \(msg)"
+        print(line)
+        var req = URLRequest(url: remoteLogURL)
+        req.httpMethod = "POST"
+        req.httpBody = (line + "\n").data(using: .utf8)
+        req.timeoutInterval = 1
+        URLSession.shared.dataTask(with: req).resume()
+    }
+
+    private func timestamp() -> String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss.SSS"
+        return f.string(from: Date())
+    }
+
     // MARK: - HealthKit types
 
     private var readTypes: Set<HKObjectType> {
@@ -70,12 +90,14 @@ final class HealthKitManager: NSObject, ObservableObject {
         do {
             try await store.requestAuthorization(toShare: writeTypes, read: readTypes)
             isAuthorized = true
+            remoteLog("[AUTH] HealthKit authorized")
             await requestNotificationPermission()
             startWorkoutSession()
             startObservers()
+            fetchInitialValues()
             await loadGenotypeFromServer()
         } catch {
-            print("[HK] Auth failed: \(error)")
+            remoteLog("[AUTH] Failed: \(error)")
         }
     }
 
@@ -118,26 +140,115 @@ final class HealthKitManager: NSObject, ObservableObject {
             builder.delegate = self
             workoutSession = session
             workoutBuilder = builder
+            // Explicitly enable HRV collection (not included by default for .other type)
+            builder.dataSource?.enableCollection(for: HKQuantityType(.heartRateVariabilitySDNN), predicate: nil)
             session.startActivity(with: .now)
-            builder.beginCollection(withStart: .now) { _, error in
-                if let error { print("[HK] Workout collection error: \(error)") }
+            builder.beginCollection(withStart: .now) { [weak self] _, error in
+                if let error {
+                    self?.remoteLog("[WORKOUT] beginCollection error: \(error)")
+                } else {
+                    self?.remoteLog("[WORKOUT] Collection started — HR sensor active")
+                }
             }
-            print("[HK] Workout session started — HR sensor always on")
+            remoteLog("[WORKOUT] Session created, starting activity")
         } catch {
-            print("[HK] Workout session unavailable: \(error) — falling back to observer queries")
+            remoteLog("[WORKOUT] Session unavailable: \(error) — using observer queries only")
         }
     }
 
     // MARK: - Observer queries
 
+    /// Immediately shows the last recorded values so the UI isn't empty on open.
+    /// The workout builder will overwrite these with live data as new readings arrive.
+    private func fetchInitialValues() {
+        remoteLog("[FETCH] fetchInitialValues() called")
+        fetchLatest(type: HKQuantityType(.heartRate), unit: .count().unitDivided(by: .minute())) { [weak self] value in
+            guard let self else { return }
+            self.remoteLog("[FETCH] heartRate query returned \(value) bpm (current=\(self.heartRate))")
+            guard self.heartRate == 0 else { return }
+            self.heartRate    = value
+            self.rrIntervalMs = 60000.0 / value
+            self.updateRisk()
+        }
+        fetchLatest(type: HKQuantityType(.heartRateVariabilitySDNN), unit: .secondUnit(with: .milli)) { [weak self] value in
+            guard let self else { return }
+            self.remoteLog("[FETCH] SDNN query returned \(value) ms")
+            guard self.hrv == 0 else { return }
+            self.hrv = value
+            self.updateRisk()
+        }
+        fetchLatest(type: HKQuantityType(.restingHeartRate), unit: .count().unitDivided(by: .minute())) { [weak self] value in
+            guard let self else { return }
+            self.remoteLog("[FETCH] restingHR query returned \(value) bpm")
+            guard self.restingHR == 0 else { return }
+            self.restingHR = value
+        }
+        fetchTodaySum(type: HKQuantityType(.stepCount), unit: .count()) { [weak self] value in
+            self?.steps = value
+        }
+    }
+
     private func startObservers() {
+        observeRealTime(.heartRate) { [weak self] value, _ in
+            guard let self else { return }
+            self.heartRate    = value
+            self.rrIntervalMs = 60000.0 / value
+            self.updateRisk()
+        }
+        observeRealTime(.heartRateVariabilitySDNN) { [weak self] value, _ in
+            guard let self else { return }
+            self.hrv = value
+            self.updateRisk()
+        }
         observeQuantity(.stepCount)
-        observeQuantity(.heartRateVariabilitySDNN)
         observeQuantity(.restingHeartRate)
         observeQuantity(.oxygenSaturation)
         observeQuantity(.respiratoryRate)
         observeIrregularRhythm()
         observeSleep()
+    }
+
+    /// HKAnchoredObjectQuery fires on every new sample — real-time updates as long as
+    /// the workout session keeps the sensor active.
+    private func observeRealTime(
+        _ identifier: HKQuantityTypeIdentifier,
+        onValue: @escaping @MainActor (Double, Date) -> Void
+    ) {
+        let type = HKQuantityType(identifier)
+        let unit = unit(for: identifier)
+
+        let handler: @Sendable (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, samples, _, _, error in
+            if let error {
+                Task { @MainActor in self?.remoteLog("[ANCHOR:\(identifier.rawValue)] error: \(error)") }
+                return
+            }
+            guard let samples = samples as? [HKQuantitySample], let latest = samples.last else {
+                Task { @MainActor in self?.remoteLog("[ANCHOR:\(identifier.rawValue)] fired — 0 samples") }
+                return
+            }
+            let value = latest.quantity.doubleValue(for: unit)
+            Task { @MainActor in
+                self?.remoteLog("[ANCHOR:\(identifier.rawValue)] → \(String(format: "%.2f", value)) (sampleDate: \(latest.endDate))")
+                onValue(value, latest.endDate)
+            }
+        }
+
+        let query = HKAnchoredObjectQuery(
+            type: type, predicate: nil, anchor: nil, limit: HKObjectQueryNoLimit,
+            resultsHandler: handler
+        )
+        query.updateHandler = handler
+        store.execute(query)
+        store.enableBackgroundDelivery(for: type, frequency: .immediate) { _, _ in }
+    }
+
+    private func unit(for identifier: HKQuantityTypeIdentifier) -> HKUnit {
+        switch identifier {
+        case .heartRate:                return .count().unitDivided(by: .minute())
+        case .heartRateVariabilitySDNN: return .secondUnit(with: .milli)
+        case .restingHeartRate:         return .count().unitDivided(by: .minute())
+        default:                        return .count()
+        }
     }
 
     private func observeQuantity(_ identifier: HKQuantityTypeIdentifier) {
@@ -324,7 +435,7 @@ final class HealthKitManager: NSObject, ObservableObject {
     }
 
     private func onRiskElevated(_ risk: LongQTRisk) {
-        print("[LongQT] Risk alert — level: \(risk.label), hr: \(Int(heartRate)) bpm, hrv: \(Int(hrv)) ms, rr: \(Int(rrIntervalMs)) ms, stress: \(stressLevel.label), asleep: \(isAsleep), irregularRhythm: \(irregularRhythmDetected), genotype: \(genotype.rawValue), SpO2: \(Int(oxygenSaturation))%, RR: \(Int(respiratoryRate))/min")
+        remoteLog("[RISK] \(risk.label) — hr:\(Int(heartRate)) hrv:\(Int(hrv)) rr:\(Int(rrIntervalMs)) stress:\(stressLevel.label) asleep:\(isAsleep) irregular:\(irregularRhythmDetected) genotype:\(genotype.rawValue) SpO2:\(Int(oxygenSaturation))% RR:\(Int(respiratoryRate))/min")
         let haptic: WKHapticType = risk == .elevated ? .notification : .directionUp
         WKInterfaceDevice.current().play(haptic)
         sendNotification(for: risk)
@@ -343,7 +454,7 @@ final class HealthKitManager: NSObject, ObservableObject {
     }
 
     private func requestNotificationPermission() async {
-        try? await UNUserNotificationCenter.current()
+        _ = try? await UNUserNotificationCenter.current()
             .requestAuthorization(options: [.alert, .sound])
     }
 
@@ -477,9 +588,14 @@ extension HealthKitManager: HKLiveWorkoutBuilderDelegate {
             guard let qty = type as? HKQuantityType else { continue }
             switch qty {
             case HKQuantityType(.heartRate):
-                guard let bpm = workoutBuilder.statistics(for: qty)?.mostRecentQuantity()?.doubleValue(for: hrUnit),
-                      bpm > 0 else { continue }
+                let stats = workoutBuilder.statistics(for: qty)
+                let raw = stats?.mostRecentQuantity()?.doubleValue(for: hrUnit)
                 Task { @MainActor [weak self] in
+                    self?.remoteLog("[BUILDER] HR type collected — stats=\(stats != nil), raw=\(raw.map { String(format: "%.1f", $0) } ?? "nil")")
+                }
+                guard let bpm = raw, bpm > 0 else { continue }
+                Task { @MainActor [weak self] in
+                    self?.remoteLog("[BUILDER] heartRate updated → \(String(format: "%.1f", bpm)) bpm")
                     self?.heartRate    = bpm
                     self?.rrIntervalMs = 60000.0 / bpm
                     self?.trackHRRecovery(currentHR: bpm)

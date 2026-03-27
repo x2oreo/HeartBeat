@@ -43,6 +43,8 @@ export async function exchangePairingCode(
   if (!pairingCode) return null
   if (pairingCode.used) return null
   if (pairingCode.expiresAt < new Date()) return null
+  if (!pairingCode.userId) return null
+  const userId = pairingCode.userId
 
   // Generate token before transaction (crypto is not async)
   const rawToken = randomBytes(32).toString('hex')
@@ -57,29 +59,21 @@ export async function exchangePairingCode(
     })
 
     await tx.apiToken.deleteMany({
-      where: { userId: pairingCode.userId, label: 'watch' },
+      where: { userId, label: 'watch' },
     })
 
     await tx.apiToken.create({
-      data: {
-        userId: pairingCode.userId,
-        tokenHash,
-        label: 'watch',
-        expiresAt,
-      },
+      data: { userId, tokenHash, label: 'watch', expiresAt },
     })
 
     await tx.watchDevice.upsert({
-      where: { userId: pairingCode.userId },
+      where: { userId },
       update: { lastSeen: new Date() },
-      create: {
-        userId: pairingCode.userId,
-        lastSeen: new Date(),
-      },
+      create: { userId, lastSeen: new Date() },
     })
   })
 
-  return { token: rawToken, userId: pairingCode.userId }
+  return { token: rawToken, userId }
 }
 
 /**

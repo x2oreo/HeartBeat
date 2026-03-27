@@ -7,14 +7,50 @@ import { ChatHeader } from './ChatHeader'
 import { ChatMessageList } from './ChatMessageList'
 import { ChatInputBar } from './ChatInputBar'
 import { WelcomeMessage } from './WelcomeMessage'
+import { ConversationList } from './ConversationList'
+import { useConversations } from '@/hooks/use-conversations'
 
 export function ChatPage() {
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [input, setInput] = useState('')
+  const [showHistory, setShowHistory] = useState(true)
+  const conversationIdRef = useRef<string | null>(null)
 
+  const {
+    conversations,
+    loading: conversationsLoading,
+    fetchConversations,
+    deleteConversation,
+    loadConversation,
+  } = useConversations()
+
+  const updateConversationId = useCallback((id: string) => {
+    conversationIdRef.current = id
+    setConversationId(id)
+  }, [])
+
+  // Custom fetch that captures X-Conversation-Id from response headers
+  const customFetch = useCallback(async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const response = await globalThis.fetch(input, init)
+    const convId = response.headers.get('X-Conversation-Id')
+    if (convId && convId !== conversationIdRef.current) {
+      updateConversationId(convId)
+      fetchConversations()
+    }
+    return response
+  }, [updateConversationId, fetchConversations])
+
+  // Transport is created once; body reads from ref at call time
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: '/api/chat', body: { conversationId } }),
-    [conversationId],
+    () => new DefaultChatTransport({
+      api: '/api/chat',
+      body: () => ({ conversationId: conversationIdRef.current }),
+      fetch: customFetch,
+    }),
+    [customFetch],
   )
 
   const {
@@ -36,11 +72,35 @@ export function ChatPage() {
     }
   }, [messages])
 
+  const handleToggleHistory = useCallback(() => setShowHistory((s) => !s), [])
+
+  const activeTitle = useMemo(
+    () => conversations.find((c) => c.id === conversationId)?.title ?? null,
+    [conversations, conversationId],
+  )
+
   const handleNewChat = useCallback(() => {
     setMessages([])
+    conversationIdRef.current = null
     setConversationId(null)
     setInput('')
   }, [setMessages])
+
+  const handleSelectConversation = useCallback(async (id: string) => {
+    if (id === conversationIdRef.current) return
+    const result = await loadConversation(id)
+    if (!result) return
+    setMessages(result.messages)
+    updateConversationId(result.conversationId)
+    setInput('')
+  }, [loadConversation, setMessages, updateConversationId])
+
+  const handleDeleteConversation = useCallback(async (id: string) => {
+    await deleteConversation(id)
+    if (id === conversationIdRef.current) {
+      handleNewChat()
+    }
+  }, [deleteConversation, handleNewChat])
 
   const handleSendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return
@@ -55,7 +115,6 @@ export function ChatPage() {
   const handleImageUpload = useCallback(async (base64: string) => {
     setInput('')
     try {
-      // Use the existing /api/scan/photo endpoint
       const response = await fetch('/api/scan/photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,14 +122,13 @@ export function ChatPage() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Photo scan failed')
+        const err = await response.json()
+        throw new Error((err as { error?: string }).error ?? 'Photo scan failed')
       }
 
-      const photoResult = await response.json()
+      const photoResult = await response.json() as { detectedDrugNames?: string[] }
 
-      // Auto-send with detected drugs clearly shown
-      if (photoResult.detectedDrugNames?.length > 0) {
+      if (photoResult.detectedDrugNames && photoResult.detectedDrugNames.length > 0) {
         const drugList = photoResult.detectedDrugNames.join(', ')
         await sendMessage({
           text: `📸 I scanned a photo and detected: ${drugList}.\n\nPlease analyze these medications for safety.`,
@@ -94,41 +152,60 @@ export function ChatPage() {
   }, [input, handleSendMessage])
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <ChatHeader onNewChat={handleNewChat} isLoading={isLoading} />
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-2xl px-3 py-4 md:px-4 md:py-6">
-          {messages.length === 0 ? (
-            <WelcomeMessage onQuickAction={handleQuickAction} />
-          ) : (
-            <ChatMessageList messages={messages} isLoading={isLoading} />
-          )}
-        </div>
-      </div>
-
-      {error && (
-        <div className="mx-auto max-w-2xl px-4">
-          <div className="mb-2 flex items-center gap-2 rounded-xl border border-[#FF3B30]/20 bg-[#FFEDEC] px-4 py-2.5">
-            <span className="text-sm text-[#C41E16]">Something went wrong.</span>
-            <button
-              type="button"
-              onClick={() => regenerate()}
-              className="text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+    <div className="flex h-full overflow-hidden">
+      {showHistory && (
+        <ConversationList
+          conversations={conversations}
+          loading={conversationsLoading}
+          activeConversationId={conversationId}
+          onSelect={handleSelectConversation}
+          onDelete={handleDeleteConversation}
+          onNewChat={handleNewChat}
+        />
       )}
 
-      <ChatInputBar
-        input={input}
-        setInput={setInput}
-        onSubmit={handleFormSubmit}
-        onImageUpload={handleImageUpload}
-        isLoading={isLoading}
-      />
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        <ChatHeader
+          onNewChat={handleNewChat}
+          isLoading={isLoading}
+          showHistory={showHistory}
+          onToggleHistory={handleToggleHistory}
+          activeTitle={activeTitle}
+        />
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-2xl px-4 py-6">
+            {messages.length === 0 ? (
+              <WelcomeMessage onQuickAction={handleQuickAction} />
+            ) : (
+              <ChatMessageList messages={messages} isLoading={isLoading} />
+            )}
+          </div>
+        </div>
+
+        {error && (
+          <div className="mx-auto max-w-2xl px-4">
+            <div className="mb-2 flex items-center gap-2 rounded-xl border border-[#FF3B30]/20 bg-[#FFEDEC] px-4 py-2.5">
+              <span className="text-sm text-[#C41E16]">Something went wrong.</span>
+              <button
+                type="button"
+                onClick={() => regenerate()}
+                className="text-sm font-medium text-[#FF3B30] underline hover:text-[#C41E16]"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        <ChatInputBar
+          input={input}
+          setInput={setInput}
+          onSubmit={handleFormSubmit}
+          onImageUpload={handleImageUpload}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   )
 }

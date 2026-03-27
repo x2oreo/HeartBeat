@@ -267,11 +267,23 @@ export function DoctorPrepClient() {
         {isLoadingList && (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse bg-surface-raised rounded-2xl card-shadow overflow-hidden">
-                <div className="aspect-[3/4] bg-separator-light" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3.5 bg-separator-light rounded-lg w-3/5" />
-                  <div className="h-3 bg-separator-light rounded-lg w-2/5" />
+              <div key={i} className="animate-pulse rounded-xl overflow-hidden bg-surface-raised border border-separator-light">
+                {/* Header — matches DocumentThumbnail header */}
+                <div className="bg-brand/60 px-3 py-2 space-y-1.5">
+                  <div className="h-3 bg-white/20 rounded w-3/5" />
+                  <div className="h-2.5 bg-white/15 rounded w-2/5" />
+                </div>
+                {/* Summary lines */}
+                <div className="px-3 py-2.5 space-y-1.5">
+                  <div className="h-2.5 bg-separator-light rounded w-full" />
+                  <div className="h-2.5 bg-separator-light rounded w-5/6" />
+                  <div className="h-2.5 bg-separator-light rounded w-4/6" />
+                  <div className="h-2.5 bg-separator-light rounded w-3/6" />
+                </div>
+                {/* Footer stat pills */}
+                <div className="px-3 pb-2.5 flex gap-1">
+                  <div className="h-4 bg-separator-light rounded w-12" />
+                  <div className="h-4 bg-separator-light rounded w-14" />
                 </div>
               </div>
             ))}

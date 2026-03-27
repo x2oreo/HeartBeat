@@ -80,9 +80,11 @@ export async function saveHealthAlert(
     timestamp: new Date().toISOString(),
   })
 
-  // Trigger SOS for ELEVATED alerts (fire-and-forget)
+  // Trigger SOS for ELEVATED alerts (fire-and-forget).
+  // bypassCooldown: true — the watch only sends ELEVATED when it is genuinely
+  // serious, and during testing the 10-minute cooldown causes silent failures.
   if (payload.riskLevel === 'ELEVATED') {
-    triggerSOS(userId, alert.id).catch((err) => {
+    triggerSOS(userId, alert.id, { bypassCooldown: true }).catch((err) => {
       console.error('[SOS] Failed to trigger:', err)
     })
   }

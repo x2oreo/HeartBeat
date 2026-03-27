@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   const scanPromise = (async () => {
     function onStep(step: PipelineStep) {
       const line = JSON.stringify({ type: 'step', step }) + '\n'
-      writer.write(encoder.encode(line))
+      void writer.write(encoder.encode(line))
     }
 
     try {

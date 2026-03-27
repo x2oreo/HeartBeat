@@ -12,12 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('theme')
-    const resolved: Theme =
-      stored === 'dark' || stored === 'light'
-        ? stored
-        : window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
+    const resolved: Theme = stored === 'dark' ? 'dark' : 'light'
     setTheme(resolved) // eslint-disable-line react-hooks/set-state-in-effect
   }, [])
 

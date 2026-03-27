@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Force light mode — dark: utilities only activate via .dark class, never from system prefs */
+@variant dark (&:is(.dark *));
+
 @theme {
   /* Brand — Guardian Blue */
   --color-brand: #3478F6;

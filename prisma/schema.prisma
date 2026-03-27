@@ -8,25 +8,25 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid()) @db.Uuid
-  supabaseId String   @unique @map("supabase_id")
-  email      String
-  firstName  String?  @map("first_name")
-  lastName   String?  @map("last_name")
-  genotype   String?  // LQT1, LQT2, LQT3, OTHER, UNKNOWN
-  onboarded  Boolean  @default(false)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
+  id                String               @id @default(uuid()) @db.Uuid
+  supabaseId        String               @unique @map("supabase_id")
+  email             String
+  genotype          String?
+  onboarded         Boolean              @default(false)
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  firstName         String?              @map("first_name")
+  lastName          String?              @map("last_name")
+  apiTokens         ApiToken[]
+  conversations     conversations[]
+  doctorPrepDocs    DoctorPrepDocument[]
+  emergencyContacts EmergencyContact[]
+  healthAlerts      HealthAlert[]
+  healthMetrics     HealthMetric[]
   medications       Medication[]
   scanLogs          ScanLog[]
-  emergencyContacts EmergencyContact[]
-  sharedCards       SharedEmergencyCard[]
-  doctorPrepDocs    DoctorPrepDocument[]
-  healthMetrics     HealthMetric[]
-  healthAlerts      HealthAlert[]
+  sharedCards       SharedEmergencyCard?
   watchDevice       WatchDevice?
-  apiTokens         ApiToken[]
 
   @@map("users")
 }
@@ -71,10 +71,9 @@ model EmergencyContact {
   userId       String  @map("user_id") @db.Uuid
   name         String
   phone        String
+  relationship String
   email        String?
-  relationship String  // cardiologist, family, friend
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("emergency_contacts")
@@ -84,8 +83,8 @@ model NotificationLog {
   id        String   @id @default(uuid()) @db.Uuid
   alertId   String   @map("alert_id") @db.Uuid
   contactId String   @map("contact_id") @db.Uuid
-  channel   String   // SMS, VOICE, EMAIL
-  status    String   // SENT, FAILED
+  channel   String
+  status    String
   error     String?
   sentAt    DateTime @default(now()) @map("sent_at")
 
@@ -100,21 +99,9 @@ model SharedEmergencyCard {
   cardData  Json     @map("card_data")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("shared_emergency_cards")
-}
-
-model BgDrug {
-  id        String  @id @default(uuid()) @db.Uuid
-  inn       String
-  brandName String  @map("brand_name")
-  atcCode   String? @map("atc_code")
-
-  @@index([inn])
-  @@index([brandName])
-  @@map("bg_drugs")
 }
 
 model DoctorPrepDocument {
@@ -126,8 +113,7 @@ model DoctorPrepDocument {
   customLanguage  String?  @map("custom_language")
   documentData    Json     @map("document_data")
   createdAt       DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
   @@map("doctor_prep_documents")
@@ -135,21 +121,20 @@ model DoctorPrepDocument {
 
 model HealthMetric {
   id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @map("user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+  activeEnergy    Float    @map("active_energy")
   heartRate       Float    @map("heart_rate")
   hrv             Float
+  irregularRhythm Boolean  @map("irregular_rhythm")
+  isAsleep        Boolean  @map("is_asleep")
+  recordedAt      DateTime @map("recorded_at")
   restingHR       Float    @map("resting_hr")
+  riskLevel       String   @map("risk_level")
   rrIntervalMs    Float    @map("rr_interval_ms")
   steps           Float
-  activeEnergy    Float    @map("active_energy")
-  riskLevel       String   @map("risk_level")
   stressLevel     String   @map("stress_level")
-  isAsleep        Boolean  @map("is_asleep")
-  irregularRhythm Boolean  @map("irregular_rhythm")
-  recordedAt      DateTime @map("recorded_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String   @map("user_id") @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, recordedAt])
   @@index([userId, riskLevel])
@@ -168,12 +153,11 @@ model HealthAlert {
   message          String
   acknowledged     Boolean  @default(false)
   notifiedContacts Boolean  @default(false) @map("notified_contacts")
-  latitude         Float?
-  longitude        Float?
   triggeredAt      DateTime @map("triggered_at")
   createdAt        DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  latitude         Float?
+  longitude        Float?
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, triggeredAt])
   @@map("health_alerts")
@@ -187,8 +171,7 @@ model WatchDevice {
   lastSeen       DateTime @map("last_seen")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("watch_devices")
 }
@@ -201,8 +184,7 @@ model ApiToken {
   lastUsed  DateTime? @map("last_used")
   expiresAt DateTime? @map("expires_at")
   createdAt DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("api_tokens")
@@ -218,4 +200,30 @@ model PairingCode {
 
   @@index([code])
   @@map("pairing_codes")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model chat_messages {
+  id              String        @id @db.Uuid
+  conversation_id String        @db.Uuid
+  role            String
+  content         String
+  tool_data       Json?
+  created_at      DateTime      @default(now())
+  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@index([conversation_id, created_at])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model conversations {
+  id            String          @id @db.Uuid
+  user_id       String          @db.Uuid
+  title         String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime
+  chat_messages chat_messages[]
+  users         User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, updated_at(sort: Desc)])
 }

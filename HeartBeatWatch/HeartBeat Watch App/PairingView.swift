@@ -6,7 +6,11 @@ struct PairingView: View {
     @EnvironmentObject var apiClient: WatchAPIClient
 
     @State private var code: String = Self.randomCode()
+    #if targetEnvironment(simulator)
     @State private var serverURL = "http://10.1.85.215:3000"
+    #else
+    @State private var serverURL = "https://qtshield.me"
+    #endif
     @State private var pairingState: PairingState = .registering
     @State private var showServerURL = false
     @State private var pollTask: Task<Void, Never>?

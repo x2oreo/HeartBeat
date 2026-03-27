@@ -66,6 +66,14 @@ struct ContentView: View {
                     .font(.system(size: 9))
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
+
+                Button("Unpair") {
+                    Task { await apiClient.unpair() }
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(.red.opacity(0.7))
+                .buttonStyle(.plain)
+                .padding(.bottom, 4)
             }
             .padding(.horizontal, 4)
         }

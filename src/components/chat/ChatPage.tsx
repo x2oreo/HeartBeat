@@ -15,7 +15,7 @@ export function ChatPage() {
   const [input, setInput] = useState('')
   const [showHistory, setShowHistory] = useState(true)
   const conversationIdRef = useRef<string | null>(null)
-  const messageImagesRef = useRef<Map<string, string>>(new Map())
+  const [messageImages, setMessageImages] = useState<Map<string, string>>(() => new Map())
   const pendingImageRef = useRef<string | null>(null)
 
   const {
@@ -48,7 +48,8 @@ export function ChatPage() {
     return response
   }, [updateConversationId, fetchConversations])
 
-  // Transport is created once; body reads from ref at call time
+  // Transport is created once; body callback reads ref at call time (not during render)
+  /* eslint-disable react-hooks/refs */
   const transport = useMemo(
     () => new DefaultChatTransport({
       api: '/api/chat',
@@ -57,6 +58,7 @@ export function ChatPage() {
     }),
     [customFetch],
   )
+  /* eslint-enable react-hooks/refs */
 
   const {
     messages,
@@ -88,12 +90,13 @@ export function ChatPage() {
   useEffect(() => {
     if (pendingImageRef.current && messages.length > 0) {
       const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
-      if (lastUserMsg && !messageImagesRef.current.has(lastUserMsg.id)) {
-        messageImagesRef.current.set(lastUserMsg.id, pendingImageRef.current)
+      if (lastUserMsg && !messageImages.has(lastUserMsg.id)) {
+        const img = pendingImageRef.current
         pendingImageRef.current = null
+        setMessageImages((prev) => new Map(prev).set(lastUserMsg.id, img))
       }
     }
-  }, [messages])
+  }, [messages, messageImages])
 
   // Auto-scroll to bottom on new messages, only if user hasn't scrolled away
   useEffect(() => {
@@ -184,7 +187,7 @@ export function ChatPage() {
             {messages.length === 0 ? (
               <WelcomeMessage onQuickAction={handleQuickAction} />
             ) : (
-              <ChatMessageList messages={messages} isLoading={isLoading} messageImages={messageImagesRef.current} />
+              <ChatMessageList messages={messages} isLoading={isLoading} messageImages={messageImages} />
             )}
           </div>
         </div>

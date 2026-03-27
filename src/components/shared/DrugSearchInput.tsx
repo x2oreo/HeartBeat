@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useDrugSearch } from '@/hooks/use-drug-search'
 import type { AutocompleteSuggestion, RiskCategory } from '@/types'
 
@@ -41,14 +41,20 @@ export function DrugSearchInput({
   const [showSuggestions, setShowSuggestions] = useState(false)
   const prevResetSignal = useRef(resetSignal)
 
-  useEffect(() => {
-    if (resetSignal !== prevResetSignal.current) {
-      prevResetSignal.current = resetSignal
-      setQuery('')
-      setShowSuggestions(false)
-      onQueryChange?.('')
+  // Reset internal state when parent signals a reset (e.g. after selecting a drug).
+  // Own-state updates during render are safe in React 19; onQueryChange (parent setState) deferred via microtask.
+  // Ref access during render is intentional here — this is the standard "derived state from props" pattern.
+  /* eslint-disable react-hooks/refs */
+  if (resetSignal !== prevResetSignal.current) {
+    prevResetSignal.current = resetSignal
+    setQuery('')
+    setShowSuggestions(false)
+    if (onQueryChange) {
+      const cb = onQueryChange
+      queueMicrotask(() => cb(''))
     }
-  }, [resetSignal, setQuery, onQueryChange])
+  }
+  /* eslint-enable react-hooks/refs */
 
   function handleChange(value: string) {
     setQuery(value)

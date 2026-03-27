@@ -80,19 +80,13 @@ function buildEnrichment(
 
 async function fetchEnrichmentWithTrace(
   genericName: string,
-  trace: PipelineStep[],
-  onStep?: OnStepCallback,
+  _trace: PipelineStep[],
+  _onStep?: OnStepCallback,
 ): Promise<{
   credibleMedsData: CredibleMedsResult | null
   fdaSignal: OpenFDASignal | null
   rxnormData: RxNormResult | null
 }> {
-  function emitStep(step: PipelineStep) {
-    trace.push(step)
-    onStep?.(step)
-  }
-
-  const t = Date.now()
   const [credibleMedsData, fdaSignal, rxnormData] = await Promise.all([
     lookupCredibleMeds(genericName).catch(() => null),
     getTorsadesSignal(genericName).catch(() => null),
@@ -249,13 +243,11 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
   })
 
   // ── Step 3: RxNorm + CredibleMeds + OpenFDA in parallel ─────────
-  const t3 = Date.now()
   const [rxnormResult, directCredibleMeds, directFdaSignal] = await Promise.all([
     resolveDrugName(normalized).catch(() => null),
     lookupCredibleMeds(normalized).catch(() => null),
     getTorsadesSignal(normalized).catch(() => null),
   ])
-  const d3 = Date.now() - t3
 
   if (rxnormResult) {
     const resolvedLocalEntry = lookupDrug(rxnormResult.genericName)

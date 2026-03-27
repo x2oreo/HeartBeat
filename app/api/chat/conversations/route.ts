@@ -18,10 +18,8 @@ export async function GET() {
       title: true,
       createdAt: true,
       updatedAt: true,
-      messages: {
-        select: { role: true },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
+      _count: {
+        select: { messages: true },
       },
     },
     orderBy: { updatedAt: 'desc' },
@@ -30,10 +28,10 @@ export async function GET() {
 
   const result = conversations.map((c) => ({
     id: c.id,
-    title: c.title,
+    title: c.title ?? 'New conversation',
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
-    messageCount: c.messages.length,
+    messageCount: c._count.messages,
   }))
 
   return NextResponse.json({ conversations: result })

@@ -1,20 +1,47 @@
 'use client'
 
-export function ChatHeader({ onNewChat, isLoading }: {
+export function ChatHeader({
+  onNewChat,
+  isLoading,
+  showHistory,
+  onToggleHistory,
+  activeTitle,
+}: {
   onNewChat: () => void
   isLoading: boolean
+  showHistory: boolean
+  onToggleHistory: () => void
+  activeTitle: string | null
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-separator-light bg-surface-raised px-4 py-3">
+    <div className="flex items-center gap-2 border-b border-separator-light bg-surface-raised px-3 py-3">
+      {/* History toggle */}
+      <button
+        type="button"
+        onClick={onToggleHistory}
+        aria-label={showHistory ? 'Hide history' : 'Show history'}
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+          showHistory
+            ? 'bg-brand-light text-brand'
+            : 'text-text-tertiary hover:bg-surface hover:text-text-primary'
+        }`}
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h7.5" />
+        </svg>
+      </button>
+
       {/* Agent avatar */}
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand">
         <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
         </svg>
       </div>
 
       <div className="min-w-0 flex-1">
-        <h1 className="text-[15px] font-semibold text-text-primary">HeartGuard AI</h1>
+        <h1 className="truncate text-[15px] font-semibold text-text-primary max-w-[220px]">
+          {activeTitle ?? 'HeartGuard AI'}
+        </h1>
         <div className="flex items-center gap-1.5">
           <div className={`h-1.5 w-1.5 rounded-full ${isLoading ? 'bg-brand animate-pulse' : 'bg-emerald-500'}`} />
           <span className="text-[11px] text-text-tertiary">
@@ -27,7 +54,7 @@ export function ChatHeader({ onNewChat, isLoading }: {
       <button
         type="button"
         onClick={onNewChat}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-surface hover:text-text-primary"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-surface hover:text-text-primary"
         aria-label="New conversation"
       >
         <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

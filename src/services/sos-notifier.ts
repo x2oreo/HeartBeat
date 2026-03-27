@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { publish } from '@/lib/sse'
 import { sendSMS, makeVoiceCall, sendAlertEmail } from './notifications'
+import { reverseGeocode } from './notifications/geocoding'
 
 const SOS_COOLDOWN_MS = 10 * 60 * 1000 // 10 minutes
 const lastNotified = new Map<string, number>()
@@ -22,6 +23,14 @@ type SOSResult = {
   contactsReached: number
 }
 
+type SOSOptions = {
+  bypassCooldown?: boolean
+  /** GPS accuracy in metres from browser Geolocation API. Absent for watch-triggered SOS. */
+  locationAccuracy?: number
+  /** True when coordinates come from a localStorage cache, not a live GPS fix. */
+  locationCached?: boolean
+}
+
 function getAppBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
@@ -31,7 +40,7 @@ function getAppBaseUrl(): string {
 export async function triggerSOS(
   userId: string,
   alertId: string,
-  options?: { bypassCooldown?: boolean }
+  options?: SOSOptions,
 ): Promise<SOSResult> {
   // Cooldown check
   if (!options?.bypassCooldown) {
@@ -94,7 +103,16 @@ export async function triggerSOS(
     return { notified: false, contactsReached: 0 }
   }
 
-  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
+  // Reverse geocode the location if coordinates are available.
+  // This runs after fetching the alert (we need lat/lng from it).
+  // Failure is safe — reverseGeocode() never throws and returns null on any error.
+  const geocodedAddress =
+    alert.latitude != null && alert.longitude != null
+      ? await reverseGeocode(alert.latitude, alert.longitude)
+      : null
+
+  const patientName =
+    [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
   const timestamp = alert.triggeredAt.toLocaleString('en-GB', {
     timeZone: 'Europe/Sofia',
     dateStyle: 'short',
@@ -102,21 +120,47 @@ export async function triggerSOS(
   })
 
   // Build shared context
-  const mapsUrl = alert.latitude != null && alert.longitude != null
-    ? `https://maps.google.com/?q=${alert.latitude},${alert.longitude}`
-    : null
+  const mapsUrl =
+    alert.latitude != null && alert.longitude != null
+      ? `https://maps.google.com/?q=${alert.latitude},${alert.longitude}`
+      : null
   const cardUrl = emergencyCard?.slug
     ? `${getAppBaseUrl()}/emergency-card/${emergencyCard.slug}`
     : null
-  const qtMeds = user.medications.filter((m) =>
-    m.qtRisk === 'KNOWN_RISK' || m.qtRisk === 'POSSIBLE_RISK' || m.qtRisk === 'CONDITIONAL_RISK'
+  const qtMeds = user.medications.filter(
+    (m) =>
+      m.qtRisk === 'KNOWN_RISK' || m.qtRisk === 'POSSIBLE_RISK' || m.qtRisk === 'CONDITIONAL_RISK',
   )
 
+  // Enrich alert data with geocoded address and location metadata
+  const alertData: AlertData = {
+    heartRate: alert.heartRate,
+    hrv: alert.hrv,
+    irregularRhythm: alert.irregularRhythm,
+    message: alert.message,
+    riskLevel: alert.riskLevel,
+    stressLevel: alert.stressLevel,
+    isAsleep: alert.isAsleep,
+    latitude: alert.latitude,
+    longitude: alert.longitude,
+    address: geocodedAddress,
+    accuracy: options?.locationAccuracy ?? null,
+    locationCached: options?.locationCached ?? false,
+  }
+
   // Compose messages
-  const smsBody = composeSMS(patientName, user.genotype, alert, qtMeds, mapsUrl, cardUrl, timestamp)
-  const voiceMessage = composeVoiceMessage(patientName, user.genotype, alert, qtMeds)
-  const emailSubject = `🚨 EMERGENCY: HeartGuard SOS Alert for ${patientName}`
-  const emailHtml = composeEmailHtml(patientName, user.genotype, alert, qtMeds, mapsUrl, cardUrl, timestamp)
+  const smsBody = composeSMS(patientName, user.genotype, alertData, qtMeds, mapsUrl, cardUrl, timestamp)
+  const voiceMessage = composeVoiceMessage(patientName, user.genotype, alertData, qtMeds)
+  const emailSubject = `EMERGENCY: HeartGuard SOS Alert for ${patientName}`
+  const emailHtml = composeEmailHtml(
+    patientName,
+    user.genotype,
+    alertData,
+    qtMeds,
+    mapsUrl,
+    cardUrl,
+    timestamp,
+  )
 
   // Send notifications to all contacts in parallel
   const notificationLogs: {
@@ -167,7 +211,7 @@ export async function triggerSOS(
       })
 
       if (contactReached) contactsReached++
-    })
+    }),
   )
 
   // Log results and update alert
@@ -196,15 +240,7 @@ export async function triggerSOS(
   return { notified: true, contactsReached }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
+// ── Types ─────────────────────────────────────────────────────────────
 
 type AlertData = {
   heartRate: number
@@ -216,9 +252,25 @@ type AlertData = {
   isAsleep: boolean
   latitude: number | null
   longitude: number | null
+  /** Human-readable street address from reverse geocoding. Null if unavailable. */
+  address: string | null
+  /** GPS accuracy in metres from browser. Null for watch-triggered alerts. */
+  accuracy: number | null
+  /** True when coordinates came from a localStorage cache, not a live GPS fix. */
+  locationCached: boolean
 }
 
 type MedInfo = { genericName: string; brandName: string | null; qtRisk: string }
+
+// ── Helpers ───────────────────────────────────────────────────────────
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 function isManualSOS(alert: { heartRate: number; message: string }): boolean {
   return alert.heartRate === 0 && alert.message === 'Manual SOS triggered by user'
@@ -235,6 +287,40 @@ function formatMedsList(meds: MedInfo[]): string {
     .join('\n')
 }
 
+/**
+ * Builds the location string for SMS.
+ *
+ * NOTE: Avoid emoji — they force UCS-2 encoding which cuts max SMS segment
+ * length from 160 to 70 chars, causing many segments on trial accounts.
+ * Use "+/-" instead of "±" for the same reason.
+ */
+function formatSMSLocation(alert: AlertData, mapsUrl: string | null): string {
+  if (!mapsUrl) return '(Location unavailable)\n'
+
+  const lines: string[] = []
+
+  if (alert.address) {
+    const accuracyNote = alert.locationCached
+      ? ' (approx - cached location)'
+      : alert.accuracy != null
+        ? ` (+/-${Math.round(alert.accuracy)}m)`
+        : ''
+    lines.push(`Address: ${alert.address}${accuracyNote}`)
+  } else {
+    // No address — fall back to coords-only line with accuracy note
+    const accuracyNote = alert.locationCached
+      ? ' (approx - cached)'
+      : alert.accuracy != null
+        ? ` (+/-${Math.round(alert.accuracy)}m)`
+        : ''
+    lines.push(`Location${accuracyNote}: ${mapsUrl}`)
+    return lines.join('\n') + '\n'
+  }
+
+  lines.push(`Map: ${mapsUrl}`)
+  return lines.join('\n') + '\n'
+}
+
 // ── Message Composers ────────────────────────────────────────────────
 
 function composeSMS(
@@ -244,13 +330,11 @@ function composeSMS(
   qtMeds: MedInfo[],
   mapsUrl: string | null,
   cardUrl: string | null,
-  timestamp: string
+  timestamp: string,
 ): string {
   const genotypeStr = genotype && genotype !== 'UNKNOWN' ? ` ${genotype}` : ''
   const manual = isManualSOS(alert)
 
-  // NOTE: Avoid emoji in SMS — they force UCS-2 encoding which cuts max
-  // segment length from 160 to 70 chars, causing many segments on trial accounts.
   let msg = `** HEARTGUARD SOS ALERT **\n\n`
 
   if (manual) {
@@ -271,9 +355,8 @@ function composeSMS(
     msg += `WARNING: ${GENOTYPE_TRIGGERS[genotype]}\n\n`
   }
 
-  if (mapsUrl) {
-    msg += `Location: ${mapsUrl}\n\n`
-  }
+  msg += formatSMSLocation(alert, mapsUrl)
+  msg += '\n'
 
   if (cardUrl) {
     msg += `Full Medical Profile:\n${cardUrl}\n\n`
@@ -289,22 +372,20 @@ function composeVoiceMessage(
   patientName: string,
   genotype: string | null,
   alert: AlertData,
-  qtMeds: MedInfo[]
+  qtMeds: MedInfo[],
 ): string {
   const manual = isManualSOS(alert)
 
-  // Priority order: WHO → WHAT → HOW BAD → WHAT TO DO → MEDICAL CONTEXT
+  // Priority order: WHO → WHAT → HOW BAD → WHERE → MEDICAL CONTEXT
   // First 10 seconds must convey the critical info.
 
   let msg = ''
 
   if (manual) {
-    // ── Manual SOS: patient is conscious and asking for help ──
     msg += `Emergency. ${patientName} needs help now. `
     msg += `${patientName} is a Long QT Syndrome patient and has triggered an emergency alert. `
     msg += `Please call ${patientName} immediately or go to them. `
   } else {
-    // ── Auto SOS: watch detected danger ──
     msg += `Emergency. ${patientName} is having a cardiac event. `
     msg += `Heart rate: ${Math.round(alert.heartRate)} beats per minute. `
     if (alert.irregularRhythm) {
@@ -316,7 +397,14 @@ function composeVoiceMessage(
     msg += `Please call ${patientName} immediately or go to them. `
   }
 
-  // ── Medical context (important but not first-priority) ──
+  // Include address in voice so responders can direct 911 without checking SMS
+  if (alert.address) {
+    msg += `Their location is: ${alert.address}. `
+  } else {
+    msg += `Check your text messages for their location and full medical profile. `
+  }
+
+  // Medical context
   if (genotype && genotype !== 'UNKNOWN') {
     msg += `${patientName} has Long QT Syndrome, genotype ${genotype}. `
   }
@@ -326,10 +414,11 @@ function composeVoiceMessage(
     msg += `They are taking ${topMeds}, which ${qtMeds.length > 1 ? 'affect' : 'affects'} the heart rhythm. `
   }
 
-  // ── Closing: direct to SMS for links ──
-  msg += `Check your text messages for their location and full medical profile. `
+  if (alert.address) {
+    msg += `Check your text messages for the map link and full medical profile. `
+  }
 
-  // ── Repeat the critical part ──
+  // Repeat the critical part
   msg += `Again: ${patientName} needs immediate help. This is an automated alert from HeartGuard.`
 
   return msg
@@ -342,16 +431,17 @@ function composeEmailHtml(
   qtMeds: MedInfo[],
   mapsUrl: string | null,
   cardUrl: string | null,
-  timestamp: string
+  timestamp: string,
 ): string {
   const safeName = escapeHtml(patientName)
   const safeGenotype = genotype ? escapeHtml(genotype) : null
   const safeMessage = escapeHtml(alert.message)
   const manual = isManualSOS(alert)
 
-  const genotypeNote = genotype && GENOTYPE_TRIGGERS[genotype]
-    ? `<p style="margin: 8px 0 0; font-size: 13px; color: #fef2f2; opacity: 0.9;">⚠️ ${escapeHtml(GENOTYPE_TRIGGERS[genotype])}</p>`
-    : ''
+  const genotypeNote =
+    genotype && GENOTYPE_TRIGGERS[genotype]
+      ? `<p style="margin: 8px 0 0; font-size: 13px; color: #fef2f2; opacity: 0.9;">Warning: ${escapeHtml(GENOTYPE_TRIGGERS[genotype])}</p>`
+      : ''
 
   const vitalsRows = manual
     ? `
@@ -382,7 +472,7 @@ function composeEmailHtml(
       </tr>
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">Patient Status</td>
-        <td style="padding: 12px; border-bottom: 1px solid #eee; ${alert.isAsleep ? 'color: #b45309; font-weight: 700;' : ''}">${alert.isAsleep ? '💤 ASLEEP — may be unresponsive' : 'Awake'}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #eee; ${alert.isAsleep ? 'color: #b45309; font-weight: 700;' : ''}">${alert.isAsleep ? 'ASLEEP — may be unresponsive' : 'Awake'}</td>
       </tr>
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">Risk Level</td>
@@ -394,42 +484,40 @@ function composeEmailHtml(
       </tr>`
 
   // Medications section
-  const medsSection = qtMeds.length > 0
-    ? `
+  const medsSection =
+    qtMeds.length > 0
+      ? `
     <div style="margin-top: 20px;">
-      <h3 style="margin: 0 0 12px; color: #1a1a1a; font-size: 16px;">💊 Current QT-Prolonging Medications</h3>
+      <h3 style="margin: 0 0 12px; color: #1a1a1a; font-size: 16px;">Current QT-Prolonging Medications</h3>
       <table style="width: 100%; border-collapse: collapse; border: 1px solid #eee; border-radius: 8px;">
         <tr style="background: #f9fafb;">
           <th style="padding: 10px 12px; text-align: left; font-size: 13px; color: #666;">Drug</th>
           <th style="padding: 10px 12px; text-align: left; font-size: 13px; color: #666;">QT Risk</th>
         </tr>
-        ${qtMeds.map((m) => {
-          const riskColor = m.qtRisk === 'KNOWN_RISK' ? '#ef4444' : m.qtRisk === 'POSSIBLE_RISK' ? '#eab308' : '#f97316'
-          const riskLabel = QT_RISK_LABELS[m.qtRisk] ?? m.qtRisk
-          return `<tr>
-            <td style="padding: 10px 12px; border-top: 1px solid #eee; font-weight: 500;">${escapeHtml(m.genericName)}${m.brandName ? ` <span style="color:#999">(${escapeHtml(m.brandName)})</span>` : ''}</td>
-            <td style="padding: 10px 12px; border-top: 1px solid #eee; color: ${riskColor}; font-weight: 600; font-size: 12px;">${escapeHtml(riskLabel)}</td>
-          </tr>`
-        }).join('')}
+        ${qtMeds
+          .map((m) => {
+            const riskColor =
+              m.qtRisk === 'KNOWN_RISK' ? '#ef4444' : m.qtRisk === 'POSSIBLE_RISK' ? '#eab308' : '#f97316'
+            const riskLabel = QT_RISK_LABELS[m.qtRisk] ?? m.qtRisk
+            return `<tr>
+              <td style="padding: 10px 12px; border-top: 1px solid #eee; font-weight: 500;">${escapeHtml(m.genericName)}${m.brandName ? ` <span style="color:#999">(${escapeHtml(m.brandName)})</span>` : ''}</td>
+              <td style="padding: 10px 12px; border-top: 1px solid #eee; color: ${riskColor}; font-weight: 600; font-size: 12px;">${escapeHtml(riskLabel)}</td>
+            </tr>`
+          })
+          .join('')}
       </table>
-      <p style="margin: 8px 0 0; font-size: 12px; color: #999;">⚠️ ER doctors: avoid additional QT-prolonging drugs. Check the full medical profile for details.</p>
+      <p style="margin: 8px 0 0; font-size: 12px; color: #999;">ER doctors: avoid additional QT-prolonging drugs. Check the full medical profile for details.</p>
     </div>`
-    : ''
+      : ''
 
-  // Location section
-  const locationSection = mapsUrl
-    ? `
-    <div style="margin-top: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; text-align: center;">
-      <p style="margin: 0 0 8px; font-weight: 600; color: #166534;">📍 Patient Location</p>
-      <a href="${escapeHtml(mapsUrl)}" style="display: inline-block; background: #22c55e; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open in Google Maps →</a>
-    </div>`
-    : ''
+  // Location section — shows address, accuracy, and map button
+  const locationSection = buildEmailLocationSection(alert, mapsUrl)
 
   // Emergency card button
   const cardSection = cardUrl
     ? `
     <div style="margin-top: 16px; text-align: center;">
-      <a href="${escapeHtml(cardUrl)}" style="display: inline-block; background: #3b82f6; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">📋 View Full Medical Profile</a>
+      <a href="${escapeHtml(cardUrl)}" style="display: inline-block; background: #3b82f6; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Full Medical Profile</a>
       <p style="margin: 8px 0 0; font-size: 12px; color: #999;">Share this link with paramedics or ER staff</p>
     </div>`
     : ''
@@ -440,7 +528,7 @@ function composeEmailHtml(
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: #ef4444; color: white; padding: 20px; border-radius: 12px 12px 0 0; text-align: center;">
-    <h1 style="margin: 0; font-size: 24px;">🚨 EMERGENCY ALERT</h1>
+    <h1 style="margin: 0; font-size: 24px;">EMERGENCY ALERT</h1>
     <p style="margin: 8px 0 0; opacity: 0.9; font-size: 16px;">HeartGuard SOS</p>
     ${genotypeNote}
   </div>
@@ -466,4 +554,37 @@ function composeEmailHtml(
   </div>
 </body>
 </html>`
+}
+
+function buildEmailLocationSection(alert: AlertData, mapsUrl: string | null): string {
+  if (!mapsUrl) {
+    return `
+    <div style="margin-top: 20px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center;">
+      <p style="margin: 0; font-weight: 600; color: #6b7280;">Location unavailable</p>
+      <p style="margin: 6px 0 0; font-size: 12px; color: #9ca3af;">GPS was not accessible when the alert was triggered.</p>
+    </div>`
+  }
+
+  // Address line
+  const addressHtml = alert.address
+    ? `<p style="margin: 0 0 4px; font-size: 18px; font-weight: 700; color: #1a1a1a;">${escapeHtml(alert.address)}</p>`
+    : ''
+
+  // Accuracy / cache note
+  let accuracyHtml = ''
+  if (alert.locationCached) {
+    accuracyHtml = `<p style="margin: 0 0 12px; font-size: 12px; color: #b45309; font-weight: 600;">Approximate location — cached (not a live GPS fix)</p>`
+  } else if (alert.accuracy != null) {
+    accuracyHtml = `<p style="margin: 0 0 12px; font-size: 12px; color: #6b7280;">GPS accuracy: &plusmn;${Math.round(alert.accuracy)} metres</p>`
+  } else {
+    accuracyHtml = `<p style="margin: 0 0 12px; font-size: 12px; color: #6b7280;">GPS accuracy unknown</p>`
+  }
+
+  return `
+    <div style="margin-top: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; text-align: center;">
+      <p style="margin: 0 0 8px; font-weight: 600; color: #166534;">Patient Location</p>
+      ${addressHtml}
+      ${accuracyHtml}
+      <a href="${escapeHtml(mapsUrl)}" style="display: inline-block; background: #22c55e; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open in Google Maps</a>
+    </div>`
 }

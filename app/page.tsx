@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DashboardLayout } from '@/components/DashboardLayout'
+import { HealthMonitor } from '@/components/dashboard/HealthMonitor'
 import type { CypData } from '@/types'
 
 const GENOTYPE_COLORS: Record<string, string> = {
@@ -163,6 +164,9 @@ export default async function HomePage() {
             </div>
           </div>
         )}
+
+        {/* Health Monitor + SOS */}
+        <HealthMonitor />
 
         {/* Scan Button */}
         <Link

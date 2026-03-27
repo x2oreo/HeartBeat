@@ -27,5 +27,5 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     return <>{children}</>
   }
 
-  return <DashboardLayout email={user.email}>{children}</DashboardLayout>
+  return <DashboardLayout>{children}</DashboardLayout>
 }

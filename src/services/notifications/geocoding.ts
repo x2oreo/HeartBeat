@@ -9,6 +9,7 @@ type NominatimAddress = {
   county?: string
   state?: string
   country?: string
+  country_code?: string  // ISO 3166-1 alpha-2, lowercase (e.g. "bg", "us")
   postcode?: string
 }
 
@@ -42,7 +43,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
     const res = await fetch(url, {
       headers: {
         // Nominatim requires a descriptive User-Agent: https://operations.osmfoundation.org/policies/nominatim/
-        'User-Agent': 'HeartGuard/1.0 (emergency-medical-alert-app; contact@heartguard.app)',
+        'User-Agent': 'QTShield/1.0 (emergency-medical-alert-app; contact@qtshield.app)',
         'Accept-Language': 'en',
         Accept: 'application/json',
       },
@@ -76,5 +77,64 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
   } catch {
     // Never let geocoding break SOS
     return null
+  }
+}
+
+export type GeocodeDetailedResult = {
+  /** Short human-readable address, e.g. "12 Main St, Sofia, Bulgaria". Null if unavailable. */
+  address: string | null
+  /** ISO 3166-1 alpha-2 country code in uppercase, e.g. "BG". Null if unavailable. */
+  countryCode: string | null
+}
+
+/**
+ * Like reverseGeocode but also returns the ISO 3166-1 alpha-2 country code.
+ *
+ * - Same safety guarantees: never throws, returns nulls on any error.
+ * - 4-second timeout — SOS is time-critical.
+ */
+export async function reverseGeocodeWithCountry(
+  lat: number,
+  lon: number,
+): Promise<GeocodeDetailedResult> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1`
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'QTShield/1.0 (emergency-medical-alert-app; contact@qtshield.app)',
+        'Accept-Language': 'en',
+        Accept: 'application/json',
+      },
+      signal: AbortSignal.timeout(4000),
+    })
+
+    if (!res.ok) return { address: null, countryCode: null }
+
+    const data: unknown = await res.json()
+    if (!isNominatimResult(data)) return { address: null, countryCode: null }
+    if (data.error) return { address: null, countryCode: null }
+
+    const a = data.address
+    const countryCode = a?.country_code ? a.country_code.toUpperCase() : null
+
+    if (!a) return { address: data.display_name || null, countryCode }
+
+    const parts: string[] = []
+
+    const streetPart =
+      a.house_number && a.road
+        ? `${a.house_number} ${a.road}`
+        : (a.road ?? null)
+    if (streetPart) parts.push(streetPart)
+
+    const cityPart = a.city ?? a.town ?? a.village ?? a.suburb ?? a.neighbourhood ?? null
+    if (cityPart) parts.push(cityPart)
+
+    if (a.country) parts.push(a.country)
+
+    const address = parts.length > 0 ? parts.join(', ') : (data.display_name || null)
+    return { address, countryCode }
+  } catch {
+    return { address: null, countryCode: null }
   }
 }

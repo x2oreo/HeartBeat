@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// Shows a 6-digit code the user enters on the HeartGuard web app (Settings → Apple Watch).
+/// Shows a 6-digit code the user enters on the QTShield web app (Settings → Apple Watch).
 /// Polls the server every 3 seconds until the code is claimed and a token is returned.
 struct PairingView: View {
     @EnvironmentObject var apiClient: WatchAPIClient
 
     @State private var code: String = Self.randomCode()
-    @State private var serverURL = "http://10.1.85.215:3000"
+    @State private var serverURL = "https://qtshield.me"
     @State private var pairingState: PairingState = .registering
     @State private var showServerURL = false
     @State private var pollTask: Task<Void, Never>?
@@ -25,7 +25,7 @@ struct PairingView: View {
                     .font(.system(size: 28))
                     .foregroundStyle(.blue)
 
-                Text("Pair with HeartGuard")
+                Text("Pair with QTShield")
                     .font(.headline)
 
                 switch pairingState {

@@ -45,7 +45,7 @@ export function buildEmergencyCardPrompt(
     .map((m) => `- ${m.name} (Risk: ${m.riskCategory}, DTA: ${m.isDTA})`)
     .join('\n')
 
-  return `You are generating critical notes for an LQTS patient's emergency card. This card will be shown to ER doctors and paramedics.
+  return `You are generating critical notes for an LQTS patient's emergency card. This card will be shown to ER doctors and paramedics. Do not use any emojis in your response.
 
 ## Patient
 - Name: ${patientName}
@@ -78,7 +78,7 @@ export function buildDoctorPrepPrompt(
     )
     .join('\n')
 
-  return `You are preparing a drug safety brief for an LQTS patient's upcoming doctor visit.
+  return `You are preparing a drug safety brief for an LQTS patient's upcoming doctor visit. Do not use any emojis in your response.
 
 ## Patient
 - Name: ${patientName}

@@ -24,6 +24,7 @@ export const SYSTEM_CONTEXT = `You are a cardiac pharmacology AI specialized in 
 3. PLAIN LANGUAGE: Explain everything so a non-medical patient can understand. Define medical terms when you must use them.
 4. NEVER DIAGNOSE OR PRESCRIBE: You provide safety information only. Always direct the patient to consult their cardiologist or prescribing physician before making any medication changes.
 5. NEVER DOWNPLAY RISK: If a drug is categorized as KNOWN_RISK or has DTA (Designated Torsades de Pointes Agent) status, treat it as genuinely dangerous regardless of how commonly it is prescribed.
+6. NO EMOJIS: Do not use any emojis anywhere in your response.
 
 ## MEDICAL CONTEXT — LQTS PHARMACOLOGY
 - QTc interval >500ms is HIGH RISK for cardiac arrhythmia (Torsades de Pointes)
@@ -265,7 +266,7 @@ ${currentMedsBlock}
 - AI Reasoning: ${aiAssessment.reasoning}
 - CYP data: unknown (not in our curated database — use your medical knowledge for CYP450 metabolism)
 
-⚠️ NOTE: This drug is NOT in our verified database. The information above is from AI assessment. Be EXTRA conservative in your risk evaluation. When in doubt, assume the drug has moderate QT risk and potential CYP interactions.
+NOTE: This drug is NOT in our verified database. The information above is from AI assessment. Be EXTRA conservative in your risk evaluation. When in doubt, assume the drug has moderate QT risk and potential CYP interactions.
 
 ${externalDataBlock}
 

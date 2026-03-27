@@ -1,4 +1,4 @@
-// HeartGuard Shared Types — Single Source of Truth
+// QTShield Shared Types — Single Source of Truth
 // All cross-boundary types live here. Import from '@/types' everywhere.
 
 import type { EmergencyCardAIOutput } from '@/ai/document-schemas'
@@ -47,6 +47,15 @@ export type DrugSearchResult = {
   brandNames: string[]
   riskCategory: RiskCategory
   isDTA: boolean
+}
+
+// ── CYP450 Conflict (detected locally between user's medications) ─
+
+export type CypConflict = {
+  medA: string
+  medB: string
+  enzyme: string
+  type: 'inhibition' | 'induction'
 }
 
 // ── Autocomplete (unified local + RxNorm results) ────────────────
@@ -275,6 +284,19 @@ export type EnhancedEmergencyCardData = EmergencyCardData & {
   aiContent?: EmergencyCardAIOutput
 }
 
+// ── Country Emergency Services ─────────────────────────────────────
+
+export type CountryEmergencyInfo = {
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode: string
+  /** Human-readable country name */
+  countryName: string
+  /** Dedicated ambulance / medical line — the number to call for a cardiac emergency */
+  ambulance: string
+  /** Catch-all general emergency number; may equal ambulance */
+  general: string
+}
+
 // ── Emergency Card Page Local Types ────────────────────────────────
 
 export type ProfileData = {
@@ -354,6 +376,82 @@ export type HealthStreamEvent = {
 export type WatchPushPayload =
   | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
   | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }
+
+// ── Dashboard Stats ──────────────────────────────────────────────
+
+export type ScanActivityDay = {
+  date: string
+  label: string
+  count: number
+  knownRisk: number
+  possibleRisk: number
+  conditionalRisk: number
+  safe: number
+}
+
+export type HealthSummary = {
+  avgHR24h: number | null
+  avgHrv24h: number | null
+  watchPaired: boolean
+  watchLastSeen: string | null
+}
+
+export type HeartRatePoint = {
+  time: string
+  hr: number
+}
+
+export type DashboardStats = {
+  scanActivity: ScanActivityDay[]
+  healthSummary: HealthSummary
+  heartRateHistory: HeartRatePoint[]
+}
+
+// ── Watch Dashboard ─────────────────────────────────────────────
+
+export type HRVPoint = {
+  time: string
+  hrv: number
+}
+
+export type RiskTimelinePoint = {
+  time: string
+  level: WatchRiskLevel
+}
+
+export type WatchAlert = {
+  id: string
+  riskLevel: string
+  heartRate: number
+  hrv: number
+  message: string
+  acknowledged: boolean
+  triggeredAt: string
+}
+
+export type WatchTodayStats = {
+  totalSteps: number
+  totalActiveEnergy: number
+  avgHR: number | null
+  avgHRV: number | null
+  minHR: number | null
+  maxHR: number | null
+}
+
+export type WatchDashboardData = {
+  metrics: {
+    heartRate: HeartRatePoint[]
+    hrv: HRVPoint[]
+    riskTimeline: RiskTimelinePoint[]
+  }
+  todayStats: WatchTodayStats
+  alerts: WatchAlert[]
+  device: {
+    paired: boolean
+    lastSeen: string | null
+    monitoringMode: string
+  }
+}
 
 // ── Chat Conversations ─────────────────────────────────────────────
 

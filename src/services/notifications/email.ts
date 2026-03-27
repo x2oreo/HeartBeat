@@ -23,7 +23,7 @@ export async function sendAlertEmail(
   const client = getClient()
   if (!client) return { success: false, error: 'Resend not configured' }
 
-  const from = process.env.RESEND_FROM_EMAIL ?? 'HeartGuard Alerts <onboarding@resend.dev>'
+  const from = process.env.RESEND_FROM_EMAIL ?? 'QTShield Alerts <onboarding@resend.dev>'
 
   try {
     await client.emails.send({ from, to, subject, html })

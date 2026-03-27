@@ -1,7 +1,7 @@
-# HeartGuard — Person B: Profile & Medications
+# QTShield — Person B: Profile & Medications
 
 ## Your Role
-You own everything about the user's identity in HeartGuard — how they set up their profile, manage their medications, and see their personal dashboard. Without your work, no one can onboard, and Person A's combo analysis has no medication data to analyze against. You are the data foundation.
+You own everything about the user's identity in QTShield — how they set up their profile, manage their medications, and see their personal dashboard. Without your work, no one can onboard, and Person A's combo analysis has no medication data to analyze against. You are the data foundation.
 
 ## What Others Are Building
 
@@ -170,14 +170,14 @@ Create src/hooks/use-medications.ts — hook that manages medication state:
 Then create app/(protected)/medications/page.tsx:
 
 - Title: "My Medications"
-- If user has QT-prolonging medications (qtRisk !== NOT_LISTED), show a warning banner at top with count: "You have X QT-prolonging medications. HeartGuard checks every new drug against these."
+- If user has QT-prolonging medications (qtRisk !== NOT_LISTED), show a warning banner at top with count: "You have X QT-prolonging medications. QTShield checks every new drug against these."
 - List of medications, each showing:
   - Generic name (large) + brand name (smaller, gray)
   - Colored QT risk badge: green dot for NOT_LISTED, yellow for POSSIBLE/CONDITIONAL, red for KNOWN_RISK
   - Dosage if set
   - Remove button (with confirmation)
 - "Add Medication" button → shows input with autocomplete → adds and refreshes
-- Empty state if no medications: "No medications added yet. Add your current medications so HeartGuard can check drug combinations."
+- Empty state if no medications: "No medications added yet. Add your current medications so QTShield can check drug combinations."
 
 Mobile-first. Each medication is a card with clear visual hierarchy.
 ```

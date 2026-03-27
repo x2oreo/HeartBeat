@@ -130,6 +130,11 @@
   animation: statusPulse 1.5s ease-in-out infinite;
 }
 
+/* Prevent horizontal overflow on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
 @media print {
   aside { display: none !important; }
   header { display: none !important; }

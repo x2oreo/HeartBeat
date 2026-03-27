@@ -717,10 +717,10 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
         Add to My Medications
       </h3>
       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-        Save this medication so HeartGuard checks future scans against it.
+        Save this medication so QTShield checks future scans against it.
       </p>
 
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
             Dosage
@@ -852,7 +852,7 @@ export function ScanPage() {
   }, [reset])
 
   return (
-    <div className="mx-auto max-w-lg px-1">
+    <div className="mx-auto max-w-lg px-3 md:px-4">
       {/* Header */}
       <div className="mb-4 print:hidden">
         <h1 className="text-xl font-semibold text-text-primary">

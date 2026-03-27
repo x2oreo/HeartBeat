@@ -19,8 +19,11 @@ final class HealthKitManager: NSObject, ObservableObject {
     @Published var stressLevel: StressLevel = .calm
     @Published var riskLevel: LongQTRisk = .normal
     @Published var isAuthorized = false
+    @Published var isWarmingUp = true
     @Published var oxygenSaturation: Double = 0
     @Published var respiratoryRate: Double = 0
+
+    private var warmupTimer: Timer?
 
     /// The user's LQTS genotype — fetched from server config.
     /// Determines which triggers are weighted most heavily in risk scoring.
@@ -92,9 +95,19 @@ final class HealthKitManager: NSObject, ObservableObject {
             isAuthorized = true
             remoteLog("[AUTH] HealthKit authorized")
             await requestNotificationPermission()
+            #if targetEnvironment(simulator)
+            isWarmingUp = false
+            #else
             startWorkoutSession()
             startObservers()
             fetchInitialValues()
+            warmupTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.isWarmingUp = false
+                    self?.remoteLog("[WARMUP] Complete — risk scoring active")
+                }
+            }
+            #endif
             await loadGenotypeFromServer()
         } catch {
             remoteLog("[AUTH] Failed: \(error)")
@@ -185,6 +198,16 @@ final class HealthKitManager: NSObject, ObservableObject {
         }
         fetchTodaySum(type: HKQuantityType(.stepCount), unit: .count()) { [weak self] value in
             self?.steps = value
+        }
+        fetchLatest(type: HKQuantityType(.oxygenSaturation), unit: .percent()) { [weak self] value in
+            guard let self, self.oxygenSaturation == 0 else { return }
+            self.oxygenSaturation = value * 100
+            self.updateRisk()
+        }
+        fetchLatest(type: HKQuantityType(.respiratoryRate), unit: .count().unitDivided(by: .minute())) { [weak self] value in
+            guard let self, self.respiratoryRate == 0 else { return }
+            self.respiratoryRate = value
+            self.updateRisk()
         }
     }
 
@@ -399,6 +422,7 @@ final class HealthKitManager: NSObject, ObservableObject {
     // MARK: - Risk
 
     private func updateRisk() {
+        guard !isWarmingUp else { return }
         stressLevel = StressLevel.compute(hr: heartRate, hrv: hrv, restingHR: restingHR)
         let previous = riskLevel
         riskLevel = LongQTRisk.compute(
@@ -505,49 +529,32 @@ final class HealthKitManager: NSObject, ObservableObject {
     // MARK: - Simulation (debug only)
 
 #if DEBUG
-    func simulateSamples() {
-        // Cycle: normal → caution → elevated → normal …
-        switch riskLevel {
-        case .normal:
-            heartRate    = Double.random(in: 110...129)
-            hrv          = Double.random(in: 15...22)
-            restingHR    = 70
-            oxygenSaturation = 97
-            respiratoryRate = 16
-            irregularRhythmDetected = false
-            isAsleep     = false
-        case .caution:
-            heartRate    = Double.random(in: 38...44)
-            hrv          = Double.random(in: 5...9)
-            oxygenSaturation = 93
-            respiratoryRate = 22
-            irregularRhythmDetected = true
-            isAsleep     = true
-        case .elevated:
-            heartRate    = Double.random(in: 60...80)
-            hrv          = Double.random(in: 45...70)
-            oxygenSaturation = 98
-            respiratoryRate = 14
-            irregularRhythmDetected = false
-            isAsleep     = false
-        }
-        rrIntervalMs  = 60000.0 / heartRate
-        steps        += Double.random(in: 200...1000)
-        activeEnergy += Double.random(in: 10...80)
+    func simulateNormal() {
+        heartRate               = Double.random(in: 62...72)
+        hrv                     = Double.random(in: 42...58)
+        restingHR               = 65
+        oxygenSaturation        = 98
+        respiratoryRate         = 14
+        irregularRhythmDetected = false
+        isAsleep                = false
+        rrIntervalMs            = 60000.0 / heartRate
+        steps                  += Double.random(in: 200...600)
+        activeEnergy           += Double.random(in: 10...40)
         updateRisk()
-
-        writeToHealthKit(HKQuantityType(.heartRate),
-                         HKQuantity(unit: .count().unitDivided(by: .minute()), doubleValue: heartRate))
-        writeToHealthKit(HKQuantityType(.heartRateVariabilitySDNN),
-                         HKQuantity(unit: .secondUnit(with: .milli), doubleValue: hrv))
     }
 
-    private func writeToHealthKit(_ type: HKQuantityType, _ quantity: HKQuantity) {
-        let sample = HKQuantitySample(type: type, quantity: quantity, start: .now, end: .now)
-        store.save(sample) { _, error in
-            if let error { print("[HK] Simulate write error: \(error)") }
-        }
+    func simulateRisk() {
+        heartRate               = Double.random(in: 38...44)   // Bradycardia → LQT3 trigger
+        hrv                     = Double.random(in: 5...9)     // Very low HRV
+        restingHR               = 65
+        oxygenSaturation        = Double.random(in: 91...93)   // Low SpO2
+        respiratoryRate         = Double.random(in: 22...25)   // Elevated
+        irregularRhythmDetected = true
+        isAsleep                = true
+        rrIntervalMs            = 60000.0 / heartRate
+        updateRisk()
     }
+
 #endif
 }
 

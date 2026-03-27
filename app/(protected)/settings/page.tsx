@@ -5,8 +5,32 @@ import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import type { Genotype } from '@/types'
 import PhoneInput from '@/components/PhoneInput'
-import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
-import { WatchPairingCard } from '@/components/settings/WatchPairingCard'
+import { COUNTRIES, parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
+import { getEmergencyInfo } from '@/data/country-emergency-numbers'
+
+// ── Avatar helpers ────────────────────────────────────────────────────
+
+const AVATAR_HUES = [210, 160, 280, 30, 190, 340, 60]
+
+function avatarColor(email: string): string {
+  let hash = 0
+  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash)
+  const hue = AVATAR_HUES[Math.abs(hash) % AVATAR_HUES.length]
+  return `hsl(${hue} 60% 45%)`
+}
+
+function avatarInitials(firstName: string, lastName: string, email: string): string {
+  const f = firstName.trim()
+  const l = lastName.trim()
+  if (f && l) return (f[0] + l[0]).toUpperCase()
+  if (f) return f.slice(0, 2).toUpperCase()
+  const name = email.split('@')[0]
+  const parts = name.split(/[._-]/)
+  if (parts.length >= 2 && parts[0].length > 0 && parts[1].length > 0) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return name.slice(0, 2).toUpperCase()
+}
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -17,6 +41,7 @@ type ProfileData = {
   lastName: string
   email: string
   genotype: Genotype | null
+  country: string | null
   contacts: Contact[]
 }
 
@@ -61,6 +86,11 @@ export default function SettingsPage() {
   const [savingGenotype, setSavingGenotype] = useState(false)
   const [genotypeMsg, setGenotypeMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Country state
+  const [country, setCountry] = useState<string | null>(null)
+  const [savingCountry, setSavingCountry] = useState(false)
+  const [countryMsg, setCountryMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   // New contact form state
   const [showAddContact, setShowAddContact] = useState(false)
   const [newContact, setNewContact] = useState({ firstName: '', lastName: '', phone: '', email: '', relationship: 'Cardiologist' })
@@ -91,10 +121,11 @@ export default function SettingsPage() {
         const profileData = profileRes.ok ? await profileRes.json() : {}
         const contacts: Contact[] = contactsRes.ok ? await contactsRes.json() : []
 
-        setProfile({ firstName: profileData.firstName ?? '', lastName: profileData.lastName ?? '', email: profileData.email ?? '', genotype: profileData.genotype ?? null, contacts })
+        setProfile({ firstName: profileData.firstName ?? '', lastName: profileData.lastName ?? '', email: profileData.email ?? '', genotype: profileData.genotype ?? null, country: profileData.country ?? null, contacts })
         setFirstName(profileData.firstName ?? '')
         setLastName(profileData.lastName ?? '')
         setGenotype(profileData.genotype ?? null)
+        setCountry(profileData.country ?? null)
       } catch {
         // Non-fatal — show empty state
       } finally {
@@ -151,14 +182,36 @@ export default function SettingsPage() {
     }
   }
 
+  // ── Country ─────────────────────────────────────────────────────
+
+  async function saveCountry() {
+    setSavingCountry(true)
+    setCountryMsg(null)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: country ?? null }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      setProfile((prev) => prev ? { ...prev, country } : prev)
+      setCountryMsg({ type: 'success', text: 'Saved' })
+      setTimeout(() => setCountryMsg(null), 2000)
+    } catch {
+      setCountryMsg({ type: 'error', text: 'Failed to save. Try again.' })
+    } finally {
+      setSavingCountry(false)
+    }
+  }
+
   // ── Contacts ────────────────────────────────────────────────────
 
   function validateNewContact() {
     const errors: typeof newContactErrors = {}
     if (!newContact.firstName.trim()) errors.firstName = 'First name is required'
     if (!newContact.lastName.trim()) errors.lastName = 'Last name is required'
-    const { country, nationalNumber } = parseE164(newContact.phone)
-    const phoneError = validateNationalNumber(country, nationalNumber)
+    const { country: phoneCountry, nationalNumber } = parseE164(newContact.phone)
+    const phoneError = validateNationalNumber(phoneCountry, nationalNumber)
     if (phoneError) errors.phone = phoneError
     setNewContactErrors(errors)
     return Object.keys(errors).length === 0
@@ -235,8 +288,8 @@ export default function SettingsPage() {
     const errors: typeof editContactErrors = {}
     if (!editContact.firstName.trim()) errors.firstName = 'First name is required'
     if (!editContact.lastName.trim()) errors.lastName = 'Last name is required'
-    const { country, nationalNumber } = parseE164(editContact.phone)
-    const phoneError = validateNationalNumber(country, nationalNumber)
+    const { country: phoneCountry, nationalNumber } = parseE164(editContact.phone)
+    const phoneError = validateNationalNumber(phoneCountry, nationalNumber)
     if (phoneError) errors.phone = phoneError
     setEditContactErrors(errors)
     return Object.keys(errors).length === 0
@@ -288,7 +341,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-3 py-5 md:px-4 md:py-8">
         <div className="max-w-lg mx-auto space-y-4">
           <div className="h-8 w-32 bg-separator-light rounded-lg animate-pulse" />
           {[1, 2, 3].map((i) => (
@@ -300,10 +353,24 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-3 py-5 md:px-4 md:py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
-        <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
+        {/* ── Profile Header ──────────────────────────────────── */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white select-none shrink-0"
+            style={{ background: avatarColor(profile?.email ?? '') }}
+          >
+            {avatarInitials(firstName, lastName, profile?.email ?? '')}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">
+              {firstName.trim() && lastName.trim() ? `${firstName.trim()} ${lastName.trim()}` : 'Profile & Settings'}
+            </h1>
+            <p className="text-sm text-text-secondary">{profile?.email ?? ''}</p>
+          </div>
+        </div>
 
         {/* ── Name ───────────────────────────────────────────── */}
         <Section title="Your Name">
@@ -370,6 +437,68 @@ export default function SettingsPage() {
           {genotypeMsg && (
             <p className={`text-sm ${genotypeMsg.type === 'success' ? 'text-[#1B7A34]' : 'text-[#FF3B30]'}`}>
               {genotypeMsg.text}
+            </p>
+          )}
+        </Section>
+
+        {/* ── Country & Emergency Services ─────────────────────── */}
+        <Section title="Country & Emergency Services">
+          <p className="text-sm text-text-secondary">
+            Your local emergency number is included in every SOS alert sent to your contacts.
+          </p>
+          {(() => {
+            const emergencyInfo = getEmergencyInfo(country)
+            return (
+              <div className="p-4 rounded-xl bg-[#F5F0FF] border border-[#C4B5FD] flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-[#6D28D9] uppercase tracking-wide mb-0.5">
+                    Ambulance — {emergencyInfo.countryName}
+                  </p>
+                  <p className="text-3xl font-black text-[#4C1D95] tracking-widest leading-none">
+                    {emergencyInfo.ambulance}
+                  </p>
+                  {emergencyInfo.general !== emergencyInfo.ambulance && (
+                    <p className="text-xs text-[#7C3AED] mt-1">
+                      General emergency: {emergencyInfo.general}
+                    </p>
+                  )}
+                </div>
+                <a
+                  href={`tel:${emergencyInfo.ambulance}`}
+                  className="shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-[#7C3AED] text-white shadow-md hover:bg-[#6D28D9] active:scale-95 transition-all"
+                  aria-label={`Call ${emergencyInfo.ambulance}`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                </a>
+              </div>
+            )
+          })()}
+          <div className="flex gap-2">
+            <select
+              value={country ?? ''}
+              onChange={(e) => setCountry(e.target.value || null)}
+              className="flex-1 px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
+            >
+              <option value="">Not set (uses 112 — international)</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.flag} {c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={saveCountry}
+              disabled={savingCountry || country === profile?.country}
+              className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {savingCountry ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+          {countryMsg && (
+            <p className={`text-sm ${countryMsg.type === 'success' ? 'text-[#1B7A34]' : 'text-[#FF3B30]'}`}>
+              {countryMsg.text}
             </p>
           )}
         </Section>
@@ -455,7 +584,7 @@ export default function SettingsPage() {
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => startEditing(c)}
-                      className="text-text-tertiary hover:text-brand transition-colors p-1"
+                      className="text-text-tertiary hover:text-brand transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label={`Edit ${c.name}`}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -465,7 +594,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => removeContact(c.id)}
                       disabled={removingContactId === c.id}
-                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-1 disabled:opacity-50"
+                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50"
                       aria-label={`Remove ${c.name}`}
                     >
                       {removingContactId === c.id ? (
@@ -553,9 +682,6 @@ export default function SettingsPage() {
             </button>
           )}
         </Section>
-
-        {/* ── Apple Watch ───────────────────────────────────────── */}
-        <WatchPairingCard />
 
         {/* ── Account ──────────────────────────────────────────── */}
         <Section title="Account">

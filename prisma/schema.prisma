@@ -66,16 +66,30 @@ model ScanLog {
 }
 
 model EmergencyContact {
-  id           String @id @default(uuid()) @db.Uuid
-  userId       String @map("user_id") @db.Uuid
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @map("user_id") @db.Uuid
   name         String
   phone        String
+  email        String?
   relationship String // cardiologist, family, friend
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("emergency_contacts")
+}
+
+model NotificationLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  alertId   String   @map("alert_id") @db.Uuid
+  contactId String   @map("contact_id") @db.Uuid
+  channel   String   // SMS, VOICE, EMAIL
+  status    String   // SENT, FAILED
+  error     String?
+  sentAt    DateTime @default(now()) @map("sent_at")
+
+  @@index([alertId])
+  @@map("notification_logs")
 }
 
 model SharedEmergencyCard {

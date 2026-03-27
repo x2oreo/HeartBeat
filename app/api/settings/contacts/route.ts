@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 const postSchema = z.object({
   name: z.string().min(1).max(100),
   phone: z.string().min(7).max(30).regex(/^\+?[\d\s\-()]+$/, 'Invalid phone number format'),
+  email: z.string().email().optional(),
   relationship: z.string().min(1).max(50),
 })
 
@@ -19,7 +20,7 @@ export async function GET() {
 
   const contacts = await prisma.emergencyContact.findMany({
     where: { userId: user.id },
-    select: { id: true, name: true, phone: true, relationship: true },
+    select: { id: true, name: true, phone: true, email: true, relationship: true },
     orderBy: { id: 'asc' },
   })
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
 
   const contact = await prisma.emergencyContact.create({
     data: { userId: user.id, ...parsed.data },
-    select: { id: true, name: true, phone: true, relationship: true },
+    select: { id: true, name: true, phone: true, email: true, relationship: true },
   })
 
   return NextResponse.json(contact, { status: 201 })

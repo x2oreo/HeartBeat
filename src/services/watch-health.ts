@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { publish } from '@/lib/sse'
+import { triggerSOS } from '@/services/sos-notifier'
 import type {
   HealthMetricPayload,
   HealthAlertPayload,
@@ -76,6 +77,13 @@ export async function saveHealthAlert(
     data: payload,
     timestamp: new Date().toISOString(),
   })
+
+  // Trigger SOS for ELEVATED alerts (fire-and-forget)
+  if (payload.riskLevel === 'ELEVATED') {
+    triggerSOS(userId, alert.id).catch((err) => {
+      console.error('[SOS] Failed to trigger:', err)
+    })
+  }
 
   return alert.id
 }

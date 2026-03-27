@@ -7,7 +7,7 @@ import type { Genotype } from '@/types'
 
 // ── Types ────────────────────────────────────────────────────────────
 
-type Contact = { id: string; name: string; phone: string; relationship: string }
+type Contact = { id: string; name: string; phone: string; email?: string; relationship: string }
 
 type ProfileData = {
   email: string
@@ -52,7 +52,7 @@ export default function SettingsPage() {
 
   // New contact form state
   const [showAddContact, setShowAddContact] = useState(false)
-  const [newContact, setNewContact] = useState({ name: '', phone: '', relationship: 'Cardiologist' })
+  const [newContact, setNewContact] = useState({ name: '', phone: '', email: '', relationship: 'Cardiologist' })
   const [newContactErrors, setNewContactErrors] = useState<{ name?: string; phone?: string }>({})
   const [addContactError, setAddContactError] = useState<string | null>(null)
   const [addingContact, setAddingContact] = useState(false)
@@ -129,13 +129,14 @@ export default function SettingsPage() {
         body: JSON.stringify({
           name: newContact.name.trim(),
           phone: newContact.phone.replace(/\D/g, ''),
+          ...(newContact.email.trim() ? { email: newContact.email.trim() } : {}),
           relationship: newContact.relationship.toLowerCase(),
         }),
       })
       if (!res.ok) throw new Error()
       const created: Contact = await res.json()
       setProfile((prev) => prev ? { ...prev, contacts: [...prev.contacts, created] } : prev)
-      setNewContact({ name: '', phone: '', relationship: 'Cardiologist' })
+      setNewContact({ name: '', phone: '', email: '', relationship: 'Cardiologist' })
       setNewContactErrors({})
       setShowAddContact(false)
     } catch {
@@ -238,6 +239,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="font-medium text-text-primary">{c.name}</p>
                   <p className="text-sm text-text-secondary">{c.phone}</p>
+                  {c.email && <p className="text-sm text-text-secondary">{c.email}</p>}
                   <p className="text-xs text-text-tertiary capitalize mt-0.5">{c.relationship}</p>
                 </div>
                 <button
@@ -280,6 +282,15 @@ export default function SettingsPage() {
                   className={`w-full px-3.5 py-3 rounded-xl border-[1.5px] bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition ${newContactErrors.phone ? 'border-[#FF3B30]' : 'border-separator'}`}
                 />
                 {newContactErrors.phone && <p className="text-xs text-[#FF3B30] mt-1">{newContactErrors.phone}</p>}
+              </div>
+              <div>
+                <input
+                  type="email"
+                  value={newContact.email}
+                  onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="Email (optional)"
+                  className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
+                />
               </div>
               <select
                 value={newContact.relationship}

@@ -140,6 +140,7 @@ export type PhotoScanResult = {
 export type EmergencyContactInfo = {
   name: string
   phone: string
+  email?: string
   relationship: string
 }
 
@@ -223,9 +224,14 @@ export type WatchConfigResponse = {
   genotype: Genotype | null
 }
 
+export type SOSSentPayload = {
+  alertId: string
+  contactsReached: number
+}
+
 export type HealthStreamEvent = {
-  type: 'health-update' | 'alert' | 'connected'
-  data: HealthMetricPayload | HealthAlertPayload | null
+  type: 'health-update' | 'alert' | 'connected' | 'sos-sent'
+  data: HealthMetricPayload | HealthAlertPayload | SOSSentPayload | null
   timestamp: string
 }
 

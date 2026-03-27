@@ -108,8 +108,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = B96030506F786CB3A40650E4 /* Build configuration list for PBXProject "HeartBeatWatch" */;
 			developmentRegion = en;
@@ -278,6 +276,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "HeartBeat Watch App/HeartBeat_Watch_App.entitlements";
+				DEVELOPMENT_TEAM = D3D57AR8M9;
 				INFOPLIST_FILE = "HeartBeat Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.heartbeat.watch;
 				SDKROOT = watchos;
@@ -293,6 +292,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "HeartBeat Watch App/HeartBeat_Watch_App.entitlements";
+				DEVELOPMENT_TEAM = D3D57AR8M9;
 				INFOPLIST_FILE = "HeartBeat Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.heartbeat.watch;
 				SDKROOT = watchos;

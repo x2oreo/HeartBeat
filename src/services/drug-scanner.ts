@@ -12,7 +12,7 @@ import {
 import type { MedicationWithCyp, EnrichmentData } from '@/ai/scan-prompts'
 import { resolveDrug, aggregateRisk } from '@/services/drug-resolver'
 import { notifyWatchOfDrugRisk } from '@/services/watch-push'
-import type { ResolvedDrug } from '@/services/drug-resolver'
+import type { ResolvedDrug, OnStepCallback } from '@/services/drug-resolver'
 import { prisma } from '@/lib/prisma'
 import type {
   ScanResult,
@@ -134,6 +134,7 @@ function determineSource(resolved: ResolvedDrug): RiskSource {
   const hasCredibleMeds = resolved.credibleMedsData !== null
   const hasExternalData = resolved.fdaSignal !== null || hasCredibleMeds || resolved.rxnormData !== null
 
+  if (resolved.matchSource === 'BG_DATABASE') return 'BG_VERIFIED'
   if (hasLocal && hasCredibleMeds) return 'MULTI_SOURCE'
   if (hasLocal) return 'CREDIBLEMEDS_VERIFIED'
   if (hasCredibleMeds) return 'CREDIBLEMEDS_API'
@@ -276,6 +277,7 @@ export async function scanDrugByText(
   drugName: string,
   userId: string,
   dosage?: string,
+  onStep?: OnStepCallback,
 ): Promise<ScanResult> {
   // ── Cache check ────────────────────────────────────────────────────
   const cached = getCachedResult(userId, drugName)
@@ -283,7 +285,7 @@ export async function scanDrugByText(
     const cachedResult = {
       ...cached,
       pipelineTrace: [
-        { name: 'Cache', status: 'HIT' as const, durationMs: 0, detail: 'Returning cached result (5-min TTL)' },
+        { name: 'Quick Lookup', status: 'HIT' as const, durationMs: 0, detail: 'Recently scanned — returning saved result' },
         ...(cached.pipelineTrace ?? []),
       ],
     }
@@ -291,8 +293,13 @@ export async function scanDrugByText(
   }
 
   // ── Step 1: Multi-source drug resolution ──────────────────────────
-  const resolved = await resolveDrug(drugName)
+  const resolved = await resolveDrug(drugName, onStep)
   const trace: PipelineStep[] = [...(resolved.pipelineTrace ?? [])]
+
+  function emitStep(step: PipelineStep) {
+    trace.push(step)
+    onStep?.(step)
+  }
 
   // ── Step 2: Unknown drug path (AI assessment) ─────────────────────
   if (!resolved.localEntry && resolved.matchSource === 'AI_ONLY') {
@@ -316,8 +323,8 @@ export async function scanDrugByText(
       prompt,
       temperature: 0,
     })
-    trace.push({
-      name: 'AI Drug Assessment',
+    emitStep({
+      name: 'AI Safety Review',
       status: 'HIT',
       durationMs: Date.now() - tAi,
       detail: aiResult.isRealDrug
@@ -340,8 +347,7 @@ export async function scanDrugByText(
       try {
         const { genotype, currentMeds } = await getUserMedications(userId)
 
-        if (currentMeds.length > 0) {
-          const comboPrompt = buildComboPromptForUnknownDrug(
+        const comboPrompt = buildComboPromptForUnknownDrug(
             drugName,
             {
               genericName: aiResult.genericName ?? drugName,
@@ -362,18 +368,19 @@ export async function scanDrugByText(
             prompt: comboPrompt,
             temperature: 0,
           })
-          trace.push({
-            name: 'AI Combo Analysis',
+          emitStep({
+            name: 'Drug Interaction Check',
             status: 'HIT',
             durationMs: Date.now() - tCombo,
-            detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
+            detail: currentMeds.length > 0
+              ? `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`
+              : `Safer alternatives found`,
           })
 
           result.comboAnalysis = mapComboAnalysis(comboAI)
-        }
       } catch (err) {
         console.error('[drug-scanner] Combo analysis for unknown drug failed:', err)
-        trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed — returning local result' })
+        emitStep({ name: 'Drug Interaction Check', status: 'ERROR', durationMs: 0, detail: 'Could not check interactions — showing available results' })
       }
     }
 
@@ -411,8 +418,7 @@ export async function scanDrugByText(
       if (credData.riskCategory !== 'NOT_LISTED') {
         try {
           const { genotype, currentMeds } = await getUserMedications(userId)
-          if (currentMeds.length > 0) {
-            const comboPrompt = buildComboPromptForUnknownDrug(
+          const comboPrompt = buildComboPromptForUnknownDrug(
               drugName,
               {
                 genericName: credData.genericName,
@@ -437,18 +443,19 @@ export async function scanDrugByText(
               prompt: comboPrompt,
               temperature: 0,
             })
-            trace.push({
-              name: 'AI Combo Analysis',
+            emitStep({
+              name: 'Drug Interaction Check',
               status: 'HIT',
               durationMs: Date.now() - tCombo2,
-              detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
+              detail: currentMeds.length > 0
+                ? `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`
+                : `Safer alternatives found`,
             })
 
             result.comboAnalysis = mapComboAnalysis(comboAI)
-          }
         } catch (err) {
           console.error('[drug-scanner] Combo analysis for CredibleMeds drug failed:', err)
-          trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed' })
+          emitStep({ name: 'Drug Interaction Check', status: 'ERROR', durationMs: 0, detail: 'Could not check interactions' })
         }
       }
 
@@ -465,7 +472,7 @@ export async function scanDrugByText(
       prompt: buildUnknownDrugPrompt(drugName),
       temperature: 0,
     })
-    trace.push({ name: 'AI Drug Assessment', status: 'HIT', durationMs: Date.now() - tFb, detail: 'Fallback assessment' })
+    emitStep({ name: 'AI Safety Review', status: 'HIT', durationMs: Date.now() - tFb, detail: 'AI assessed drug safety' })
 
     const result = mapUnknownDrugToScanResult(drugName, aiResult, resolved)
     result.pipelineTrace = trace
@@ -480,7 +487,7 @@ export async function scanDrugByText(
 
   // If NOT_LISTED → instant green, no AI call needed
   if (result.riskCategory === 'NOT_LISTED') {
-    trace.push({ name: 'AI Combo Analysis', status: 'SKIPPED', durationMs: 0, detail: 'Drug is NOT_LISTED — no combo analysis needed' })
+    emitStep({ name: 'Drug Interaction Check', status: 'SKIPPED', durationMs: 0, detail: 'Drug not in risk list — no interaction check needed' })
     result.pipelineTrace = trace
     setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
@@ -491,35 +498,33 @@ export async function scanDrugByText(
   try {
     const { genotype, currentMeds } = await getUserMedications(userId)
 
-    if (currentMeds.length > 0) {
-      const qtEntry = drugInfoToQtDrugEntry(drugInfo)
+    const qtEntry = drugInfoToQtDrugEntry(drugInfo)
 
-      // Use dosage-aware combo prompt if dosage is available
-      const prompt = dosage
-        ? buildComboPromptWithDosage(qtEntry, currentMeds, genotype, dosage)
-        : buildComboPrompt(qtEntry, currentMeds, genotype)
+    // Use dosage-aware combo prompt if dosage is available
+    const prompt = dosage
+      ? buildComboPromptWithDosage(qtEntry, currentMeds, genotype, dosage)
+      : buildComboPrompt(qtEntry, currentMeds, genotype)
 
-      const tCombo3 = Date.now()
-      const { object: comboAI } = await generateObject({
-        model,
-        schema: ComboAnalysisSchema,
-        prompt,
-        temperature: 0,
-      })
-      trace.push({
-        name: 'AI Combo Analysis',
-        status: 'HIT',
-        durationMs: Date.now() - tCombo3,
-        detail: `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`,
-      })
+    const tCombo3 = Date.now()
+    const { object: comboAI } = await generateObject({
+      model,
+      schema: ComboAnalysisSchema,
+      prompt,
+      temperature: 0,
+    })
+    emitStep({
+      name: 'Drug Interaction Check',
+      status: 'HIT',
+      durationMs: Date.now() - tCombo3,
+      detail: currentMeds.length > 0
+        ? `${comboAI.comboRisk.level} risk with ${currentMeds.length} current medication(s)`
+        : `Safer alternatives found`,
+    })
 
-      result.comboAnalysis = mapComboAnalysis(comboAI)
-    } else {
-      trace.push({ name: 'AI Combo Analysis', status: 'SKIPPED', durationMs: 0, detail: 'No current medications to analyze' })
-    }
+    result.comboAnalysis = mapComboAnalysis(comboAI)
   } catch (err) {
     console.error('[drug-scanner] Combo analysis failed, returning local result only:', err)
-    trace.push({ name: 'AI Combo Analysis', status: 'ERROR', durationMs: 0, detail: 'Analysis failed — returning local result' })
+    emitStep({ name: 'Drug Interaction Check', status: 'ERROR', durationMs: 0, detail: 'Could not check interactions — showing available results' })
   }
 
   result.pipelineTrace = trace

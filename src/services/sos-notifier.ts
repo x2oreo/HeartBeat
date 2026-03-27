@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { publish } from '@/lib/sse'
 import { sendSMS, makeVoiceCall, sendAlertEmail } from './notifications'
-import { reverseGeocode } from './notifications/geocoding'
+import { reverseGeocodeWithCountry } from './notifications/geocoding'
+import { getEmergencyInfo } from '@/data/country-emergency-numbers'
+import type { CountryEmergencyInfo } from '@/types'
 
 const SOS_COOLDOWN_MS = 10 * 60 * 1000 // 10 minutes
 const lastNotified = new Map<string, number>()
@@ -60,6 +62,7 @@ export async function triggerSOS(
         lastName: true,
         genotype: true,
         email: true,
+        country: true,
         medications: {
           where: { active: true },
           select: { genericName: true, brandName: true, qtRisk: true },
@@ -104,12 +107,18 @@ export async function triggerSOS(
   }
 
   // Reverse geocode the location if coordinates are available.
-  // This runs after fetching the alert (we need lat/lng from it).
-  // Failure is safe — reverseGeocode() never throws and returns null on any error.
-  const geocodedAddress =
+  // Failure is safe — reverseGeocodeWithCountry() never throws and returns nulls on any error.
+  const geocodeResult =
     alert.latitude != null && alert.longitude != null
-      ? await reverseGeocode(alert.latitude, alert.longitude)
-      : null
+      ? await reverseGeocodeWithCountry(alert.latitude, alert.longitude)
+      : { address: null, countryCode: null }
+
+  const geocodedAddress = geocodeResult.address
+
+  // Determine the patient's country for emergency number lookup.
+  // Prefer geocoded country (reflects current physical location) over stored profile country.
+  const effectiveCountryCode = geocodeResult.countryCode ?? user.country ?? null
+  const emergencyInfo: CountryEmergencyInfo = getEmergencyInfo(effectiveCountryCode)
 
   const patientName =
     [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
@@ -149,8 +158,8 @@ export async function triggerSOS(
   }
 
   // Compose messages
-  const smsBody = composeSMS(patientName, user.genotype, alertData, qtMeds, mapsUrl, cardUrl, timestamp)
-  const voiceMessage = composeVoiceMessage(patientName, user.genotype, alertData, qtMeds)
+  const smsBody = composeSMS(patientName, user.genotype, alertData, qtMeds, mapsUrl, cardUrl, timestamp, emergencyInfo)
+  const voiceMessage = composeVoiceMessage(patientName, user.genotype, alertData, qtMeds, emergencyInfo)
   const emailSubject = `EMERGENCY: HeartGuard SOS Alert for ${patientName}`
   const emailHtml = composeEmailHtml(
     patientName,
@@ -160,6 +169,7 @@ export async function triggerSOS(
     mapsUrl,
     cardUrl,
     timestamp,
+    emergencyInfo,
   )
 
   // Send notifications to all contacts in parallel
@@ -331,11 +341,19 @@ function composeSMS(
   mapsUrl: string | null,
   cardUrl: string | null,
   timestamp: string,
+  emergencyInfo: CountryEmergencyInfo,
 ): string {
   const genotypeStr = genotype && genotype !== 'UNKNOWN' ? ` ${genotype}` : ''
   const manual = isManualSOS(alert)
 
   let msg = `** HEARTGUARD SOS ALERT **\n\n`
+
+  // Emergency services line — placed first so it is visible without scrolling
+  msg += `CALL AMBULANCE: ${emergencyInfo.ambulance} (${emergencyInfo.countryName})`
+  if (emergencyInfo.general !== emergencyInfo.ambulance) {
+    msg += ` | General: ${emergencyInfo.general}`
+  }
+  msg += `\n\n`
 
   if (manual) {
     msg += `${patientName} (LQTS${genotypeStr}) has manually triggered an emergency SOS.\n\n`
@@ -368,11 +386,20 @@ function composeSMS(
   return msg
 }
 
+/**
+ * Converts a digit string to TTS-friendly spoken digits, e.g. "112" → "1 1 2".
+ * Separating digits with spaces causes most TTS engines to read them individually.
+ */
+function spokenDigits(number: string): string {
+  return number.split('').join(' ')
+}
+
 function composeVoiceMessage(
   patientName: string,
   genotype: string | null,
   alert: AlertData,
   qtMeds: MedInfo[],
+  emergencyInfo: CountryEmergencyInfo,
 ): string {
   const manual = isManualSOS(alert)
 
@@ -397,7 +424,11 @@ function composeVoiceMessage(
     msg += `Please call ${patientName} immediately or go to them. `
   }
 
-  // Include address in voice so responders can direct 911 without checking SMS
+  // Emergency services callout — audible without needing to check SMS
+  msg += `If this is life-threatening, call the ambulance now: ${spokenDigits(emergencyInfo.ambulance)}. `
+  msg += `That is the ambulance number for ${emergencyInfo.countryName}. `
+
+  // Include address in voice so responders can direct emergency services without checking SMS
   if (alert.address) {
     msg += `Their location is: ${alert.address}. `
   } else {
@@ -419,7 +450,8 @@ function composeVoiceMessage(
   }
 
   // Repeat the critical part
-  msg += `Again: ${patientName} needs immediate help. This is an automated alert from HeartGuard.`
+  msg += `Again: ${patientName} needs immediate help. Ambulance: ${spokenDigits(emergencyInfo.ambulance)}. `
+  msg += `This is an automated alert from HeartGuard.`
 
   return msg
 }
@@ -432,6 +464,7 @@ function composeEmailHtml(
   mapsUrl: string | null,
   cardUrl: string | null,
   timestamp: string,
+  emergencyInfo: CountryEmergencyInfo,
 ): string {
   const safeName = escapeHtml(patientName)
   const safeGenotype = genotype ? escapeHtml(genotype) : null
@@ -522,6 +555,18 @@ function composeEmailHtml(
     </div>`
     : ''
 
+  const generalNote =
+    emergencyInfo.general !== emergencyInfo.ambulance
+      ? `<p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85;">General emergency: <strong>${escapeHtml(emergencyInfo.general)}</strong></p>`
+      : ''
+
+  const emergencyBanner = `
+    <div style="background: #7c3aed; color: white; padding: 16px 20px; margin-bottom: 20px; border-radius: 8px; text-align: center;">
+      <p style="margin: 0 0 4px; font-size: 13px; letter-spacing: 0.05em; opacity: 0.85; font-weight: 600;">CALL AMBULANCE &mdash; ${escapeHtml(emergencyInfo.countryName)}</p>
+      <p style="margin: 0; font-size: 32px; font-weight: 900; letter-spacing: 0.1em;">${escapeHtml(emergencyInfo.ambulance)}</p>
+      ${generalNote}
+    </div>`
+
   return `
 <!DOCTYPE html>
 <html>
@@ -533,6 +578,7 @@ function composeEmailHtml(
     ${genotypeNote}
   </div>
   <div style="border: 2px solid #ef4444; border-top: none; border-radius: 0 0 12px 12px; padding: 24px;">
+    ${emergencyBanner}
     <h2 style="margin: 0 0 4px; color: #1a1a1a;">${safeName}</h2>
     <p style="color: #666; margin: 0 0 20px;">Long QT Syndrome Patient${safeGenotype && safeGenotype !== 'UNKNOWN' ? ` — Genotype: <strong>${safeGenotype}</strong>` : ''}</p>
 

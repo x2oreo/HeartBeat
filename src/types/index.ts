@@ -284,6 +284,19 @@ export type EnhancedEmergencyCardData = EmergencyCardData & {
   aiContent?: EmergencyCardAIOutput
 }
 
+// ── Country Emergency Services ─────────────────────────────────────
+
+export type CountryEmergencyInfo = {
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode: string
+  /** Human-readable country name */
+  countryName: string
+  /** Dedicated ambulance / medical line — the number to call for a cardiac emergency */
+  ambulance: string
+  /** Catch-all general emergency number; may equal ambulance */
+  general: string
+}
+
 // ── Emergency Card Page Local Types ────────────────────────────────
 
 export type ProfileData = {

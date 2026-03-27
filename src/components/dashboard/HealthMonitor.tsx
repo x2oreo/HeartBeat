@@ -100,13 +100,13 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <MetricTile label="Heart Rate" value={metric.heartRate > 0 ? String(Math.round(metric.heartRate)) : '—'} unit="bpm" />
         <MetricTile label="HRV" value={metric.hrv > 0 ? String(Math.round(metric.hrv)) : '—'} unit="ms" />
         <MetricTile label="Resting HR" value={metric.restingHR > 0 ? String(Math.round(metric.restingHR)) : '—'} unit="bpm" />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <MetricTile label="Steps" value={metric.steps > 0 ? String(Math.round(metric.steps)) : '—'} unit="today" />
         <MetricTile label="Calories" value={metric.activeEnergy > 0 ? String(Math.round(metric.activeEnergy)) : '—'} unit="kcal" />
         <div className="flex flex-col items-center rounded-lg bg-surface px-3 py-2">
@@ -179,7 +179,7 @@ function SOSButton() {
 
   if (showConfirm) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-risk-danger-text font-medium">Alert all contacts?</span>
         <button
           onClick={handleSOS}

@@ -384,3 +384,49 @@ export type DashboardStats = {
   healthSummary: HealthSummary
   heartRateHistory: HeartRatePoint[]
 }
+
+// ── Watch Dashboard ─────────────────────────────────────────────
+
+export type HRVPoint = {
+  time: string
+  hrv: number
+}
+
+export type RiskTimelinePoint = {
+  time: string
+  level: WatchRiskLevel
+}
+
+export type WatchAlert = {
+  id: string
+  riskLevel: string
+  heartRate: number
+  hrv: number
+  message: string
+  acknowledged: boolean
+  triggeredAt: string
+}
+
+export type WatchTodayStats = {
+  totalSteps: number
+  totalActiveEnergy: number
+  avgHR: number | null
+  avgHRV: number | null
+  minHR: number | null
+  maxHR: number | null
+}
+
+export type WatchDashboardData = {
+  metrics: {
+    heartRate: HeartRatePoint[]
+    hrv: HRVPoint[]
+    riskTimeline: RiskTimelinePoint[]
+  }
+  todayStats: WatchTodayStats
+  alerts: WatchAlert[]
+  device: {
+    paired: boolean
+    lastSeen: string | null
+    monitoringMode: string
+  }
+}

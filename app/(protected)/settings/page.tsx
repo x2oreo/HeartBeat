@@ -287,7 +287,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-3 py-5 md:px-4 md:py-8">
         <div className="max-w-lg mx-auto space-y-4">
           <div className="h-8 w-32 bg-separator-light rounded-lg animate-pulse" />
           {[1, 2, 3].map((i) => (
@@ -299,7 +299,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-3 py-5 md:px-4 md:py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
         {/* ── Profile Header ──────────────────────────────────── */}
@@ -477,7 +477,7 @@ export default function SettingsPage() {
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => startEditing(c)}
-                      className="text-text-tertiary hover:text-brand transition-colors p-1"
+                      className="text-text-tertiary hover:text-brand transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label={`Edit ${c.name}`}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -487,7 +487,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => removeContact(c.id)}
                       disabled={removingContactId === c.id}
-                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-1 disabled:opacity-50"
+                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50"
                       aria-label={`Remove ${c.name}`}
                     >
                       {removingContactId === c.id ? (

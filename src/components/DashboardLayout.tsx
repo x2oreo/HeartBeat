@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { MobileBottomNav } from './MobileBottomNav'
 
 // ── Nav items ────────────────────────────────────────────────────────
 
@@ -22,6 +23,17 @@ const NAV_ITEMS = [
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
         <path d="M6 14V9h4v5" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/watch',
+    label: 'Apple Watch',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="4" y="2" width="8" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.25" />
+        <path d="M6 2V1M10 2V1M6 14v1M10 14v1" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+        <polyline points="5.5,8 7,8 7.7,6.5 8.3,9.5 9,6 9.7,9 10.5,8" stroke="currentColor" strokeWidth="0.9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -99,13 +111,13 @@ export function DashboardLayout({ children }: Props) {
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-surface p-2"
+      className="flex h-screen overflow-hidden bg-surface p-0 md:p-2"
       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      <div className="flex flex-1 bg-white rounded-2xl overflow-hidden card-shadow">
+      <div className="flex flex-1 bg-white rounded-none md:rounded-2xl overflow-hidden md:card-shadow">
 
-        {/* Sidebar */}
-        <aside className="w-52 shrink-0 flex flex-col bg-surface-raised border-r border-separator-light">
+        {/* Sidebar — hidden on mobile */}
+        <aside className="hidden md:flex w-52 shrink-0 flex-col bg-surface-raised border-r border-separator-light">
 
           {/* Logo */}
           <div className="h-14 flex items-center px-4">
@@ -164,6 +176,8 @@ export function DashboardLayout({ children }: Props) {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <main className="flex-1 overflow-auto bg-surface">
             {children}
+            {/* Bottom nav for mobile */}
+            <MobileBottomNav />
           </main>
         </div>
 

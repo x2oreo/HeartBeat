@@ -28,7 +28,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="bg-coral-deep rounded-t-2xl px-6 py-5 text-white">
+      <div className="bg-coral-deep rounded-t-2xl px-4 py-4 md:px-6 md:py-5 text-white">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -43,7 +43,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
       </div>
 
       {/* Patient Info Bar */}
-      <div className="bg-coral px-6 py-3 flex flex-wrap items-center gap-3 text-white text-sm">
+      <div className="bg-coral px-4 py-3 md:px-6 flex flex-wrap items-center gap-2 md:gap-3 text-white text-sm">
         <span className="font-semibold">{data.patientName}</span>
         <span className="w-px h-4 bg-white/30" />
         <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-medium">
@@ -185,7 +185,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
             </h2>
             <div className="space-y-2">
               {data.emergencyContacts.map((contact, i) => (
-                <div key={i} className="flex items-center justify-between text-sm bg-surface rounded-xl px-3 py-2">
+                <div key={i} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm bg-surface rounded-xl px-3 py-2.5">
                   <div>
                     <span className="font-medium text-text-primary">
                       {contact.name}
@@ -196,7 +196,7 @@ export function EmergencyCardView({ data, isPublic = false }: Props) {
                   </div>
                   <a
                     href={`tel:${contact.phone}`}
-                    className="text-brand font-medium hover:underline"
+                    className="text-brand font-medium hover:underline min-h-[44px] flex items-center"
                   >
                     {contact.phone}
                   </a>

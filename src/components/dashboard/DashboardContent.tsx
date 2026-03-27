@@ -82,7 +82,7 @@ export function DashboardContent({
   const dtaMeds = medications.filter((m) => m.isDTA)
 
   return (
-    <div className="px-4 py-8 max-w-2xl mx-auto space-y-5">
+    <div className="px-3 py-5 md:px-4 md:py-8 max-w-2xl mx-auto space-y-5">
       {/* Welcome */}
       <div className="flex items-center justify-between animate-fade-in-up">
         <div>

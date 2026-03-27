@@ -48,7 +48,7 @@ export function HealthMonitorCompact({ heartRateHistory, watchPaired }: HealthMo
           <p className="text-sm font-medium text-text-secondary mb-1">No Apple Watch paired</p>
           <p className="text-xs text-text-tertiary mb-4">Connect your watch to see live health data</p>
           <Link
-            href="/settings"
+            href="/watch"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-hover transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

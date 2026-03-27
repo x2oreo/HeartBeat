@@ -27,7 +27,7 @@ export function ChatHeader({ onNewChat, isLoading }: {
       <button
         type="button"
         onClick={onNewChat}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-surface hover:text-text-primary"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-tertiary transition-colors hover:bg-surface hover:text-text-primary"
         aria-label="New conversation"
       >
         <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

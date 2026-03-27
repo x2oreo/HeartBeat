@@ -43,7 +43,7 @@ There is no consumer tool that covers both sides of this problem: preventing dan
 
 ## What We Built
 
-A **mobile-first PWA** with five integrated layers - scan drugs before taking them, monitor heart health continuously, and make sure every doctor anywhere in the world has what they need:
+QTShield has five integrated layers - scan drugs before taking them, monitor heart health continuously, and make sure every doctor anywhere in the world has what they need:
 
 - **Instant medication scanning** - type a drug name or photograph the box → immediate RED / YELLOW / GREEN result
 - **AI-powered combination analysis** - Claude reasons over CYP450 interactions and genotype-specific risk, not just individual drug flags

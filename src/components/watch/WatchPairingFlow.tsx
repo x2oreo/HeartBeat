@@ -59,7 +59,7 @@ export function WatchPairingFlow() {
   }
 
   return (
-    <div className="px-4 py-12 max-w-md mx-auto">
+    <div className="px-4 py-6 max-w-md mx-auto">
       {/* Watch illustration */}
       <div className="flex flex-col items-center mb-8 animate-fade-in-up">
         <div className="w-20 h-20 rounded-[22px] bg-gradient-to-br from-brand to-brand-deep flex items-center justify-center mb-5 shadow-[0_4px_24px_rgba(52,120,246,0.3)]">
@@ -144,17 +144,15 @@ export function WatchPairingFlow() {
                 </div>
               ) : (
                 <div className="mt-3 space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={code}
-                      onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(null) }}
-                      placeholder="000000"
-                      className="flex-1 text-center font-mono text-lg tracking-[0.3em] rounded-xl border-[1.5px] border-separator bg-surface text-text-primary px-3 py-3 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(null) }}
+                    placeholder="000000"
+                    className="w-full text-center font-mono text-lg tracking-[0.3em] rounded-xl border-[1.5px] border-separator bg-surface text-text-primary px-3 py-3 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition"
+                  />
                   <button
                     onClick={claimCode}
                     disabled={loading || code.length !== 6}
@@ -173,7 +171,7 @@ export function WatchPairingFlow() {
       </div>
 
       {/* Help text */}
-      <p className="text-[11px] text-text-tertiary text-center mt-6 animate-fade-in-up" style={{ animationDelay: '240ms' }}>
+      <p className="text-[11px] text-text-tertiary text-center mt-6 mb-4 animate-fade-in-up" style={{ animationDelay: '240ms' }}>
         Having trouble? Make sure Bluetooth is enabled and your Apple Watch is running watchOS 10 or later.
       </p>
     </div>

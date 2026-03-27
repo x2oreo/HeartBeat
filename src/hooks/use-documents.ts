@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { z } from 'zod'
-import type { EnhancedEmergencyCardData, DoctorPrepData, SavedDoctorPrepDocumentWithPreview, DoctorSpecialty, DocumentLanguage } from '@/types'
+import type { EnhancedEmergencyCardData, DoctorPrepData, PipelineStep, SavedDoctorPrepDocumentWithPreview, DoctorSpecialty, DocumentLanguage } from '@/types'
 
 const shareResponseSchema = z.object({ slug: z.string(), url: z.string() })
 
@@ -97,6 +97,7 @@ export function useDoctorPrep() {
   const [prepData, setPrepData] = useState<DoctorPrepData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [liveSteps, setLiveSteps] = useState<PipelineStep[]>([])
 
   const fetchDocuments = useCallback(async () => {
     setIsLoadingList(true)
@@ -118,8 +119,9 @@ export function useDoctorPrep() {
   const generate = useCallback(async (params: GenerateParams) => {
     setIsGenerating(true)
     setError(null)
+    setLiveSteps([])
     try {
-      const res = await fetch('/api/documents/doctor-prep', {
+      const res = await fetch('/api/documents/doctor-prep/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -129,15 +131,53 @@ export function useDoctorPrep() {
           customLanguage: params.customLanguage ?? null,
         }),
       })
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({ error: 'Unknown error' }))
         throw new Error(body.error ?? `Failed (${res.status})`)
       }
-      const data: DoctorPrepData = await res.json()
-      setPrepData(data)
-      // Refresh the document list
+
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('Streaming not supported')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let result: DoctorPrepData | undefined
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.trim()) continue
+          try {
+            const msg = JSON.parse(line) as
+              | { type: 'step'; step: PipelineStep }
+              | { type: 'result'; data: DoctorPrepData }
+              | { type: 'error'; error: string }
+
+            if (msg.type === 'step') {
+              setLiveSteps((prev) => [...prev, msg.step])
+            } else if (msg.type === 'result') {
+              result = msg.data
+            } else if (msg.type === 'error') {
+              throw new Error(msg.error)
+            }
+          } catch (e) {
+            if (e instanceof Error && e.message !== 'Unexpected end of JSON input') throw e
+          }
+        }
+      }
+
+      if (!result) throw new Error('No result received from server')
+
+      setPrepData(result)
       await fetchDocuments()
-      return data
+      return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate doctor prep')
       return undefined
@@ -186,6 +226,7 @@ export function useDoctorPrep() {
     prepData,
     isGenerating,
     error,
+    liveSteps,
     fetchDocuments,
     generate,
     loadDocument,

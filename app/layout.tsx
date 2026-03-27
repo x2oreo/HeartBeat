@@ -4,6 +4,14 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'HeartGuard',
   manifest: '/manifest.webmanifest',
+  openGraph: {
+    title: 'HeartGuard',
+    images: [{ url: '/icons/512.png', width: 512, height: 512 }],
+  },
+  icons: {
+    icon: '/icons/512.png',
+    apple: '/icons/512.png',
+  },
 }
 
 export const viewport = {

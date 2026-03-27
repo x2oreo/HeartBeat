@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 type PairingStatus = {
   paired: boolean
@@ -10,56 +10,50 @@ type PairingStatus = {
 }
 
 export function WatchPairingCard() {
-  const [pairingCode, setPairingCode] = useState<string | null>(null)
-  const [expiresIn, setExpiresIn] = useState<number>(0)
+  const [code, setCode] = useState('')
   const [status, setStatus] = useState<PairingStatus | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const fetchStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/watch/pair')
-      if (res.ok) {
-        const data = await res.json() as PairingStatus
-        setStatus(data)
-      }
+      if (res.ok) setStatus(await res.json() as PairingStatus)
     } catch {
       // Non-critical
     }
   }, [])
 
-  const generateCode = async () => {
+  useEffect(() => { fetchStatus() }, [fetchStatus])
+
+  const claimCode = async () => {
+    if (!/^\d{6}$/.test(code)) {
+      setError('Enter the 6-digit code shown on your watch')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/watch/pair', { method: 'POST' })
-      if (!res.ok) throw new Error('Failed to generate code')
-      const data = await res.json() as { code: string; expiresInSeconds: number }
-      setPairingCode(data.code)
-      setExpiresIn(data.expiresInSeconds)
-
-      // Start countdown
-      const interval = setInterval(() => {
-        setExpiresIn((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            setPairingCode(null)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
+      const res = await fetch('/api/watch/pair/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to pair')
+        return
+      }
+      setSuccess(true)
+      setCode('')
+      await fetchStatus()
     } catch {
-      setError('Failed to generate pairing code')
+      setError('Connection error. Try again.')
     } finally {
       setLoading(false)
     }
   }
-
-  // Fetch status on mount
-  useState(() => {
-    fetchStatus()
-  })
 
   const lastSeenText = status?.lastSeen
     ? `Last seen ${new Date(status.lastSeen).toLocaleString()}`
@@ -78,7 +72,7 @@ export function WatchPairingCard() {
         )}
       </div>
 
-      {status?.paired ? (
+      {status?.paired && !success ? (
         <div className="space-y-2">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
             Your Apple Watch is connected to HeartGuard.
@@ -95,7 +89,7 @@ export function WatchPairingCard() {
             </span>
           </div>
           <button
-            onClick={generateCode}
+            onClick={() => { setSuccess(false); setStatus({ ...status, paired: false }) }}
             className="text-xs text-neutral-500 dark:text-neutral-400 underline underline-offset-2 hover:text-neutral-700 dark:hover:text-neutral-300"
           >
             Re-pair watch
@@ -103,34 +97,40 @@ export function WatchPairingCard() {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Pair your Apple Watch to see live heart rate, HRV, and risk data on your dashboard.
-          </p>
-
-          {pairingCode ? (
-            <div className="flex flex-col items-center py-3 space-y-2">
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Enter this code on your Apple Watch:
-              </p>
-              <div className="text-3xl font-mono font-bold tracking-[0.3em] text-neutral-900 dark:text-neutral-100">
-                {pairingCode}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                Expires in {Math.floor(expiresIn / 60)}:{String(expiresIn % 60).padStart(2, '0')}
-              </p>
-            </div>
+          {success ? (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              Watch paired successfully!
+            </p>
           ) : (
-            <button
-              onClick={generateCode}
-              disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900 text-sm font-medium py-2 px-4 hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {loading ? 'Generating...' : 'Pair Watch'}
-            </button>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Open the HeartGuard app on your watch — it will show a 6-digit code. Enter it below.
+            </p>
           )}
 
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          {!success && (
+            <>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(null) }}
+                  placeholder="000000"
+                  className="flex-1 text-center font-mono text-lg tracking-[0.3em] rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={claimCode}
+                  disabled={loading || code.length !== 6}
+                  className="rounded-lg bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900 text-sm font-medium py-2 px-4 hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  {loading ? '…' : 'Pair'}
+                </button>
+              </div>
+              {error && (
+                <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+              )}
+            </>
           )}
         </div>
       )}

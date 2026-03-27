@@ -14,6 +14,17 @@ final class WatchAPIClient: ObservableObject {
     private let session: URLSession
     private var lastHealthDataSent: Date = .distantPast
     private let healthDataInterval: TimeInterval = 30 // Minimum seconds between health data pushes
+    private let remoteLogURL = URL(string: "http://10.1.85.215:4567/log")!
+
+    private func remoteLog(_ msg: String) {
+        let line = "[API] \(msg)"
+        print(line)
+        var req = URLRequest(url: remoteLogURL)
+        req.httpMethod = "POST"
+        req.httpBody = (line + "\n").data(using: .utf8)
+        req.timeoutInterval = 1
+        URLSession.shared.dataTask(with: req).resume()
+    }
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -27,7 +38,7 @@ final class WatchAPIClient: ObservableObject {
     // MARK: - Server URL
 
     var serverBaseURL: String {
-        KeychainHelper.loadServerURL() ?? "https://heartguard.vercel.app"
+        KeychainHelper.loadServerURL() ?? "http://10.1.85.215:3000"
     }
 
     // MARK: - Pairing
@@ -59,9 +70,15 @@ final class WatchAPIClient: ObservableObject {
         return saved
     }
 
-    /// Remove stored credentials and unpair.
-    func unpair() {
+    /// Notify server then remove stored credentials.
+    func unpair() async {
+        do {
+            try await post(path: "/api/watch/unpair", body: [:])
+        } catch {
+            remoteLog("Unpair server call failed (continuing anyway): \(error)")
+        }
         KeychainHelper.deleteToken()
+        KeychainHelper.deleteServerURL()
         isPaired = false
         isConnected = false
     }
@@ -134,11 +151,13 @@ final class WatchAPIClient: ObservableObject {
             "triggeredAt": ISO8601DateFormatter().string(from: .now),
         ]
 
+        remoteLog("Sending alert — risk:\(riskLevel.apiValue) hr:\(Int(heartRate)) hrv:\(Int(hrv))")
         do {
             try await post(path: "/api/watch/alert", body: payload)
             isConnected = true
+            remoteLog("Alert sent OK")
         } catch {
-            print("[API] Alert send failed: \(error)")
+            remoteLog("Alert send FAILED: \(error)")
             isConnected = false
         }
     }

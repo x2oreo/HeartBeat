@@ -60,6 +60,10 @@ enum KeychainHelper {
         return status == errSecSuccess
     }
 
+    static func deleteServerURL() {
+        delete(key: "server-url")
+    }
+
     static func loadServerURL() -> String? {
         let query: [String: Any] = [
             kSecClass as String:       kSecClassGenericPassword,

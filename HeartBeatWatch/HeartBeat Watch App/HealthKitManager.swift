@@ -435,7 +435,7 @@ final class HealthKitManager: NSObject, ObservableObject {
     }
 
     private func onRiskElevated(_ risk: LongQTRisk) {
-        print("[LongQT] Risk alert — level: \(risk.label), hr: \(Int(heartRate)) bpm, hrv: \(Int(hrv)) ms, rr: \(Int(rrIntervalMs)) ms, stress: \(stressLevel.label), asleep: \(isAsleep), irregularRhythm: \(irregularRhythmDetected), genotype: \(genotype.rawValue), SpO2: \(Int(oxygenSaturation))%, RR: \(Int(respiratoryRate))/min")
+        remoteLog("[RISK] \(risk.label) — hr:\(Int(heartRate)) hrv:\(Int(hrv)) rr:\(Int(rrIntervalMs)) stress:\(stressLevel.label) asleep:\(isAsleep) irregular:\(irregularRhythmDetected) genotype:\(genotype.rawValue) SpO2:\(Int(oxygenSaturation))% RR:\(Int(respiratoryRate))/min")
         let haptic: WKHapticType = risk == .elevated ? .notification : .directionUp
         WKInterfaceDevice.current().play(haptic)
         sendNotification(for: risk)

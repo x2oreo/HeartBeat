@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { ScanResultPart } from './parts/ScanResultPart'
 import { MedicationListPart } from './parts/MedicationListPart'
 import { EmergencyCardPart } from './parts/EmergencyCardPart'
@@ -66,8 +67,12 @@ function AssistantBubble({ message }: { message: UIMessage }) {
                   [&>hr]:my-3 [&>hr]:border-text-tertiary/20
                   [&_strong]:font-semibold [&_em]:italic
                   [&_code]:bg-black/5 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[13px]
+                  [&>table]:w-full [&>table]:border-collapse [&>table]:text-[13px] [&>table]:my-2
+                  [&>table_th]:border [&>table_th]:border-separator [&>table_th]:bg-surface [&>table_th]:px-3 [&>table_th]:py-1.5 [&>table_th]:text-left [&>table_th]:font-semibold [&>table_th]:text-text-primary
+                  [&>table_td]:border [&>table_td]:border-separator [&>table_td]:px-3 [&>table_td]:py-1.5 [&>table_td]:text-text-secondary
+                  [&>table_tr:nth-child(even)_td]:bg-surface/50
                 ">
-                  <ReactMarkdown>{part.text}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.text}</ReactMarkdown>
                 </div>
               </div>
             )

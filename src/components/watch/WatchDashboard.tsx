@@ -98,8 +98,18 @@ export function WatchDashboard({ initialData }: WatchDashboardProps) {
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-deep flex items-center justify-center shadow-sm">
             <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
-              <rect x="10" y="6" width="20" height="28" rx="6" stroke="white" strokeWidth="2.5" fill="none" />
-              <polyline points="14,20 17,20 18.5,15 20,25 21.5,13 23,22 24.5,18 26,20" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Watch bands */}
+              <path d="M14 7V2M26 7V2M14 33v5M26 33v5" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Squircle watch body */}
+              <rect x="8" y="7" width="24" height="26" rx="7" stroke="white" strokeWidth="2.5" fill="none" />
+              {/* Digital crown */}
+              <rect x="32" y="16" width="3" height="8" rx="1.5" fill="white" opacity="0.7" />
+              {/* Heart icon */}
+              <path
+                d="M20 26s-6-3.8-6-7.2c0-2 1.5-3.3 3.3-3.3 1.1 0 2 .5 2.7 1.3.7-.8 1.6-1.3 2.7-1.3 1.8 0 3.3 1.3 3.3 3.3 0 3.4-6 7.2-6 7.2z"
+                fill="white"
+                opacity="0.9"
+              />
             </svg>
           </div>
           <div>

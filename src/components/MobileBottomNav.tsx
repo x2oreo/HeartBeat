@@ -27,6 +27,37 @@ const TABS = [
     ),
   },
   {
+    href: '/watch',
+    label: 'Watch',
+    match: (p: string) => p.startsWith('/watch'),
+    icon: (active: boolean) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        {/* Watch band top */}
+        <path d="M8.5 4.5V1.5M15.5 4.5V1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Watch band bottom */}
+        <path d="M8.5 19.5v3M15.5 19.5v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Squircle watch body */}
+        <rect
+          x="5.5" y="4.5" width="13" height="15" rx="4"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          fill={active ? 'currentColor' : 'none'}
+          fillOpacity={active ? 0.1 : 0}
+        />
+        {/* Digital crown */}
+        <rect x="18.5" y="9.5" width="1.5" height="5" rx="0.75" fill="currentColor" opacity={active ? 1 : 0.5} />
+        {/* Heart icon */}
+        <path
+          d="M12 15.5s-3.5-2.2-3.5-4.2c0-1.2.9-2 2-2 .7 0 1.2.3 1.5.8.3-.5.8-.8 1.5-.8 1.1 0 2 .8 2 2 0 2-3.5 4.2-3.5 4.2z"
+          fill={active ? 'currentColor' : 'none'}
+          stroke="currentColor"
+          strokeWidth="1.25"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
     href: '/scan',
     label: 'Scan',
     match: (p: string) => p.startsWith('/scan'),

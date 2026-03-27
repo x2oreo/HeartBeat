@@ -6,7 +6,6 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { Genotype } from '@/types'
 import PhoneInput from '@/components/PhoneInput'
 import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
-import { WatchPairingCard } from '@/components/settings/WatchPairingCard'
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -576,9 +575,6 @@ export default function SettingsPage() {
             </button>
           )}
         </Section>
-
-        {/* ── Apple Watch ───────────────────────────────────────── */}
-        <WatchPairingCard />
 
         {/* ── Account ──────────────────────────────────────────── */}
         <Section title="Account">

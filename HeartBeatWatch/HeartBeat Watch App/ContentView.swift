@@ -7,12 +7,24 @@ struct ContentView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
-                RiskBanner(risk: hk.riskLevel, irregularRhythm: hk.irregularRhythmDetected, genotype: hk.genotype, recentDrugRisk: hk.recentDrugRisk)
+                if hk.isWarmingUp {
+                    VStack(spacing: 6) {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                        Text("Reading sensors…")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                } else {
+                    RiskBanner(risk: hk.riskLevel, irregularRhythm: hk.irregularRhythmDetected, genotype: hk.genotype, recentDrugRisk: hk.recentDrugRisk)
+                }
 
                 HeartRateCard(bpm: hk.heartRate, rrMs: hk.rrIntervalMs)
 
                 HStack(spacing: 8) {
-                    MetricCard(label: "HRV (SDNN)", value: hk.hrv > 0 ? "\(Int(hk.hrv))" : "—",
+                    MetricCard(label: "SDNN", value: hk.hrv > 0 ? "\(Int(hk.hrv))" : "—",
                                unit: "ms", color: hrvColor(hk.hrv))
                     StatusBadge(label: hk.isAsleep ? "Sleeping" : "Awake",
                                 icon: hk.isAsleep ? "moon.fill" : "sun.min.fill",
@@ -22,9 +34,6 @@ struct ContentView: View {
                 HStack(spacing: 8) {
                     MetricCard(label: "Stress", value: hk.stressLevel.label,
                                unit: "", color: hk.stressLevel.color)
-                    if hk.isAsleep {
-                        StatusBadge(label: "Sleep risk", icon: "exclamationmark.moon.fill", color: .orange)
-                    }
                 }
 
                 if hk.restingHR > 0 {
@@ -33,14 +42,18 @@ struct ContentView: View {
                 }
 
                 HStack(spacing: 8) {
-                    if hk.oxygenSaturation > 0 {
-                        MetricCard(label: "SpO2", value: "\(Int(hk.oxygenSaturation))",
-                                   unit: "%", color: hk.oxygenSaturation < 94 ? .red : .blue)
-                    }
-                    if hk.respiratoryRate > 0 {
-                        MetricCard(label: "Resp Rate", value: "\(Int(hk.respiratoryRate))",
-                                   unit: "/min", color: hk.respiratoryRate > 20 ? .orange : .secondary)
-                    }
+                    MetricCard(
+                        label: "SpO2",
+                        value: hk.oxygenSaturation > 0 ? "\(Int(hk.oxygenSaturation))%" : "—",
+                        unit: "",
+                        color: hk.oxygenSaturation > 0 && hk.oxygenSaturation < 94 ? .red : .blue
+                    )
+                    MetricCard(
+                        label: "Resp",
+                        value: hk.respiratoryRate > 0 ? "\(Int(hk.respiratoryRate))" : "—",
+                        unit: hk.respiratoryRate > 0 ? "/min" : "",
+                        color: hk.respiratoryRate > 20 ? .orange : .secondary
+                    )
                 }
 
                 if let recovery = hk.hrRecovery {
@@ -84,9 +97,14 @@ struct ContentView: View {
 #if DEBUG
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
-                Button("Simulate") { hk.simulateSamples() }
-                    .font(.caption)
-                    .foregroundStyle(.blue)
+                HStack(spacing: 12) {
+                    Button("Normal") { hk.simulateNormal() }
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                    Button("Risk") { hk.simulateRisk() }
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
         }
 #endif
@@ -214,13 +232,21 @@ struct MetricCard: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.caption2).foregroundStyle(.secondary)
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    .font(.system(size: 9))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(value)
-                        .font(.title3).fontWeight(.semibold)
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(color)
-                    Text(unit)
-                        .font(.caption2).foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    if !unit.isEmpty {
+                        Text(unit)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
             Spacer()

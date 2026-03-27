@@ -38,7 +38,7 @@ final class WatchAPIClient: ObservableObject {
     // MARK: - Server URL
 
     var serverBaseURL: String {
-        KeychainHelper.loadServerURL() ?? "http://10.1.85.215:3000"
+        KeychainHelper.loadServerURL() ?? "https://qtshield.me"
     }
 
     // MARK: - Pairing

@@ -3,14 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DashboardLayout } from '@/components/DashboardLayout'
 import { DashboardContent } from '@/components/dashboard/DashboardContent'
-import type { CypData } from '@/types'
-
-type CypConflict = {
-  medA: string
-  medB: string
-  enzyme: string
-  type: 'inhibition' | 'induction'
-}
+import type { CypData, CypConflict } from '@/types'
 
 function detectCypConflicts(
   meds: { genericName: string; cypData: CypData | null }[],

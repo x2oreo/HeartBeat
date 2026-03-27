@@ -7,6 +7,30 @@ import type { Genotype } from '@/types'
 import PhoneInput from '@/components/PhoneInput'
 import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
 
+// ── Avatar helpers ────────────────────────────────────────────────────
+
+const AVATAR_HUES = [210, 160, 280, 30, 190, 340, 60]
+
+function avatarColor(email: string): string {
+  let hash = 0
+  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash)
+  const hue = AVATAR_HUES[Math.abs(hash) % AVATAR_HUES.length]
+  return `hsl(${hue} 60% 45%)`
+}
+
+function avatarInitials(firstName: string, lastName: string, email: string): string {
+  const f = firstName.trim()
+  const l = lastName.trim()
+  if (f && l) return (f[0] + l[0]).toUpperCase()
+  if (f) return f.slice(0, 2).toUpperCase()
+  const name = email.split('@')[0]
+  const parts = name.split(/[._-]/)
+  if (parts.length >= 2 && parts[0].length > 0 && parts[1].length > 0) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return name.slice(0, 2).toUpperCase()
+}
+
 // ── Types ────────────────────────────────────────────────────────────
 
 type Contact = { id: string; name: string; phone: string; email?: string; relationship: string }
@@ -306,18 +330,9 @@ export default function SettingsPage() {
         <div className="flex items-center gap-4">
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white select-none shrink-0"
-            style={{ background: `hsl(${(() => { const hues = [210, 160, 280, 30, 190, 340, 60]; let hash = 0; const e = profile?.email ?? ''; for (let i = 0; i < e.length; i++) hash = e.charCodeAt(i) + ((hash << 5) - hash); return hues[Math.abs(hash) % hues.length] })()} 60% 45%)` }}
+            style={{ background: avatarColor(profile?.email ?? '') }}
           >
-            {(() => {
-              const f = firstName.trim()
-              const l = lastName.trim()
-              if (f && l) return (f[0] + l[0]).toUpperCase()
-              if (f) return f.slice(0, 2).toUpperCase()
-              const name = (profile?.email ?? '').split('@')[0]
-              const parts = name.split(/[._-]/)
-              if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-              return name.slice(0, 2).toUpperCase()
-            })()}
+            {avatarInitials(firstName, lastName, profile?.email ?? '')}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-text-primary">

@@ -49,6 +49,15 @@ export type DrugSearchResult = {
   isDTA: boolean
 }
 
+// ── CYP450 Conflict (detected locally between user's medications) ─
+
+export type CypConflict = {
+  medA: string
+  medB: string
+  enzyme: string
+  type: 'inhibition' | 'induction'
+}
+
 // ── Autocomplete (unified local + RxNorm results) ────────────────
 
 export type AutocompleteSource = 'LOCAL' | 'RXNORM' | 'DRUG_TABLE' | 'BG_POSITIVE_LIST'

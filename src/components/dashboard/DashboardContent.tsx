@@ -6,12 +6,7 @@ import { QuickActionsGrid } from './QuickActionsGrid'
 import { HealthMonitorCompact } from './HealthMonitorCompact'
 import { MedicationRiskChart } from './MedicationRiskChart'
 import { ScanActivityChart } from './ScanActivityChart'
-type CypConflict = {
-  medA: string
-  medB: string
-  enzyme: string
-  type: 'inhibition' | 'induction'
-}
+import type { CypConflict } from '@/types'
 
 type DashboardContentProps = {
   user: {

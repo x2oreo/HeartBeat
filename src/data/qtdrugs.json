@@ -404,5 +404,1153 @@
       "inhibits": [],
       "induces": []
     }
+  },
+  {
+    "genericName": "vandetanib",
+    "searchTerms": ["caprelsa", "vandetanib"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Tyrosine kinase inhibitor (TKI)",
+    "primaryUse": "Medullary thyroid cancer",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); carries FDA black box warning for QT prolongation and TdP",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "arsenic trioxide",
+    "searchTerms": ["trisenox", "arsenic trioxide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Antineoplastic agent",
+    "primaryUse": "Acute promyelocytic leukemia (APL)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); dose-dependent QT prolongation with high TdP risk",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "dofetilide",
+    "searchTerms": ["tikosyn", "dofetilide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class III antiarrhythmic",
+    "primaryUse": "Atrial fibrillation and atrial flutter",
+    "qtMechanism": "Selective IKr potassium channel blocker; intentionally prolongs QT interval",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ibutilide",
+    "searchTerms": ["corvert", "ibutilide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class III antiarrhythmic",
+    "primaryUse": "Acute conversion of atrial fibrillation/flutter",
+    "qtMechanism": "Activates slow inward sodium current and blocks IKr; intentionally prolongs QT",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "procainamide",
+    "searchTerms": ["pronestyl", "procan", "procainamide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class IA antiarrhythmic",
+    "primaryUse": "Ventricular arrhythmias, atrial fibrillation",
+    "qtMechanism": "Blocks sodium and IKr potassium channels; prolongs QT interval",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "quinidine",
+    "searchTerms": ["qualaquin", "quinidex", "quinidine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class IA antiarrhythmic",
+    "primaryUse": "Atrial fibrillation, ventricular arrhythmias, malaria",
+    "qtMechanism": "Blocks IKr potassium channel and sodium channels; significant QT prolongation",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "disopyramide",
+    "searchTerms": ["norpace", "disopyramide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Class IA antiarrhythmic",
+    "primaryUse": "Ventricular arrhythmias, hypertrophic cardiomyopathy",
+    "qtMechanism": "Blocks sodium and IKr potassium channels; prolongs QT interval",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "thioridazine",
+    "searchTerms": ["mellaril", "thioridazine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Typical antipsychotic (phenothiazine)",
+    "primaryUse": "Schizophrenia (withdrawn in many countries due to QT risk)",
+    "qtMechanism": "Potent hERG potassium channel blocker; carries FDA black box warning for QT prolongation and TdP",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2C19"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "pimozide",
+    "searchTerms": ["orap", "pimozide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Typical antipsychotic (diphenylbutylpiperidine)",
+    "primaryUse": "Tourette syndrome, refractory schizophrenia",
+    "qtMechanism": "Potent hERG potassium channel blocker; significant QT prolongation risk",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP1A2"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "cisapride",
+    "searchTerms": ["propulsid", "cisapride"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Prokinetic agent (5-HT4 agonist)",
+    "primaryUse": "GERD, gastroparesis (withdrawn from market due to TdP)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); withdrawn due to multiple TdP deaths",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "levomethadyl",
+    "searchTerms": ["orlaam", "levomethadyl", "laam"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Opioid analgesic",
+    "primaryUse": "Opioid dependence treatment (withdrawn due to TdP)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); withdrawn from market due to fatal TdP",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2B6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sevoflurane",
+    "searchTerms": ["ultane", "sevorane", "sevoflurane"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Inhalation anesthetic",
+    "primaryUse": "General anesthesia induction and maintenance",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); QT prolongation observed during anesthesia",
+    "cyp": {
+      "metabolizedBy": ["CYP2E1"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "pentamidine",
+    "searchTerms": ["pentam", "nebupent", "pentamidine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Antiprotozoal agent",
+    "primaryUse": "Pneumocystis pneumonia (PCP), leishmaniasis",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); significant QT prolongation especially with IV use",
+    "cyp": {
+      "metabolizedBy": ["CYP2C19"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "probucol",
+    "searchTerms": ["lorelco", "probucol"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Cholesterol-lowering agent",
+    "primaryUse": "Hypercholesterolemia (withdrawn from market)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); withdrawn due to QT prolongation risk",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sparfloxacin",
+    "searchTerms": ["zagam", "sparfloxacin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Fluoroquinolone antibiotic",
+    "primaryUse": "Respiratory infections (withdrawn due to QT risk and phototoxicity)",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); withdrawn for significant QT prolongation",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "terfenadine",
+    "searchTerms": ["seldane", "terfenadine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Second-generation antihistamine (withdrawn)",
+    "primaryUse": "Allergic rhinitis (withdrawn due to fatal TdP arrhythmias)",
+    "qtMechanism": "Potent hERG potassium channel blocker; TdP risk especially when combined with CYP3A4 inhibitors",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "astemizole",
+    "searchTerms": ["hismanal", "astemizole"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": true,
+    "drugClass": "Second-generation antihistamine (withdrawn)",
+    "primaryUse": "Allergic rhinitis (withdrawn due to fatal TdP arrhythmias)",
+    "qtMechanism": "Potent hERG potassium channel blocker; withdrawn due to TdP deaths, especially with CYP3A4 inhibitors",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "flecainide",
+    "searchTerms": ["tambocor", "flecainide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Class IC antiarrhythmic",
+    "primaryUse": "Supraventricular and ventricular arrhythmias",
+    "qtMechanism": "Blocks cardiac sodium channels; can widen QRS and prolong QT in some patients",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "chloroquine",
+    "searchTerms": ["aralen", "chloroquine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Antimalarial",
+    "primaryUse": "Malaria treatment and prophylaxis",
+    "qtMechanism": "Blocks hERG potassium channel (IKr); QT prolongation risk especially at high doses",
+    "cyp": {
+      "metabolizedBy": ["CYP2C8", "CYP3A4"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "oxaliplatin",
+    "searchTerms": ["eloxatin", "oxaliplatin"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Platinum-based antineoplastic",
+    "primaryUse": "Colorectal cancer (combination chemotherapy)",
+    "qtMechanism": "QT prolongation reported; mechanism not fully elucidated, may involve electrolyte changes",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ranolazine",
+    "searchTerms": ["ranexa", "ranolazine"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Antianginal agent",
+    "primaryUse": "Chronic stable angina",
+    "qtMechanism": "Blocks late sodium current and IKr; dose-dependent QT prolongation",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2D6"],
+      "inhibits": ["CYP2D6", "CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "anagrelide",
+    "searchTerms": ["agrylin", "anagrelide"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Phosphodiesterase III inhibitor",
+    "primaryUse": "Essential thrombocythemia (platelet reduction)",
+    "qtMechanism": "QT prolongation observed; mechanism involves PDE3 inhibition and possible hERG block",
+    "cyp": {
+      "metabolizedBy": ["CYP1A2"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "bedaquiline",
+    "searchTerms": ["sirturo", "bedaquiline"],
+    "riskCategory": "KNOWN_RISK",
+    "isDTA": false,
+    "drugClass": "Diarylquinoline antimycobacterial",
+    "primaryUse": "Multidrug-resistant tuberculosis (MDR-TB)",
+    "qtMechanism": "QT prolongation observed in clinical trials; carries FDA black box warning",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "amitriptyline",
+    "searchTerms": ["elavil", "endep", "amitriptyline"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Depression, neuropathic pain, migraine prophylaxis",
+    "qtMechanism": "Blocks cardiac sodium and potassium channels; QT prolongation risk especially in overdose",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2C19", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "nortriptyline",
+    "searchTerms": ["pamelor", "aventyl", "nortriptyline"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Depression, neuropathic pain",
+    "qtMechanism": "Blocks cardiac sodium and potassium channels; lower risk than amitriptyline",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "imipramine",
+    "searchTerms": ["tofranil", "imipramine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Depression, enuresis, panic disorder",
+    "qtMechanism": "Blocks cardiac sodium and potassium channels; QT prolongation risk especially in overdose",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2C19", "CYP1A2"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "desipramine",
+    "searchTerms": ["norpramin", "desipramine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Depression, neuropathic pain",
+    "qtMechanism": "Blocks cardiac sodium channels; QT prolongation risk in overdose",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "clomipramine",
+    "searchTerms": ["anafranil", "clomipramine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Obsessive-compulsive disorder, depression",
+    "qtMechanism": "Blocks cardiac sodium and potassium channels; QT prolongation risk",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4", "CYP1A2"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "doxepin",
+    "searchTerms": ["sinequan", "silenor", "doxepin"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Tricyclic antidepressant (TCA)",
+    "primaryUse": "Depression, anxiety, insomnia, pruritus",
+    "qtMechanism": "Blocks cardiac sodium and potassium channels; QT prolongation risk in overdose",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2C19"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "fluoxetine",
+    "searchTerms": ["prozac", "sarafem", "fluoxetine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "SSRI antidepressant",
+    "primaryUse": "Depression, OCD, panic disorder, bulimia",
+    "qtMechanism": "Mild QT prolongation; also a strong CYP2D6 inhibitor raising levels of other QT drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2C9"],
+      "inhibits": ["CYP2D6", "CYP2C19"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sertraline",
+    "searchTerms": ["zoloft", "sertraline"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "SSRI antidepressant",
+    "primaryUse": "Depression, OCD, panic disorder, PTSD, social anxiety",
+    "qtMechanism": "Mild QT prolongation risk at higher doses",
+    "cyp": {
+      "metabolizedBy": ["CYP2B6", "CYP2C19", "CYP3A4"],
+      "inhibits": ["CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "venlafaxine",
+    "searchTerms": ["effexor", "venlafaxine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "SNRI antidepressant",
+    "primaryUse": "Depression, generalized anxiety, social anxiety, panic disorder",
+    "qtMechanism": "QT prolongation reported, especially in overdose; blocks cardiac sodium channels at high concentrations",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "mirtazapine",
+    "searchTerms": ["remeron", "mirtazapine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antidepressant (noradrenergic and specific serotonergic)",
+    "primaryUse": "Depression, insomnia, appetite stimulation",
+    "qtMechanism": "Mild QT prolongation reported in post-marketing data",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2D6", "CYP1A2"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "trazodone",
+    "searchTerms": ["desyrel", "oleptro", "trazodone"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Serotonin modulator antidepressant",
+    "primaryUse": "Depression, insomnia",
+    "qtMechanism": "QT prolongation reported; blocks hERG channel at higher concentrations",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "lithium",
+    "searchTerms": ["lithobid", "eskalith", "lithium"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Mood stabilizer",
+    "primaryUse": "Bipolar disorder (manic and depressive episodes)",
+    "qtMechanism": "QT prolongation and T-wave changes reported; mechanism involves altered ion channel function",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "olanzapine",
+    "searchTerms": ["zyprexa", "olanzapine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic",
+    "primaryUse": "Schizophrenia, bipolar disorder",
+    "qtMechanism": "Mild QT prolongation; lower risk than other antipsychotics",
+    "cyp": {
+      "metabolizedBy": ["CYP1A2", "CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ziprasidone",
+    "searchTerms": ["geodon", "zeldox", "ziprasidone"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic",
+    "primaryUse": "Schizophrenia, bipolar mania",
+    "qtMechanism": "Moderate QT prolongation; highest QT risk among atypical antipsychotics",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP1A2"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "aripiprazole",
+    "searchTerms": ["abilify", "aripiprazole"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic (partial dopamine agonist)",
+    "primaryUse": "Schizophrenia, bipolar disorder, depression adjunct, irritability in autism",
+    "qtMechanism": "Minimal QT prolongation; one of the lower-risk antipsychotics",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "clozapine",
+    "searchTerms": ["clozaril", "fazaclo", "clozapine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Atypical antipsychotic",
+    "primaryUse": "Treatment-resistant schizophrenia",
+    "qtMechanism": "QT prolongation reported; also risk of myocarditis and cardiomyopathy",
+    "cyp": {
+      "metabolizedBy": ["CYP1A2", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "tamoxifen",
+    "searchTerms": ["nolvadex", "soltamox", "tamoxifen"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Selective estrogen receptor modulator (SERM)",
+    "primaryUse": "Breast cancer treatment and prevention",
+    "qtMechanism": "QT prolongation reported; active metabolite endoxifen may block hERG channel",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sorafenib",
+    "searchTerms": ["nexavar", "sorafenib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Multi-kinase inhibitor (TKI)",
+    "primaryUse": "Hepatocellular carcinoma, renal cell carcinoma, thyroid cancer",
+    "qtMechanism": "QT prolongation reported in clinical trials; monitor ECG during treatment",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sunitinib",
+    "searchTerms": ["sutent", "sunitinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Multi-kinase inhibitor (TKI)",
+    "primaryUse": "Renal cell carcinoma, gastrointestinal stromal tumors (GIST)",
+    "qtMechanism": "QT prolongation reported; dose-dependent effect on cardiac repolarization",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "nilotinib",
+    "searchTerms": ["tasigna", "nilotinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "BCR-ABL tyrosine kinase inhibitor",
+    "primaryUse": "Chronic myeloid leukemia (CML)",
+    "qtMechanism": "Blocks hERG potassium channel; carries FDA black box warning for QT prolongation and sudden death",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4", "CYP2C8", "CYP2C9", "CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "dasatinib",
+    "searchTerms": ["sprycel", "dasatinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "BCR-ABL tyrosine kinase inhibitor",
+    "primaryUse": "Chronic myeloid leukemia (CML), acute lymphoblastic leukemia (ALL)",
+    "qtMechanism": "QT prolongation reported in clinical trials",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "pazopanib",
+    "searchTerms": ["votrient", "pazopanib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Multi-kinase inhibitor (TKI)",
+    "primaryUse": "Renal cell carcinoma, soft tissue sarcoma",
+    "qtMechanism": "QT prolongation reported; monitor ECG during treatment",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4", "CYP2C8", "CYP2D6"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "lapatinib",
+    "searchTerms": ["tykerb", "tyverb", "lapatinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Dual EGFR/HER2 tyrosine kinase inhibitor",
+    "primaryUse": "HER2-positive metastatic breast cancer",
+    "qtMechanism": "QT prolongation reported; avoid with other QT-prolonging drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP3A5"],
+      "inhibits": ["CYP3A4", "CYP2C8"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "crizotinib",
+    "searchTerms": ["xalkori", "crizotinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "ALK/ROS1 tyrosine kinase inhibitor",
+    "primaryUse": "ALK-positive non-small cell lung cancer",
+    "qtMechanism": "QT prolongation and bradycardia reported; monitor ECG",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ceritinib",
+    "searchTerms": ["zykadia", "ceritinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "ALK tyrosine kinase inhibitor",
+    "primaryUse": "ALK-positive non-small cell lung cancer",
+    "qtMechanism": "QT prolongation reported; concentration-dependent effect",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4", "CYP2C9"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "osimertinib",
+    "searchTerms": ["tagrisso", "osimertinib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Third-generation EGFR tyrosine kinase inhibitor",
+    "primaryUse": "EGFR-mutated non-small cell lung cancer",
+    "qtMechanism": "QT prolongation reported; dose-dependent effect on cardiac repolarization",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "ribociclib",
+    "searchTerms": ["kisqali", "ribociclib"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "CDK4/6 inhibitor",
+    "primaryUse": "HR-positive, HER2-negative metastatic breast cancer",
+    "qtMechanism": "Concentration-dependent QT prolongation; ECG monitoring required",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": ["CYP3A4"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "tacrolimus",
+    "searchTerms": ["prograf", "advagraf", "envarsus", "tacrolimus"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Calcineurin inhibitor (immunosuppressant)",
+    "primaryUse": "Organ transplant rejection prophylaxis",
+    "qtMechanism": "QT prolongation reported; may be related to electrolyte disturbances (hypomagnesemia, hypokalemia)",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP3A5"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "metronidazole",
+    "searchTerms": ["flagyl", "metrogel", "metronidazole"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Nitroimidazole antibiotic/antiprotozoal",
+    "primaryUse": "Anaerobic bacterial infections, C. difficile, protozoal infections",
+    "qtMechanism": "QT prolongation reported; risk increases when combined with other QT-prolonging drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2C9"],
+      "inhibits": ["CYP2C9"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "loperamide",
+    "searchTerms": ["imodium", "loperamide"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Opioid receptor agonist (peripheral)",
+    "primaryUse": "Diarrhea (acute and chronic)",
+    "qtMechanism": "Blocks hERG potassium channel at supratherapeutic doses; FDA warning for cardiac events with abuse/misuse",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2C8"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "sumatriptan",
+    "searchTerms": ["imitrex", "sumatriptan"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "5-HT1B/1D receptor agonist (triptan)",
+    "primaryUse": "Acute migraine and cluster headache",
+    "qtMechanism": "Coronary vasospasm can affect cardiac repolarization; QT effects reported rarely",
+    "cyp": {
+      "metabolizedBy": ["MAO-A"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "granisetron",
+    "searchTerms": ["kytril", "sancuso", "granisetron"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "5-HT3 receptor antagonist (antiemetic)",
+    "primaryUse": "Chemotherapy-induced and post-operative nausea/vomiting",
+    "qtMechanism": "QT prolongation reported; similar mechanism to ondansetron but potentially lower risk",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP1A1"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "dolasetron",
+    "searchTerms": ["anzemet", "dolasetron"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "5-HT3 receptor antagonist (antiemetic)",
+    "primaryUse": "Chemotherapy-induced and post-operative nausea/vomiting",
+    "qtMechanism": "Blocks hERG potassium channel; IV form withdrawn for chemotherapy-induced nausea due to QT risk",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "famotidine",
+    "searchTerms": ["pepcid", "famotidine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Histamine H2 receptor antagonist",
+    "primaryUse": "GERD, peptic ulcers, heartburn",
+    "qtMechanism": "QT prolongation reported in post-marketing surveillance; risk generally low at standard doses",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "promethazine",
+    "searchTerms": ["phenergan", "promethazine"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Phenothiazine antihistamine/antiemetic",
+    "primaryUse": "Nausea, allergies, motion sickness, sedation",
+    "qtMechanism": "Blocks hERG potassium channel; QT prolongation risk especially with IV use or high doses",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP2B6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "trimethoprim-sulfamethoxazole",
+    "searchTerms": ["bactrim", "septra", "cotrimoxazole", "tmp-smx", "trimethoprim-sulfamethoxazole", "trimethoprim"],
+    "riskCategory": "POSSIBLE_RISK",
+    "isDTA": false,
+    "drugClass": "Sulfonamide antibiotic combination",
+    "primaryUse": "UTI, respiratory infections, PCP prophylaxis",
+    "qtMechanism": "QT prolongation reported; trimethoprim may block hERG channel; can cause hyperkalemia affecting cardiac conduction",
+    "cyp": {
+      "metabolizedBy": ["CYP2C9"],
+      "inhibits": ["CYP2C8", "CYP2C9"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "furosemide",
+    "searchTerms": ["lasix", "furosemide"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Loop diuretic",
+    "primaryUse": "Edema, heart failure, hypertension",
+    "qtMechanism": "Indirect QT risk via hypokalemia and hypomagnesemia; electrolyte depletion potentiates QT-prolonging drugs",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "hydrochlorothiazide",
+    "searchTerms": ["hctz", "microzide", "hydrodiuril", "hydrochlorothiazide"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Thiazide diuretic",
+    "primaryUse": "Hypertension, edema",
+    "qtMechanism": "Indirect QT risk via hypokalemia and hypomagnesemia; electrolyte depletion potentiates QT-prolonging drugs",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "indapamide",
+    "searchTerms": ["lozol", "indapamide"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Thiazide-like diuretic",
+    "primaryUse": "Hypertension, edema",
+    "qtMechanism": "Indirect QT risk via hypokalemia; also direct QT prolongation reported at higher doses",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "amphotericin B",
+    "searchTerms": ["fungizone", "ambisome", "abelcet", "amphotericin b", "amphotericin"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Polyene antifungal",
+    "primaryUse": "Severe systemic fungal infections",
+    "qtMechanism": "Indirect QT risk via severe hypokalemia and hypomagnesemia; nephrotoxicity worsens electrolyte depletion",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "albuterol",
+    "searchTerms": ["ventolin", "proventil", "proair", "salbutamol", "albuterol"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Short-acting beta-2 adrenergic agonist (bronchodilator)",
+    "primaryUse": "Asthma, COPD, bronchospasm",
+    "qtMechanism": "Indirect QT risk via hypokalemia from beta-2 stimulation; risk increases with high doses or nebulized use",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "terbutaline",
+    "searchTerms": ["brethine", "bricanyl", "terbutaline"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Beta-2 adrenergic agonist (bronchodilator/tocolytic)",
+    "primaryUse": "Asthma, bronchospasm, preterm labor",
+    "qtMechanism": "Indirect QT risk via hypokalemia from beta-2 stimulation; tachycardia also contributes to arrhythmia risk",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "atomoxetine",
+    "searchTerms": ["strattera", "atomoxetine"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Selective norepinephrine reuptake inhibitor",
+    "primaryUse": "ADHD (attention deficit hyperactivity disorder)",
+    "qtMechanism": "QT prolongation reported at therapeutic doses; risk increases with CYP2D6 poor metabolizers",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "alfuzosin",
+    "searchTerms": ["uroxatral", "alfuzosin"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Alpha-1 adrenergic blocker",
+    "primaryUse": "Benign prostatic hyperplasia (BPH)",
+    "qtMechanism": "QT prolongation reported; mechanism may involve hERG channel block at higher concentrations",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "vardenafil",
+    "searchTerms": ["levitra", "staxyn", "vardenafil"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "PDE5 inhibitor",
+    "primaryUse": "Erectile dysfunction",
+    "qtMechanism": "Dose-dependent QT prolongation; avoid with other QT-prolonging drugs or Class IA/III antiarrhythmics",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "donepezil",
+    "searchTerms": ["aricept", "donepezil"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Cholinesterase inhibitor",
+    "primaryUse": "Alzheimer's disease (mild to severe)",
+    "qtMechanism": "QT prolongation reported; cholinergic effects can cause bradycardia contributing to arrhythmia risk",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "galantamine",
+    "searchTerms": ["razadyne", "reminyl", "galantamine"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Cholinesterase inhibitor",
+    "primaryUse": "Alzheimer's disease (mild to moderate)",
+    "qtMechanism": "QT prolongation reported; cholinergic effects cause bradycardia contributing to arrhythmia risk",
+    "cyp": {
+      "metabolizedBy": ["CYP2D6", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "fingolimod",
+    "searchTerms": ["gilenya", "fingolimod"],
+    "riskCategory": "CONDITIONAL_RISK",
+    "isDTA": false,
+    "drugClass": "Sphingosine-1-phosphate receptor modulator",
+    "primaryUse": "Relapsing multiple sclerosis",
+    "qtMechanism": "Causes bradycardia and AV block at treatment initiation; QT prolongation reported, especially with other QT drugs",
+    "cyp": {
+      "metabolizedBy": ["CYP4F2", "CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "atenolol",
+    "searchTerms": ["tenormin", "atenolol"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Beta-blocker (selective beta-1)",
+    "primaryUse": "Hypertension, angina, arrhythmias",
+    "qtMechanism": "No QT prolongation; beta-blockers are protective in LQTS",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "lisinopril",
+    "searchTerms": ["zestril", "prinivil", "lisinopril"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "ACE inhibitor",
+    "primaryUse": "Hypertension, heart failure, post-MI",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "amlodipine",
+    "searchTerms": ["norvasc", "amlodipine"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Calcium channel blocker (dihydropyridine)",
+    "primaryUse": "Hypertension, angina",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "omeprazole",
+    "searchTerms": ["prilosec", "omeprazole"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Proton pump inhibitor (PPI)",
+    "primaryUse": "GERD, peptic ulcers, H. pylori (with antibiotics)",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": ["CYP2C19", "CYP3A4"],
+      "inhibits": ["CYP2C19"],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "pantoprazole",
+    "searchTerms": ["protonix", "pantoprazole"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Proton pump inhibitor (PPI)",
+    "primaryUse": "GERD, erosive esophagitis",
+    "qtMechanism": "No known QT prolongation effect",
+    "cyp": {
+      "metabolizedBy": ["CYP2C19"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "cetirizine",
+    "searchTerms": ["zyrtec", "cetirizine"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Second-generation antihistamine",
+    "primaryUse": "Allergic rhinitis, urticaria",
+    "qtMechanism": "No known QT prolongation effect; safe antihistamine for LQTS patients",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "loratadine",
+    "searchTerms": ["claritin", "loratadine", "alavert"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Second-generation antihistamine",
+    "primaryUse": "Allergic rhinitis, urticaria",
+    "qtMechanism": "No known QT prolongation effect; safe antihistamine for LQTS patients",
+    "cyp": {
+      "metabolizedBy": ["CYP3A4", "CYP2D6"],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "fexofenadine",
+    "searchTerms": ["allegra", "fexofenadine"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Second-generation antihistamine",
+    "primaryUse": "Allergic rhinitis, urticaria",
+    "qtMechanism": "No known QT prolongation effect; active metabolite of terfenadine but without hERG block",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "doxycycline",
+    "searchTerms": ["vibramycin", "doryx", "doxycycline"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Tetracycline antibiotic",
+    "primaryUse": "Bacterial infections, acne, malaria prophylaxis, Lyme disease",
+    "qtMechanism": "No known QT prolongation effect; safe antibiotic alternative for LQTS patients",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "cephalexin",
+    "searchTerms": ["keflex", "cephalexin"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "First-generation cephalosporin antibiotic",
+    "primaryUse": "Skin, respiratory, urinary, bone infections",
+    "qtMechanism": "No known QT prolongation effect; safe antibiotic alternative for LQTS patients",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
+  },
+  {
+    "genericName": "penicillin V",
+    "searchTerms": ["pen-vk", "veetids", "penicillin v", "penicillin"],
+    "riskCategory": "NOT_LISTED",
+    "isDTA": false,
+    "drugClass": "Penicillin antibiotic",
+    "primaryUse": "Streptococcal infections, dental infections, rheumatic fever prophylaxis",
+    "qtMechanism": "No known QT prolongation effect; safe antibiotic for LQTS patients",
+    "cyp": {
+      "metabolizedBy": [],
+      "inhibits": [],
+      "induces": []
+    }
   }
 ]

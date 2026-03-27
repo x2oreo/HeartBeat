@@ -1,64 +1,37 @@
-import type { DrugInfo, Genotype, CypData } from '@/types'
-
-// ── Combo Analysis Prompt ──────────────────────────────────────────
-
-type MedicationForPrompt = {
-  genericName: string
-  riskCategory: string
-  isDTA: boolean
-  cyp: CypData
-}
-
-export function buildComboAnalysisPrompt(
-  scannedDrug: DrugInfo,
-  currentMedications: MedicationForPrompt[],
-  genotype: Genotype | null,
-) {
-  const medsBlock = currentMedications
-    .map(
-      (m) =>
-        `- ${m.genericName} (Risk: ${m.riskCategory}, DTA: ${m.isDTA}, Metabolized by: ${m.cyp.metabolizedBy.join(', ') || 'unknown'}, Inhibits: ${m.cyp.inhibits.join(', ') || 'none'}, Induces: ${m.cyp.induces.join(', ') || 'none'})`,
-    )
-    .join('\n')
-
-  return `You are a clinical pharmacology AI assistant helping patients with Long QT Syndrome (LQTS) understand drug interaction risks. You MUST be conservative — when in doubt, flag the risk.
-
-## Patient Profile
-- Genotype: ${genotype ?? 'Unknown'}
-
-## Drug Being Scanned
-- Name: ${scannedDrug.genericName}
-- QT Risk: ${scannedDrug.riskCategory}
-- Torsades de Pointes Risk (DTA): ${scannedDrug.isDTA}
-- Drug Class: ${scannedDrug.drugClass}
-- QT Mechanism: ${scannedDrug.qtMechanism}
-- CYP Metabolism: Metabolized by ${scannedDrug.cyp.metabolizedBy.join(', ') || 'unknown'}; Inhibits ${scannedDrug.cyp.inhibits.join(', ') || 'none'}; Induces ${scannedDrug.cyp.induces.join(', ') || 'none'}
-
-## Patient's Current Medications
-${medsBlock || 'None'}
-
-## Task
-1. Analyze the combination risk of the scanned drug with EACH current medication
-2. Consider CYP450 enzyme interactions (inhibition = higher drug levels = more QT risk)
-3. Consider additive QT prolongation when multiple QT-risk drugs are combined
-4. Factor in genotype-specific risks if known
-5. Suggest safer alternatives that treat the same condition but have lower QT risk
-6. Write the summary in plain language a patient can understand — no medical jargon without explanation`
-}
+import type { Genotype, CypData } from '@/types'
 
 // ── Photo Scan Prompt ──────────────────────────────────────────────
 
 export function buildPhotoScanPrompt() {
-  return `You are reading a photo of a medication package, box, label, or pill bottle. Extract the drug name(s) visible in the image.
+  return `You are a medication identification AI reading a photo of a medication package, box, label, pill bottle, or blister pack. Your goal is to extract the medication name(s) so an LQTS patient can check if the drug is safe.
 
-## Rules
-1. Look for the generic name (active ingredient) — this is most important
-2. Also note brand names if visible
-3. Ignore dosage, manufacturer, and other text unless it helps identify the drug
-4. If you can read the text clearly, confidence is HIGH
-5. If partially obscured or blurry, confidence is MEDIUM
-6. If you're guessing, confidence is LOW
-7. Return the raw text you can read from the image`
+## WHAT TO EXTRACT
+1. **Generic name (active ingredient)** — this is the MOST IMPORTANT thing to find. It is usually printed in smaller text below the brand name, sometimes preceded by words like "active ingredient" or the INN name.
+2. **Brand name** — use this to identify the drug if the generic name is not visible. Return the GENERIC name in the "name" field when possible, even if you read the brand name from the package.
+3. **Multiple medications** — if the photo shows multiple medication packages/bottles, extract ALL of them as separate entries.
+
+## WHAT TO IGNORE
+- Dosage amounts (mg, ml) — not needed for identification
+- Manufacturer names (Pfizer, Teva, Mylan, etc.) — these are NOT drug names
+- Warnings, instructions, lot numbers, expiry dates
+- Inactive ingredients / excipients
+- Supplement facts panels (vitamins, minerals) — unless they are prescription medications
+
+## IMAGE QUALITY ASSESSMENT
+- **CLEAR**: Text is sharp and fully legible. You can confidently read drug names.
+- **PARTIAL**: Some text is readable but parts are obscured, angled, or blurry. You can make out drug names but with reduced confidence.
+- **UNREADABLE**: The image is too blurry, dark, overexposed, or the text is not visible at all. You CANNOT extract any drug names. Set this when you genuinely cannot read ANY medication name from the image.
+
+## CONFIDENCE LEVELS
+- **HIGH**: You can clearly read the drug name with no ambiguity.
+- **MEDIUM**: The text is partially obscured, at an angle, or slightly blurry, but you are reasonably confident in your reading.
+- **LOW**: You are guessing based on partial letters or context. This reading may be wrong.
+
+## IMPORTANT
+- If you recognize a brand name, convert it to the generic name when possible (e.g., "Avelox" → name: "moxifloxacin", "Cipro" → name: "ciprofloxacin")
+- If you cannot determine the generic name, return the brand name as-is
+- Do NOT hallucinate drug names — only return what you can actually read from the image
+- If the image shows something that is clearly not a medication (e.g., food, a non-medical product), set imageQuality to UNREADABLE and explain in notes`
 }
 
 // ── Emergency Card Prompt ──────────────────────────────────────────

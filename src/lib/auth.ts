@@ -1,6 +1,8 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
+export { getWatchUser } from '@/lib/watch-auth'
+
 /**
  * Get the current authenticated user from Supabase session.
  * Returns the Supabase user or null if not authenticated.
@@ -26,7 +28,8 @@ export async function getCurrentUser() {
     create: {
       supabaseId: supabaseUser.id,
       email: supabaseUser.email ?? '',
-      name: supabaseUser.user_metadata?.full_name ?? null,
+      firstName: supabaseUser.user_metadata?.first_name ?? null,
+      lastName: supabaseUser.user_metadata?.last_name ?? null,
     },
   })
 

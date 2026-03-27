@@ -1,5 +1,9 @@
 # HeartGuard
 
+## Frontend Design Rule
+
+When building, modifying, or creating any frontend UI (pages, components, layouts, styles), ALWAYS use the `/frontend-design` skill FIRST before writing any code. This applies to any task involving React components, Tailwind styling, page layouts, or visual design work. The skill ensures production-grade, polished UI that avoids generic AI aesthetics.
+
 ## What is HeartGuard?
 
 HeartGuard is an AI-powered medication safety app for people with Long QT Syndrome (LQTS). LQTS is a heart condition affecting 1 in 3,000-5,000 people where certain medications can cause fatal cardiac arrhythmias. Over 190 common medications (antibiotics, antidepressants, antihistamines, pain medications) can prolong the QT interval and trigger sudden cardiac death in these patients.

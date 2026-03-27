@@ -11,7 +11,8 @@ model User {
   id         String   @id @default(uuid()) @db.Uuid
   supabaseId String   @unique @map("supabase_id")
   email      String
-  name       String?
+  firstName  String?  @map("first_name")
+  lastName   String?  @map("last_name")
   genotype   String?  // LQT1, LQT2, LQT3, OTHER, UNKNOWN
   onboarded  Boolean  @default(false)
   createdAt  DateTime @default(now()) @map("created_at")
@@ -20,6 +21,12 @@ model User {
   medications       Medication[]
   scanLogs          ScanLog[]
   emergencyContacts EmergencyContact[]
+  sharedCards       SharedEmergencyCard[]
+  doctorPrepDocs    DoctorPrepDocument[]
+  healthMetrics     HealthMetric[]
+  healthAlerts      HealthAlert[]
+  watchDevice       WatchDevice?
+  apiTokens         ApiToken[]
 
   @@map("users")
 }
@@ -61,10 +68,11 @@ model ScanLog {
 }
 
 model EmergencyContact {
-  id           String @id @default(uuid()) @db.Uuid
-  userId       String @map("user_id") @db.Uuid
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @map("user_id") @db.Uuid
   name         String
   phone        String
+  email        String?
   relationship String // cardiologist, family, friend
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -73,14 +81,132 @@ model EmergencyContact {
   @@map("emergency_contacts")
 }
 
-model HealthMetric {
+model NotificationLog {
   id        String   @id @default(uuid()) @db.Uuid
-  type      String
-  value     Float
-  unit      String
-  timestamp DateTime
-  deviceId  String   @map("device_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  alertId   String   @map("alert_id") @db.Uuid
+  contactId String   @map("contact_id") @db.Uuid
+  channel   String   // SMS, VOICE, EMAIL
+  status    String   // SENT, FAILED
+  error     String?
+  sentAt    DateTime @default(now()) @map("sent_at")
 
+  @@index([alertId])
+  @@map("notification_logs")
+}
+
+model SharedEmergencyCard {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  slug      String   @unique
+  cardData  Json     @map("card_data")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("shared_emergency_cards")
+}
+
+model DoctorPrepDocument {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  doctorSpecialty String   @map("doctor_specialty")
+  customSpecialty String?  @map("custom_specialty")
+  language        String
+  customLanguage  String?  @map("custom_language")
+  documentData    Json     @map("document_data")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("doctor_prep_documents")
+}
+
+model HealthMetric {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  heartRate        Float    @map("heart_rate")
+  hrv              Float
+  restingHR        Float    @map("resting_hr")
+  rrIntervalMs     Float    @map("rr_interval_ms")
+  steps            Float
+  activeEnergy     Float    @map("active_energy")
+  riskLevel        String   @map("risk_level")
+  stressLevel      String   @map("stress_level")
+  isAsleep         Boolean  @map("is_asleep")
+  irregularRhythm  Boolean  @map("irregular_rhythm")
+  recordedAt       DateTime @map("recorded_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, recordedAt])
+  @@index([userId, riskLevel])
   @@map("health_metrics")
 }
+
+model HealthAlert {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  riskLevel        String   @map("risk_level")
+  heartRate        Float    @map("heart_rate")
+  hrv              Float
+  stressLevel      String   @map("stress_level")
+  isAsleep         Boolean  @map("is_asleep")
+  irregularRhythm  Boolean  @map("irregular_rhythm")
+  message          String
+  acknowledged     Boolean  @default(false)
+  notifiedContacts Boolean  @default(false) @map("notified_contacts")
+  latitude         Float?
+  longitude        Float?
+  triggeredAt      DateTime @map("triggered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, triggeredAt])
+  @@map("health_alerts")
+}
+
+model WatchDevice {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  apnsToken       String?  @map("apns_token")
+  monitoringMode  String   @default("normal") @map("monitoring_mode")
+  lastSeen        DateTime @map("last_seen")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("watch_devices")
+}
+
+model ApiToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  label     String    @default("watch")
+  lastUsed  DateTime? @map("last_used")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_tokens")
+}
+
+model PairingCode {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  code      String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([code])
+  @@map("pairing_codes")
+}
+

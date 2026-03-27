@@ -55,7 +55,8 @@ type WatchDashboardProps = {
 
 export function WatchDashboard({ initialData }: WatchDashboardProps) {
   const { data, refetch } = useWatchDashboard(initialData)
-  const { latestMetric, isConnected } = useHealthStream()
+  const { latestMetric, connectionStatus } = useHealthStream()
+  const isConnected = connectionStatus === 'live'
   const [acknowledgingId, setAcknowledgingId] = useState<string | null>(null)
 
   const dashData = data ?? initialData

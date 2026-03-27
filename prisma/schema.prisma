@@ -202,12 +202,13 @@ model BgDrug {
 }
 
 model PairingCode {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  code      String   @unique
-  expiresAt DateTime @map("expires_at")
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String?  @map("user_id") @db.Uuid
+  code          String   @unique
+  expiresAt     DateTime @map("expires_at")
+  used          Boolean  @default(false)
+  tokenForWatch String?  @map("token_for_watch")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   @@index([code])
   @@map("pairing_codes")

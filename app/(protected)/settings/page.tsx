@@ -128,7 +128,7 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newContact.name.trim(),
-          phone: newContact.phone.replace(/\D/g, ''),
+          phone: newContact.phone.replace(/[^\d+]/g, ''),
           ...(newContact.email.trim() ? { email: newContact.email.trim() } : {}),
           relationship: newContact.relationship.toLowerCase(),
         }),

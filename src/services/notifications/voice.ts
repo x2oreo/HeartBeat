@@ -1,7 +1,6 @@
 import { getTwilioClient, normalizePhone } from './twilio-client'
 
 function buildTwiml(message: string): string {
-  // Escape XML special characters in the message
   const escaped = message
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -9,7 +8,6 @@ function buildTwiml(message: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;')
 
-  // Repeat message twice with a pause for urgency
   return `<Response><Say voice="alice">${escaped}</Say><Pause length="2"/><Say voice="alice">${escaped}</Say></Response>`
 }
 

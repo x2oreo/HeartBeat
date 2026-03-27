@@ -20,8 +20,8 @@ export function getTwilioClient(): ReturnType<typeof Twilio> | null {
 }
 
 export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/[\s\-()]/g, '')
-  if (digits.startsWith('+')) return digits
-  // Default to US country code if none provided
-  return `+1${digits}`
+  const cleaned = phone.replace(/[\s\-()]/g, '')
+  if (cleaned.startsWith('+')) return cleaned
+  // Number already has country code but missing +
+  return `+${cleaned}`
 }

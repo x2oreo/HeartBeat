@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useHealthStream } from '@/hooks/use-health-stream'
 import type { HealthMetricPayload, HealthAlertPayload, WatchRiskLevel, WatchStressLevel } from '@/types'
 
@@ -122,6 +123,92 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
   )
 }
 
+function SOSButton() {
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ success: boolean; contactsReached: number } | null>(null)
+
+  async function handleSOS() {
+    setSending(true)
+    setResult(null)
+    try {
+      // Try to get location before sending SOS (5s timeout, non-blocking)
+      const body: Record<string, unknown> = {}
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 60000,
+          })
+        }).catch(() => null)
+        if (pos) {
+          body.latitude = pos.coords.latitude
+          body.longitude = pos.coords.longitude
+        }
+      }
+
+      const res = await fetch('/api/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      setResult({ success: res.ok && data.notified, contactsReached: data.contactsReached ?? 0 })
+    } catch {
+      setResult({ success: false, contactsReached: 0 })
+    } finally {
+      setSending(false)
+      setShowConfirm(false)
+      setTimeout(() => setResult(null), 5000)
+    }
+  }
+
+  if (result) {
+    return (
+      <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${
+        result.success
+          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+          : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+      }`}>
+        {result.success
+          ? `SOS sent to ${result.contactsReached} contact${result.contactsReached !== 1 ? 's' : ''}`
+          : 'Failed to send SOS. Check contacts in Settings.'}
+      </div>
+    )
+  }
+
+  if (showConfirm) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-red-600 dark:text-red-400 font-medium">Alert all contacts?</span>
+        <button
+          onClick={handleSOS}
+          disabled={sending}
+          className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {sending ? 'Sending...' : 'Confirm'}
+        </button>
+        <button
+          onClick={() => setShowConfirm(false)}
+          className="px-3 py-1.5 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs font-medium hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setShowConfirm(true)}
+      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors shadow-sm"
+    >
+      SOS
+    </button>
+  )
+}
+
 export function HealthMonitor() {
   const { latestMetric, recentAlerts, isConnected } = useHealthStream()
 
@@ -140,6 +227,7 @@ export function HealthMonitor() {
             </span>
           </div>
         </div>
+        <SOSButton />
       </div>
 
       {/* Live metrics or empty state */}

@@ -9,7 +9,7 @@ import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/pho
 
 // ── Types ────────────────────────────────────────────────────────────
 
-type Contact = { id: string; name: string; phone: string; relationship: string }
+type Contact = { id: string; name: string; phone: string; email?: string; relationship: string }
 
 type ProfileData = {
   firstName: string
@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
   // New contact form state
   const [showAddContact, setShowAddContact] = useState(false)
-  const [newContact, setNewContact] = useState({ firstName: '', lastName: '', phone: '', relationship: 'Cardiologist' })
+  const [newContact, setNewContact] = useState({ firstName: '', lastName: '', phone: '', email: '', relationship: 'Cardiologist' })
   const [newContactErrors, setNewContactErrors] = useState<{ firstName?: string; lastName?: string; phone?: string }>({})
   const [addContactError, setAddContactError] = useState<string | null>(null)
   const [addingContact, setAddingContact] = useState(false)
@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
   // Edit contact form state
   const [editingContactId, setEditingContactId] = useState<string | null>(null)
-  const [editContact, setEditContact] = useState({ firstName: '', lastName: '', phone: '', relationship: 'Cardiologist' })
+  const [editContact, setEditContact] = useState({ firstName: '', lastName: '', phone: '', email: '', relationship: 'Cardiologist' })
   const [editContactErrors, setEditContactErrors] = useState<{ firstName?: string; lastName?: string; phone?: string }>({})
   const [editContactError, setEditContactError] = useState<string | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
@@ -174,13 +174,14 @@ export default function SettingsPage() {
         body: JSON.stringify({
           name: `${newContact.firstName.trim()} ${newContact.lastName.trim()}`,
           phone: newContact.phone,
+          ...(newContact.email.trim() ? { email: newContact.email.trim() } : {}),
           relationship: newContact.relationship.toLowerCase(),
         }),
       })
       if (!res.ok) throw new Error()
       const created: Contact = await res.json()
       setProfile((prev) => prev ? { ...prev, contacts: [...prev.contacts, created] } : prev)
-      setNewContact({ firstName: '', lastName: '', phone: '', relationship: 'Cardiologist' })
+      setNewContact({ firstName: '', lastName: '', phone: '', email: '', relationship: 'Cardiologist' })
       setNewContactErrors({})
       setShowAddContact(false)
     } catch {
@@ -209,13 +210,14 @@ export default function SettingsPage() {
 
   function startEditing(contact: Contact) {
     const nameParts = contact.name.split(' ')
-    const firstName = nameParts[0] ?? ''
-    const lastName = nameParts.slice(1).join(' ')
+    const first = nameParts[0] ?? ''
+    const last = nameParts.slice(1).join(' ')
     setEditingContactId(contact.id)
     setEditContact({
-      firstName,
-      lastName,
+      firstName: first,
+      lastName: last,
       phone: contact.phone,
+      email: contact.email ?? '',
       relationship: contact.relationship.charAt(0).toUpperCase() + contact.relationship.slice(1),
     })
     setEditContactErrors({})
@@ -251,6 +253,7 @@ export default function SettingsPage() {
           contactId: editingContactId,
           name: `${editContact.firstName.trim()} ${editContact.lastName.trim()}`,
           phone: editContact.phone,
+          ...(editContact.email.trim() ? { email: editContact.email.trim() } : { email: null }),
           relationship: editContact.relationship.toLowerCase(),
         }),
       })
@@ -407,6 +410,13 @@ export default function SettingsPage() {
                     onChange={(val) => setEditContact((p) => ({ ...p, phone: val }))}
                     error={editContactErrors.phone}
                   />
+                  <input
+                    type="email"
+                    value={editContact.email}
+                    onChange={(e) => setEditContact((p) => ({ ...p, email: e.target.value }))}
+                    placeholder="Email (optional)"
+                    className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
+                  />
                   <select
                     value={editContact.relationship}
                     onChange={(e) => setEditContact((p) => ({ ...p, relationship: e.target.value }))}
@@ -438,6 +448,7 @@ export default function SettingsPage() {
                   <div>
                     <p className="font-medium text-text-primary">{c.name}</p>
                     <p className="text-sm text-text-secondary">{formatPhoneDisplay(c.phone)}</p>
+                    {c.email && <p className="text-sm text-text-secondary">{c.email}</p>}
                     <p className="text-xs text-text-tertiary capitalize mt-0.5">{c.relationship}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
@@ -498,6 +509,13 @@ export default function SettingsPage() {
                 value={newContact.phone}
                 onChange={(val) => setNewContact((p) => ({ ...p, phone: val }))}
                 error={newContactErrors.phone}
+              />
+              <input
+                type="email"
+                value={newContact.email}
+                onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))}
+                placeholder="Email (optional)"
+                className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
               />
               <select
                 value={newContact.relationship}

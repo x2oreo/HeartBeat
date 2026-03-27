@@ -47,7 +47,6 @@ export async function notifyWatch(
 
   try {
     // Dynamic import to avoid crashes when APNS is not configured
-    // @ts-expect-error -- optional dependency, not installed in all environments
     const apn = await import('@parse/node-apn')
 
     const provider = new apn.Provider({

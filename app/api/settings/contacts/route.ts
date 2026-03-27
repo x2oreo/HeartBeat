@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 const postSchema = z.object({
   name: z.string().min(1).max(100),
   phone: z.string().min(8).max(16).regex(/^\+\d{7,15}$/, 'Phone must be in E.164 format'),
+  email: z.string().email().optional(),
   relationship: z.string().min(1).max(50),
 })
 
@@ -19,7 +20,7 @@ export async function GET() {
 
   const contacts = await prisma.emergencyContact.findMany({
     where: { userId: user.id },
-    select: { id: true, name: true, phone: true, relationship: true },
+    select: { id: true, name: true, phone: true, email: true, relationship: true },
     orderBy: { id: 'asc' },
   })
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
 
   const contact = await prisma.emergencyContact.create({
     data: { userId: user.id, ...parsed.data },
-    select: { id: true, name: true, phone: true, relationship: true },
+    select: { id: true, name: true, phone: true, email: true, relationship: true },
   })
 
   return NextResponse.json(contact, { status: 201 })
@@ -48,6 +49,7 @@ const patchSchema = z.object({
   contactId: z.string().uuid(),
   name: z.string().min(1).max(100),
   phone: z.string().min(8).max(16).regex(/^\+\d{7,15}$/, 'Phone must be in E.164 format'),
+  email: z.string().email().optional().nullable(),
   relationship: z.string().min(1).max(50),
 })
 
@@ -72,9 +74,10 @@ export async function PATCH(request: Request) {
     data: {
       name: parsed.data.name,
       phone: parsed.data.phone,
+      email: parsed.data.email ?? null,
       relationship: parsed.data.relationship,
     },
-    select: { id: true, name: true, phone: true, relationship: true },
+    select: { id: true, name: true, phone: true, email: true, relationship: true },
   })
 
   return NextResponse.json(updated)

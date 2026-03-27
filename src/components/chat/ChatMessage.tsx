@@ -126,8 +126,6 @@ function ToolResultRenderer({ toolName, result }: { toolName: string; result: un
   switch (toolName) {
     case 'scan_drug':
       return <ScanResultPart result={result} />
-    case 'scan_photo':
-      return <ScanResultPart result={result} isPhoto />
     case 'generate_emergency_card':
       return <EmergencyCardPart result={result} />
     case 'generate_doctor_prep':

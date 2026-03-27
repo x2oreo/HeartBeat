@@ -424,7 +424,7 @@ export async function scanDrugByText(
                 genericName: credData.genericName,
                 drugClass: credData.drugClass,
                 primaryUse: 'See prescribing information',
-                qtRiskAssessment: credData.riskCategory === 'KNOWN_RISK' ? 'POSSIBLE_RISK' : 'POSSIBLE_RISK',
+                qtRiskAssessment: 'POSSIBLE_RISK',
                 reasoning: `This drug is classified as ${credData.riskCategory} by CredibleMeds, the gold standard QT risk database.`,
               },
               currentMeds,

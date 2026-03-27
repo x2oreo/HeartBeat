@@ -354,3 +354,20 @@ export type HealthStreamEvent = {
 export type WatchPushPayload =
   | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
   | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }
+
+// ── Chat Conversations ─────────────────────────────────────────────
+
+export type ConversationSummary = {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+}
+
+export type ConversationMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: string
+}

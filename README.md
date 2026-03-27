@@ -6,7 +6,7 @@
 
 <h3 align="center">Medication safety and cardiac monitoring for people whose hearts can't afford a single mistake</h3>
 
-**[Try it live → qtshield.me](https://qtshield.me)**
+<h3 align="center">Try it live at <a href="https://qtshield.me" target="_blank">qtshield.me</a></h3>
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.3-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -27,7 +27,7 @@ The danger comes from two directions.
 
 **Medications.** Over **190 common medications** - antibiotics, antidepressants, antihistamines, anti-nausea drugs - can prolong the QT interval and trigger a fatal arrhythmia (Torsades de Pointes). The risk compounds with every combination. Three genetic subtypes (LQT1, LQT2, LQT3) each respond differently, which means a drug that's fine for one patient is dangerous for another.
 
-**The syndrome itself.** Even with correct medications, LQTS patients can go into arrhythmia from their genotype-specific triggers: LQT1 during physical exertion, LQT2 from a sudden loud sound, LQT3 at rest or during sleep. When it happens, seconds matter. There is no warning, no alarm - just a window between onset and cardiac arrest that closes fast.
+**The syndrome itself.** Even with correct medications, LQTS patients can go into arrhythmia from their genotype-specific triggers: LQT1 during physical exertion, LQT2 from emotional or physiological stress, LQT3 at rest or during sleep. When it happens, seconds matter. There is no warning, no alarm - just a window between onset and cardiac arrest that closes fast.
 
 **The system fails them every day:**
 
@@ -68,11 +68,11 @@ The watch is the patient's continuous guardian - both a sensor and a responder.
 
 1. QTShield detects a threshold crossing - HR spike, rhythm irregularity, HRV drop consistent with arrhythmia onset
 2. The watch vibrates and the patient receives an alert - they can confirm they're okay
-3. If they don't respond, QTShield automatically triggers the full SOS chain: SMS + voice call + email to all emergency contacts, with GPS location, medication list, and genotype
+3. If they don't respond, QTShield automatically triggers the full SOS chain: SMS + voice call + email to all emergency contacts, and a call to local emergency services (911, 112, or the country-specific number) - with GPS location, medication list, and genotype
 
 This escalation loop is the difference between a data dashboard and a safety system. The watch also receives push notifications (APNS) from QTShield in the other direction - when a scan flags a dangerous drug, the patient feels it on their wrist before they take it.
 
-Pairs via 6-digit PIN (5-minute expiry) - no account needed on the watch itself. Watch data flows to the app dashboard via SSE (Server-Sent Events) for real-time display.
+Pairs via 6-digit PIN - no account needed on the watch itself. Watch data flows to the app dashboard via SSE (Server-Sent Events) for real-time display.
 
 ### Layer 2 - Web App
 

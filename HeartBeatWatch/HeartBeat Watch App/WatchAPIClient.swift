@@ -13,7 +13,7 @@ final class WatchAPIClient: ObservableObject {
 
     private let session: URLSession
     private var lastHealthDataSent: Date = .distantPast
-    private let healthDataInterval: TimeInterval = 30 // Minimum seconds between health data pushes
+    private let healthDataInterval: TimeInterval = 600 // Minimum seconds between health data pushes
     private let remoteLogURL = URL(string: "http://10.1.85.215:4567/log")!
 
     private func remoteLog(_ msg: String) {

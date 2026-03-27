@@ -151,14 +151,67 @@ export type EmergencyCardData = {
     name: string
     riskCategory: RiskCategory
     isDTA: boolean
+    dosage?: string
+    brandName?: string
   }[]
   emergencyContacts: EmergencyContactInfo[]
   criticalNotes: string[]
   generatedAt: string
   shareSlug: string
+  patientPhoto?: string
+  personalNotes?: { en: string; bg: string }
+}
+
+// ── Doctor Prep ──────────────────────────────────────────────────────
+
+export type DoctorSpecialty =
+  | 'Cardiologist'
+  | 'Dentist'
+  | 'General Practitioner'
+  | 'Surgeon'
+  | 'Anesthesiologist'
+  | 'Psychiatrist'
+  | 'ENT'
+  | 'Gastroenterologist'
+  | 'Dermatologist'
+  | 'Ophthalmologist'
+  | 'Other'
+
+export type DocumentLanguage =
+  | 'English'
+  | 'Bulgarian'
+  | 'German'
+  | 'French'
+  | 'Spanish'
+  | 'Italian'
+  | 'Portuguese'
+  | 'Turkish'
+  | 'Arabic'
+  | 'Chinese'
+  | 'Japanese'
+  | 'Korean'
+  | 'Other'
+
+export type ProhibitedDrug = {
+  genericName: string
+  drugClass: string
+  riskCategory: RiskCategory
+  isDTA: boolean
+}
+
+export type MedicationImplication = {
+  name: string
+  implication: string
+}
+
+export type MedicationToAvoid = {
+  genericName: string
+  drugClass: string
+  reason: string
 }
 
 export type DoctorPrepData = {
+  id?: string
   patientName: string
   genotype: Genotype | null
   currentMedications: {
@@ -167,22 +220,68 @@ export type DoctorPrepData = {
     isDTA: boolean
     cypProfile: CypData
   }[]
-  procedureType: string | null
+  doctorSpecialty: DoctorSpecialty
+  customSpecialty: string | null
+  language: DocumentLanguage
+  customLanguage: string | null
+  summary: string
+  syndromeExplanation: string
   drugSafetyBrief: string
   questionsForDoctor: string[]
-  medicationsToAvoid: string[]
+  medicationsToAvoid: MedicationToAvoid[]
   saferAlternatives: AlternativeDrug[]
+  prohibitedDrugs: ProhibitedDrug[]
+  medicationImplications: MedicationImplication[]
+  specialtyWarnings: string[]
   generatedAt: string
+}
+
+export type SavedDoctorPrepDocument = {
+  id: string
+  doctorSpecialty: DoctorSpecialty
+  customSpecialty: string | null
+  language: DocumentLanguage
+  customLanguage: string | null
+  generatedAt: string
+}
+
+export type SavedDoctorPrepDocumentWithPreview = SavedDoctorPrepDocument & {
+  patientName: string
+  genotype: string | null
+  medicationNames: string[]
+  avoidCount: number
+  warningCount: number
+  summary: string
 }
 
 // ── Enhanced Document Types ─────────────────────────────────────────
 
 export type EnhancedEmergencyCardData = EmergencyCardData & {
-  aiContent: EmergencyCardAIOutput
+  aiContent?: EmergencyCardAIOutput
 }
 
-export type EnhancedDoctorPrepData = DoctorPrepData & {
-  procedureSpecificWarnings: string[]
+// ── Emergency Card Page Local Types ────────────────────────────────
+
+export type ProfileData = {
+  name: string | null
+  email: string
+  genotype: string | null
+}
+
+export type ContactData = {
+  id: string
+  name: string
+  phone: string
+  relationship: string
+}
+
+export type MedicationData = {
+  id: string
+  genericName: string
+  brandName: string | null
+  dosage: string | null
+  qtRisk: string
+  isDTA: boolean
 }
 
 // ── Watch Health Data ──────────────────────────────────────────────

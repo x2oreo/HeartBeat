@@ -9,6 +9,8 @@ type Mode = 'signin' | 'signup' | 'forgot'
 export function LoginPage() {
   const router = useRouter()
   const [mode, setMode] = useState<Mode>('signin')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,7 +38,16 @@ export function LoginPage() {
         if (error) throw error
         router.push('/')
       } else if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+            },
+          },
+        })
         if (error) throw error
         setMessage('Check your email for a confirmation link.')
       } else {
@@ -119,6 +130,37 @@ export function LoginPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            {mode === 'signup' && (
+              <div className="flex gap-2">
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-text-secondary">
+                    First name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    placeholder="John"
+                    className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-[15px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition"
+                  />
+                </div>
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-text-secondary">
+                    Last name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    placeholder="Doe"
+                    className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-[15px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-text-secondary">
                 Email

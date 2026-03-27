@@ -110,6 +110,26 @@
   animation: shimmer 2s ease-in-out infinite;
 }
 
+/* Chat: pipeline step reveal animation */
+@keyframes stepReveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-step-reveal {
+  animation: stepReveal 0.25s ease-out both;
+}
+
+/* Chat: status pulse for active agent */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-status-pulse {
+  animation: statusPulse 1.5s ease-in-out infinite;
+}
+
 @media print {
   aside { display: none !important; }
   header { display: none !important; }

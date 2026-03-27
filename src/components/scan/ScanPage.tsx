@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import type { ScanResult, RiskCategory, ComboRiskLevel, PipelineStep, PipelineStepStatus } from '@/types'
+import type { ScanResult, PipelineStep, PipelineStepStatus } from '@/types'
+import { riskColor, riskHeadline, comboColor } from '@/lib/risk-utils'
 import { useDrugScan } from '@/hooks/use-drug-scan'
 import { useMedications } from '@/hooks/use-medications'
 import { DrugSearchInput } from '@/components/shared/DrugSearchInput'
@@ -18,53 +19,6 @@ type ScanHistoryEntry = {
   createdAt: string
   fullResult: ScanResult | null
 }
-
-// ── Helpers ─────────────────────────────────────────────────────────
-
-function riskColor(category: RiskCategory, isDTA: boolean) {
-  if (category === 'KNOWN_RISK' || isDTA)
-    return {
-      bg: 'bg-[#FFEDEC]',
-      border: 'border-[#FF3B30]/20',
-      text: 'text-[#C41E16]',
-      icon: 'text-[#FF3B30]',
-      badge: 'bg-[#FFEDEC] text-[#C41E16]',
-    }
-  if (category === 'POSSIBLE_RISK' || category === 'CONDITIONAL_RISK')
-    return {
-      bg: 'bg-[#FFF5E0]',
-      border: 'border-[#FF9F0A]/20',
-      text: 'text-[#8A5600]',
-      icon: 'text-[#FF9F0A]',
-      badge: 'bg-[#FFF5E0] text-[#8A5600]',
-    }
-  return {
-    bg: 'bg-[#EAFBF0]',
-    border: 'border-[#34C759]/20',
-    text: 'text-[#1B7A34]',
-    icon: 'text-[#34C759]',
-    badge: 'bg-[#EAFBF0] text-[#1B7A34]',
-  }
-}
-
-function riskHeadline(category: RiskCategory, isDTA: boolean) {
-  if (category === 'KNOWN_RISK' || isDTA)
-    return { icon: '\u2715', text: 'DANGER — This medication can prolong QT interval' }
-  if (category === 'POSSIBLE_RISK')
-    return { icon: '\u26A0', text: 'Possible QT risk — discuss with your cardiologist' }
-  if (category === 'CONDITIONAL_RISK')
-    return { icon: '\u26A0', text: 'Conditional QT risk — depends on dosage and conditions' }
-  return { icon: '\u2713', text: 'This medication is not on the QT risk list' }
-}
-
-function comboColor(level: ComboRiskLevel) {
-  if (level === 'CRITICAL' || level === 'HIGH')
-    return 'bg-[#FFEDEC] text-[#C41E16]'
-  if (level === 'MEDIUM')
-    return 'bg-[#FFF5E0] text-[#8A5600]'
-  return 'bg-[#EAFBF0] text-[#1B7A34]'
-}
-
 
 function readFileAsBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

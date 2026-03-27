@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { generateEmergencyCard } from '@/services/document-generator'
 import { prisma } from '@/lib/prisma'
+import { enhancedEmergencyCardDataSchema } from '@/ai/document-schemas'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 export async function POST(request: Request) {
   const user = await getCurrentUser()
@@ -10,22 +15,17 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json().catch(() => ({})) as Record<string, unknown>
+    const rawBody: unknown = await request.json().catch(() => ({}))
+    const body: Record<string, unknown> = isRecord(rawBody) ? rawBody : {}
     const extras: { patientPhoto?: string; personalNotes?: { en: string; bg: string } } = {}
 
     if (typeof body.patientPhoto === 'string' && body.patientPhoto.length > 0) {
       extras.patientPhoto = body.patientPhoto
     }
-    if (
-      body.personalNotes &&
-      typeof body.personalNotes === 'object' &&
-      body.personalNotes !== null &&
-      'en' in body.personalNotes &&
-      'bg' in body.personalNotes
-    ) {
-      const notes = body.personalNotes as { en: unknown; bg: unknown }
-      if (typeof notes.en === 'string' && typeof notes.bg === 'string') {
-        extras.personalNotes = { en: notes.en, bg: notes.bg }
+    const pn = body.personalNotes
+    if (isRecord(pn)) {
+      if (typeof pn['en'] === 'string' && typeof pn['bg'] === 'string') {
+        extras.personalNotes = { en: pn['en'], bg: pn['bg'] }
       }
     }
 
@@ -56,7 +56,12 @@ export async function GET() {
       return NextResponse.json({ error: 'No saved card found' }, { status: 404 })
     }
 
-    return NextResponse.json({ ...saved.cardData as object, shareSlug: saved.slug })
+    const parsed = enhancedEmergencyCardDataSchema.safeParse(saved.cardData)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid saved card data' }, { status: 500 })
+    }
+
+    return NextResponse.json({ ...parsed.data, shareSlug: saved.slug })
   } catch (error) {
     console.error('Failed to fetch saved card:', error)
     return NextResponse.json(

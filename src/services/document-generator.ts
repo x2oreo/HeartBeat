@@ -1,4 +1,5 @@
 import { generateObject } from 'ai'
+import { z } from 'zod'
 import { model } from '@/ai/client'
 import {
   emergencyCardAISchema,
@@ -20,8 +21,80 @@ import type {
   SavedDoctorPrepDocumentWithPreview,
 } from '@/types'
 import qtDrugs from '@/data/qtdrugs.json'
+import { groupDrugsByClass } from '@/lib/drug-utils'
 
 const defaultCyp = { metabolizedBy: [] as string[], inhibits: [] as string[], induces: [] as string[] }
+
+const doctorSpecialtySchema = z.enum([
+  'Cardiologist',
+  'Dentist',
+  'General Practitioner',
+  'Surgeon',
+  'Anesthesiologist',
+  'Psychiatrist',
+  'ENT',
+  'Gastroenterologist',
+  'Dermatologist',
+  'Ophthalmologist',
+  'Other',
+])
+
+const documentLanguageSchema = z.enum([
+  'English',
+  'Bulgarian',
+  'German',
+  'French',
+  'Spanish',
+  'Italian',
+  'Portuguese',
+  'Turkish',
+  'Arabic',
+  'Chinese',
+  'Japanese',
+  'Korean',
+  'Other',
+])
+
+const doctorPrepDataSchema = z.object({
+  patientName: z.string(),
+  genotype: genotypeSchema,
+  currentMedications: z.array(z.object({
+    name: z.string(),
+    riskCategory: riskCategorySchema,
+    isDTA: z.boolean(),
+    cypProfile: cypDataSchema,
+  })),
+  doctorSpecialty: doctorSpecialtySchema,
+  customSpecialty: z.string().nullable(),
+  language: documentLanguageSchema,
+  customLanguage: z.string().nullable(),
+  summary: z.string(),
+  syndromeExplanation: z.string(),
+  drugSafetyBrief: z.string(),
+  questionsForDoctor: z.array(z.string()),
+  medicationsToAvoid: z.array(z.object({
+    genericName: z.string(),
+    drugClass: z.string(),
+    reason: z.string(),
+  })),
+  saferAlternatives: z.array(z.object({
+    genericName: z.string(),
+    drugClass: z.string(),
+    whySafer: z.string(),
+  })),
+  prohibitedDrugs: z.array(z.object({
+    genericName: z.string(),
+    drugClass: z.string(),
+    riskCategory: riskCategorySchema,
+    isDTA: z.boolean(),
+  })),
+  medicationImplications: z.array(z.object({
+    name: z.string(),
+    implication: z.string(),
+  })),
+  specialtyWarnings: z.array(z.string()),
+  generatedAt: z.string(),
+})
 
 function parseCypData(raw: unknown) {
   const result = cypDataSchema.safeParse(raw)
@@ -108,25 +181,17 @@ export async function generateEmergencyCard(
 // ── Prohibited Drugs List (deterministic, from qtdrugs.json) ─────
 
 function getProhibitedDrugs(): ProhibitedDrug[] {
-  return (qtDrugs as { genericName: string; drugClass: string; riskCategory: string; isDTA: boolean }[])
+  const entries = qtDrugs as { genericName: string; drugClass: string; riskCategory: string; isDTA: boolean }[]
+  return entries
     .filter((d) => d.riskCategory === 'KNOWN_RISK' || d.isDTA)
-    .map((d) => ({
-      genericName: d.genericName,
-      drugClass: d.drugClass,
-      riskCategory: d.riskCategory as ProhibitedDrug['riskCategory'],
-      isDTA: d.isDTA,
-    }))
+    .flatMap((d) => {
+      const parsed = riskCategorySchema.safeParse(d.riskCategory)
+      if (!parsed.success) return []
+      return [{ genericName: d.genericName, drugClass: d.drugClass, riskCategory: parsed.data, isDTA: d.isDTA }]
+    })
 }
 
-export function groupDrugsByClass(drugs: ProhibitedDrug[]): Map<string, ProhibitedDrug[]> {
-  const byClass = new Map<string, ProhibitedDrug[]>()
-  for (const drug of drugs) {
-    const list = byClass.get(drug.drugClass) ?? []
-    list.push(drug)
-    byClass.set(drug.drugClass, list)
-  }
-  return byClass
-}
+export { groupDrugsByClass }
 
 function buildProhibitedDrugsSummary(drugs: ProhibitedDrug[]): string {
   const byClass = new Map<string, string[]>()
@@ -266,11 +331,14 @@ export async function getDoctorPrepDocuments(userId: string): Promise<SavedDocto
         ? dd.drugSafetyBrief.slice(0, 150)
         : ''
 
+    const specialtyParsed = doctorSpecialtySchema.safeParse(d.doctorSpecialty)
+    const languageParsed = documentLanguageSchema.safeParse(d.language)
+
     return {
       id: d.id,
-      doctorSpecialty: d.doctorSpecialty as DoctorSpecialty,
+      doctorSpecialty: specialtyParsed.success ? specialtyParsed.data : ('Other' satisfies DoctorSpecialty),
       customSpecialty: d.customSpecialty,
-      language: d.language as DocumentLanguage,
+      language: languageParsed.success ? languageParsed.data : ('Other' satisfies DocumentLanguage),
       customLanguage: d.customLanguage,
       generatedAt: d.createdAt.toISOString(),
       patientName: typeof dd?.patientName === 'string' ? dd.patientName : 'Patient',
@@ -296,7 +364,12 @@ export async function getDoctorPrepDocument(
   })
 
   if (!doc) return null
-  return { ...(doc.documentData as unknown as DoctorPrepData), id: doc.id }
+
+  const parsed = doctorPrepDataSchema.safeParse(doc.documentData)
+  if (!parsed.success) {
+    throw new Error(`Invalid doctor prep document data: ${parsed.error.message}`)
+  }
+  return { ...parsed.data, id: doc.id }
 }
 
 export async function deleteDoctorPrepDocument(

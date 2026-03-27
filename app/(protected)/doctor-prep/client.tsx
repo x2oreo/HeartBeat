@@ -521,7 +521,7 @@ export function DoctorPrepClient() {
                           : { backgroundColor: '#F2F2F7', color: '#6E6E73' }
                         }
                       >
-                        <SpecialtyIcon specialty={opt.value} className="w-4.5 h-4.5" />
+                        <SpecialtyIcon specialty={opt.value} className="w-5 h-5" />
                       </div>
                       <span className={`
                         text-[13px] font-medium leading-tight transition-colors duration-200
@@ -623,6 +623,27 @@ export function DoctorPrepClient() {
   }
 
   // ── Document View ──────────────────────────────────────────────
+
+  if (view === 'view' && !prepData) {
+    return (
+      <div className="px-4 sm:px-6 py-6 max-w-3xl mx-auto">
+        <div className="bg-[#FFEDEC] border border-[#FF3B30]/20 rounded-xl p-4 flex items-start gap-3">
+          <svg className="w-5 h-5 text-[#FF3B30] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+          </svg>
+          <div>
+            <p className="text-sm font-semibold text-[#C41E16]">Failed to load document</p>
+            <button
+              onClick={goToDashboard}
+              className="mt-2 text-sm font-medium text-[#FF3B30] hover:underline cursor-pointer"
+            >
+              Back to documents
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (view === 'view' && prepData) {
     return (

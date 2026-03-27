@@ -297,12 +297,13 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
           doc.setFontSize(9)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(180, 40, 40)
-          doc.text(`${med.genericName} (${med.drugClass})`, 14, y + 4)
+          const avoidNameLines = doc.splitTextToSize(`${med.genericName} (${med.drugClass})`, pageWidth - 28)
+          doc.text(avoidNameLines, 14, y + 4)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(100, 60, 60)
           const reasonLines = doc.splitTextToSize(med.reason, pageWidth - 28)
-          doc.text(reasonLines, 14, y + 8)
-          y += reasonLines.length * 4 + 10
+          doc.text(reasonLines, 14, y + 4 + avoidNameLines.length * 4)
+          y += avoidNameLines.length * 4 + reasonLines.length * 4 + 6
         }
         y += 2
       }
@@ -324,8 +325,9 @@ export function DoctorPrepPDFButton({ data }: DoctorPrepPDFProps) {
           doc.text(alt.genericName, 14, y + 4)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(80, 80, 80)
-          doc.text(` (${alt.drugClass}) — ${alt.whySafer}`, 14 + doc.getTextWidth(alt.genericName + ' '), y + 4)
-          y += 6
+          const altDetailLines = doc.splitTextToSize(`(${alt.drugClass}) — ${alt.whySafer}`, pageWidth - 28)
+          doc.text(altDetailLines, 14, y + 8)
+          y += altDetailLines.length * 4 + 8
         }
         y += 4
       }

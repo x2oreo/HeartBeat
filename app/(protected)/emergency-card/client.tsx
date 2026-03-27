@@ -2,35 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import type { EnhancedEmergencyCardData, RiskCategory } from '@/types'
+import type { EnhancedEmergencyCardData, ProfileData, ContactData, MedicationData } from '@/types'
 import { translations } from '@/lib/translations/emergency-card'
-
-type ProfileData = {
-  name: string | null
-  email: string
-  genotype: string | null
-}
-
-type ContactData = {
-  id: string
-  name: string
-  phone: string
-  relationship: string
-}
-
-type MedicationData = {
-  id: string
-  genericName: string
-  brandName: string | null
-  dosage: string | null
-  qtRisk: string
-  isDTA: boolean
-}
+import { genotypeSchema, riskCategorySchema } from '@/ai/document-schemas'
 
 function resizeImage(file: File, maxSize: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
+      const result = reader.result
+      if (typeof result !== 'string') { reject(new Error('Unexpected reader result')); return }
       const img = new Image()
       img.onload = () => {
         const canvas = document.createElement('canvas')
@@ -48,14 +29,14 @@ function resizeImage(file: File, maxSize: number): Promise<string> {
         resolve(canvas.toDataURL('image/jpeg', 0.7))
       }
       img.onerror = () => reject(new Error('Failed to load image'))
-      img.src = reader.result as string
+      img.src = result
     }
     reader.onerror = () => reject(new Error('Failed to read file'))
     reader.readAsDataURL(file)
   })
 }
 
-function getRiskStyle(risk: string) {
+function getRiskStyleLocal(risk: string) {
   switch (risk) {
     case 'KNOWN_RISK': return { bg: 'bg-[#FFEDEC]', text: 'text-[#C41E16]', label: 'Known Risk' }
     case 'POSSIBLE_RISK': return { bg: 'bg-[#FFF5E0]', text: 'text-[#8A5600]', label: 'Possible Risk' }
@@ -105,8 +86,8 @@ export function EmergencyCardClient() {
             setShareUrl(`${window.location.origin}/emergency-card/${existingRes.shareSlug}`)
           }
         }
-      } catch {
-        // Silent fail on load
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load card data')
       } finally {
         setLoading(false)
       }
@@ -128,16 +109,21 @@ export function EmergencyCardClient() {
     setSaving(true)
     setError(null)
 
+    const genotypeParsed = genotypeSchema.safeParse(profile.genotype)
     const cardData: EnhancedEmergencyCardData = {
       patientName: profile.name ?? 'Unknown',
-      genotype: (profile.genotype as EnhancedEmergencyCardData['genotype']) ?? null,
-      medications: medications.map(m => ({
-        name: m.genericName,
-        riskCategory: m.qtRisk as RiskCategory,
-        isDTA: m.isDTA,
-        dosage: m.dosage ?? undefined,
-        brandName: m.brandName ?? undefined,
-      })),
+      genotype: genotypeParsed.success ? genotypeParsed.data : null,
+      medications: medications.flatMap(m => {
+        const riskParsed = riskCategorySchema.safeParse(m.qtRisk)
+        if (!riskParsed.success) return []
+        return [{
+          name: m.genericName,
+          riskCategory: riskParsed.data,
+          isDTA: m.isDTA,
+          dosage: m.dosage ?? undefined,
+          brandName: m.brandName ?? undefined,
+        }]
+      }),
       emergencyContacts: contacts.map(c => ({
         name: c.name,
         phone: c.phone,
@@ -565,7 +551,7 @@ export function EmergencyCardClient() {
         {medications.length > 0 ? (
           <div>
             {medications.map((med, i) => {
-              const risk = getRiskStyle(med.qtRisk)
+              const risk = getRiskStyleLocal(med.qtRisk)
               return (
                 <div key={med.id}>
                   {i > 0 && <div className="h-px bg-separator-light ml-5" />}

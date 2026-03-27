@@ -102,11 +102,14 @@ export function useDoctorPrep() {
     setIsLoadingList(true)
     try {
       const res = await fetch('/api/documents/doctor-prep')
-      if (!res.ok) return
+      if (!res.ok) {
+        setError('Failed to load documents')
+        return
+      }
       const data = await res.json()
       setDocuments(data.documents ?? [])
-    } catch {
-      // silently fail — dashboard will show empty
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load documents')
     } finally {
       setIsLoadingList(false)
     }
@@ -162,11 +165,15 @@ export function useDoctorPrep() {
   const deleteDocument = useCallback(async (id: string) => {
     try {
       const res = await fetch(`/api/documents/doctor-prep/${id}`, { method: 'DELETE' })
-      if (!res.ok) return false
+      if (!res.ok) {
+        setError('Failed to delete document')
+        return false
+      }
       setDocuments((prev) => prev.filter((d) => d.id !== id))
       if (prepData?.id === id) setPrepData(null)
       return true
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete document')
       return false
     }
   }, [prepData])

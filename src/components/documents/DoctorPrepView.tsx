@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import type { DoctorPrepData, ProhibitedDrug } from '@/types'
+import type { DoctorPrepData } from '@/types'
+import { groupDrugsByClass } from '@/lib/drug-utils'
 
 type Props = {
   data: DoctorPrepData
@@ -58,13 +59,7 @@ export function DoctorPrepView({ data }: Props) {
     ? data.customLanguage
     : data.language
 
-  // Group prohibited drugs by class (inline to avoid server import)
-  const prohibitedByClass = new Map<string, ProhibitedDrug[]>()
-  for (const drug of data.prohibitedDrugs) {
-    const list = prohibitedByClass.get(drug.drugClass) ?? []
-    list.push(drug)
-    prohibitedByClass.set(drug.drugClass, list)
-  }
+  const prohibitedByClass = groupDrugsByClass(data.prohibitedDrugs)
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">

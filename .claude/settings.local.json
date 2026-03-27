@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "*",
+      "Bash(npx next:*)"
+    ],
+    "defaultMode": "bypassPermissions"
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"

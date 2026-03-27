@@ -259,6 +259,30 @@ export type EnhancedEmergencyCardData = EmergencyCardData & {
   aiContent?: EmergencyCardAIOutput
 }
 
+// ── Emergency Card Page Local Types ────────────────────────────────
+
+export type ProfileData = {
+  name: string | null
+  email: string
+  genotype: string | null
+}
+
+export type ContactData = {
+  id: string
+  name: string
+  phone: string
+  relationship: string
+}
+
+export type MedicationData = {
+  id: string
+  genericName: string
+  brandName: string | null
+  dosage: string | null
+  qtRisk: string
+  isDTA: boolean
+}
+
 // ── Watch Health Data ──────────────────────────────────────────────
 
 export type WatchRiskLevel = 'NORMAL' | 'CAUTION' | 'ELEVATED'

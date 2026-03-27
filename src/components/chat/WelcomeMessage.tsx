@@ -54,7 +54,7 @@ export function WelcomeMessage({ onQuickAction }: { onQuickAction: (prompt: stri
       </div>
 
       <h2 className="mt-5 text-xl font-semibold text-text-primary">
-        HeartGuard AI
+        QTShield AI
       </h2>
       <p className="mt-2 max-w-sm text-center text-sm text-text-secondary leading-relaxed">
         Your medication safety expert for Long QT Syndrome. I can check drugs, analyze interactions, and help you prepare for doctor visits.
@@ -81,7 +81,7 @@ export function WelcomeMessage({ onQuickAction }: { onQuickAction: (prompt: stri
       </div>
 
       <p className="mt-8 max-w-sm text-center text-[11px] text-text-tertiary">
-        HeartGuard AI provides medication safety information only. Always consult your cardiologist before making medication changes.
+        QTShield AI provides medication safety information only. Always consult your cardiologist before making medication changes.
       </p>
     </div>
   )

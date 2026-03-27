@@ -4,7 +4,7 @@ import Security
 /// Minimal Keychain wrapper for storing the API bearer token.
 enum KeychainHelper {
 
-    private static let service = "com.heartguard.watch"
+    private static let service = "com.qtshield.watch"
 
     // MARK: - Public API
 

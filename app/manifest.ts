@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'HeartGuard',
-    short_name: 'HeartGuard',
+    name: 'QTShield',
+    short_name: 'QTShield',
     description: 'AI-powered medication safety for Long QT Syndrome',
     start_url: '/',
     display: 'standalone',

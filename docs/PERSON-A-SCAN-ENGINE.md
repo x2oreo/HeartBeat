@@ -1,4 +1,4 @@
-# HeartGuard — Person A: Scan Engine
+# QTShield — Person A: Scan Engine
 
 ## Your Role
 You own the CORE product feature — the medication scan. When a user types a drug name or takes a photo, YOUR code decides whether it's dangerous, analyzes combinations with their current meds, and suggests safe alternatives. This is 80% of the demo and 80% of the product value.
@@ -87,7 +87,7 @@ Import from 'zod'. Use .describe() on fields to help Claude understand what we e
 
 ### Task A2: AI Prompts (Hour 4-8)
 
-This is THE HARDEST AND MOST IMPORTANT task in the entire project. The quality of these prompts determines whether HeartGuard gives life-saving advice or dangerous misinformation. Take your time.
+This is THE HARDEST AND MOST IMPORTANT task in the entire project. The quality of these prompts determines whether QTShield gives life-saving advice or dangerous misinformation. Take your time.
 
 **Claude Code prompt:**
 ```

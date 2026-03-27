@@ -1,4 +1,4 @@
-# HeartGuard — Team Workflow (4 Fullstack Developers)
+# QTShield — Team Workflow (4 Fullstack Developers)
 
 > Each person owns a COMPLETE feature stream: UI + API + services + AI.
 > After Phase 0, all 4 work in parallel with ZERO blocking.
@@ -271,7 +271,7 @@ Always start a Claude Code session with:
 
 ### Person A: Starting the scan engine
 ```
-I'm building the Scan Engine stream of HeartGuard. Read CLAUDE.md for project context.
+I'm building the Scan Engine stream of QTShield. Read CLAUDE.md for project context.
 
 My first task: create the AI schemas and prompts for drug combo analysis.
 
@@ -288,7 +288,7 @@ Import types from src/types/index.ts. Import the Anthropic provider from src/ai/
 
 ### Person B: Starting profile
 ```
-I'm building the Profile & Medications stream of HeartGuard. Read CLAUDE.md for project context.
+I'm building the Profile & Medications stream of QTShield. Read CLAUDE.md for project context.
 
 My first task: create the onboarding API and page.
 
@@ -308,7 +308,7 @@ Drug lookup functions are in src/services/drug-lookup.ts. Types in src/types/ind
 
 ### Person C: Starting documents
 ```
-I'm building the Documents & Emergency stream of HeartGuard. Read CLAUDE.md for project context.
+I'm building the Documents & Emergency stream of QTShield. Read CLAUDE.md for project context.
 
 My first task: create the emergency card AI and page.
 
@@ -327,7 +327,7 @@ Also create app/emergency-card/[slug]/page.tsx as a PUBLIC page (no auth) for th
 
 ### Person D: Starting data + landing
 ```
-I'm building the Data & Landing stream of HeartGuard. Read CLAUDE.md for project context.
+I'm building the Data & Landing stream of QTShield. Read CLAUDE.md for project context.
 
 My first task: expand the drug database and create the landing page.
 

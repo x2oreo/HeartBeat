@@ -1,7 +1,7 @@
 import Foundation
 import WatchKit
 
-/// HTTP client for communicating with the HeartGuard Next.js API.
+/// HTTP client for communicating with the QTShield Next.js API.
 /// All requests are authenticated with a bearer token stored in Keychain.
 @MainActor
 final class WatchAPIClient: ObservableObject {

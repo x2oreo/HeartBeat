@@ -81,7 +81,7 @@ export function LoginPage() {
             </svg>
           </div>
           <span className="text-base font-bold text-text-primary tracking-tight">
-            HeartGuard
+            QTShield
           </span>
         </div>
 

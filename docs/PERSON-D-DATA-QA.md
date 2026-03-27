@@ -1,9 +1,9 @@
-# HeartGuard — Person D: Data, Landing, History & QA
+# QTShield — Person D: Data, Landing, History & QA
 
 ## Your Role
 You have the most DIVERSE role on the team. You own three things that nobody else does:
 
-1. **The drug database** (qtdrugs.json) — this is the FOUNDATION of the entire product. Every scan, every combo check, every "is this drug safe?" question is answered by YOUR data. If your data has 50 drugs, HeartGuard knows 50 drugs. If it has 200, it knows 200. Your data quality IS the product quality.
+1. **The drug database** (qtdrugs.json) — this is the FOUNDATION of the entire product. Every scan, every combo check, every "is this drug safe?" question is answered by YOUR data. If your data has 50 drugs, QTShield knows 50 drugs. If it has 200, it knows 200. Your data quality IS the product quality.
 
 2. **The landing page and history** — the first thing judges see (landing) and a useful feature for returning users (history).
 
@@ -56,7 +56,7 @@ src/lib/prisma.ts                        # DB client
 
 ### Task D1: Expand Drug Database (Hour 2-12, ONGOING)
 
-This is your HIGHEST PRIORITY for the first half. Every drug you add makes HeartGuard more useful and more impressive in the demo.
+This is your HIGHEST PRIORITY for the first half. Every drug you add makes QTShield more useful and more impressive in the demo.
 
 **Sources for drug data:**
 - CredibleMeds.org — register for free, access QTdrugs list. This is THE authoritative source.
@@ -136,7 +136,7 @@ It should:
 3. If authenticated but not onboarded, redirect to /onboarding (check user.onboarded from Prisma)
 4. Show a mobile-friendly navigation: bottom tab bar on mobile, sidebar on desktop
 5. Nav items: Dashboard (home icon), Scan (search icon), Medications (pill icon), Emergency Card (heart icon), History (clock icon)
-6. Show HeartGuard logo/name at top
+6. Show QTShield logo/name at top
 7. User avatar/name in corner with settings link
 
 Keep it clean and medical-feeling. The nav should not distract from the main content.
@@ -284,7 +284,7 @@ Show the app on your phone (or phone emulator):
 7. Show Doctor Prep for dental → procedure-specific drug list (10 sec)
 
 Minute 4:00-5:00 — VISION
-"HeartGuard today checks 190+ medications against the CredibleMeds database — the gold standard used by the FDA. Next: Apple Watch integration for real-time heart monitoring after taking medication. And the same architecture works for other conditions — Acute Porphyria has 1,000+ dangerous drugs, G6PD deficiency affects 400 million people worldwide. One platform. Thousands of lives."
+"QTShield today checks 190+ medications against the CredibleMeds database — the gold standard used by the FDA. Next: Apple Watch integration for real-time heart monitoring after taking medication. And the same architecture works for other conditions — Acute Porphyria has 1,000+ dangerous drugs, G6PD deficiency affects 400 million people worldwide. One platform. Thousands of lives."
 
 **Prepare backup plan:** If live demo fails, have screenshots/recording ready.
 

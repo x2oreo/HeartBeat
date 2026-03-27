@@ -1,6 +1,6 @@
-# HeartGuard — Master Build Plan
+# QTShield — Master Build Plan
 
-> This document is the single source of truth for building HeartGuard.
+> This document is the single source of truth for building QTShield.
 > Read it fully before writing any code. Give it as context to Claude Code.
 
 ---
@@ -14,7 +14,7 @@
 | ✅ | Prisma 7.5 + @prisma/adapter-pg (Supabase connection) |
 | ✅ | PWA support (@ducanh2912/next-pwa) |
 | ✅ | ESLint + Husky |
-| ❌ | Prisma schema (only default, no HeartGuard models) |
+| ❌ | Prisma schema (only default, no QTShield models) |
 | ❌ | Any app pages beyond defaults |
 | ❌ | AI / Claude integration |
 | ❌ | src/ directory structure (services, ai, types, data) |
@@ -170,7 +170,7 @@ Team syncs. The text scan flow should work end-to-end: type "Cipro" → see red 
 
 **What it does:** 3-step wizard that new users complete after first login.
 
-**Step 1 — Genotype:** "What is your LQTS type?" Radio buttons: LQT1, LQT2, LQT3, Other, I don't know. Brief explanation of each. "Not sure? Choose 'I don't know' — HeartGuard will use general LQTS safety guidelines."
+**Step 1 — Genotype:** "What is your LQTS type?" Radio buttons: LQT1, LQT2, LQT3, Other, I don't know. Brief explanation of each. "Not sure? Choose 'I don't know' — QTShield will use general LQTS safety guidelines."
 
 **Step 2 — Current Medications:** "What medications do you currently take?" Text input with autocomplete (same as scan). For each added drug, show QT risk badge (run it through lookupDrug). Store with CYP data from JSON.
 
@@ -259,7 +259,7 @@ Everything works. All features complete. Time to prepare the demo.
 
 ### 5.1 Landing Page (Person D — Hour 50-54)
 
-**What it does:** Public landing page at `/`. Explains what HeartGuard is. The "3 seconds vs 3 hours" pitch. Sign Up CTA. This is the first thing the judges see.
+**What it does:** Public landing page at `/`. Explains what QTShield is. The "3 seconds vs 3 hours" pitch. Sign Up CTA. This is the first thing the judges see.
 
 **Sections:** Hero ("Your heart medication guardian"), Problem statement (190+ dangerous drugs, 14 pulled from market), How it works (3 steps: scan → check → safe), Sign up button.
 

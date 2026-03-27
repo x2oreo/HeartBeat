@@ -1,6 +1,6 @@
-# HeartGuard Design System
+# QTShield Design System
 
-Complete reference for implementing HeartGuard's UI. Every decision here serves one goal: a patient in a high-stress moment can instantly understand what they're looking at.
+Complete reference for implementing QTShield's UI. Every decision here serves one goal: a patient in a high-stress moment can instantly understand what they're looking at.
 
 ---
 

@@ -14,7 +14,7 @@ export async function getSupabaseUser() {
 }
 
 /**
- * Get the HeartGuard database user for the current session.
+ * Get the QTShield database user for the current session.
  * Creates the DB user if it doesn't exist yet (first login).
  * Returns null if not authenticated.
  */

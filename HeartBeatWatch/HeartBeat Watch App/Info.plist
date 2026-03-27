@@ -22,7 +22,7 @@
     <string>1</string>
     <!-- HealthKit -->
     <key>NSHealthShareUsageDescription</key>
-    <string>HeartBeat reads heart rate, HRV, resting heart rate, blood oxygen (SpO2), respiratory rate, sleep analysis, irregular rhythm events, steps, and active energy to monitor Long QT risk factors. Data is analyzed locally and sent to your HeartGuard web dashboard for comprehensive cardiac safety monitoring.</string>
+    <string>HeartBeat reads heart rate, HRV, resting heart rate, blood oxygen (SpO2), respiratory rate, sleep analysis, irregular rhythm events, steps, and active energy to monitor Long QT risk factors. Data is analyzed locally and sent to your QTShield web dashboard for comprehensive cardiac safety monitoring.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>HeartBeat writes simulated health data in debug mode for testing purposes.</string>
     <!-- Background delivery via HealthKit observer queries -->

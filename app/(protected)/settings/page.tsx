@@ -6,7 +6,30 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { Genotype } from '@/types'
 import PhoneInput from '@/components/PhoneInput'
 import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/phone-countries'
-import { WatchPairingCard } from '@/components/settings/WatchPairingCard'
+
+// ── Avatar helpers ────────────────────────────────────────────────────
+
+const AVATAR_HUES = [210, 160, 280, 30, 190, 340, 60]
+
+function avatarColor(email: string): string {
+  let hash = 0
+  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash)
+  const hue = AVATAR_HUES[Math.abs(hash) % AVATAR_HUES.length]
+  return `hsl(${hue} 60% 45%)`
+}
+
+function avatarInitials(firstName: string, lastName: string, email: string): string {
+  const f = firstName.trim()
+  const l = lastName.trim()
+  if (f && l) return (f[0] + l[0]).toUpperCase()
+  if (f) return f.slice(0, 2).toUpperCase()
+  const name = email.split('@')[0]
+  const parts = name.split(/[._-]/)
+  if (parts.length >= 2 && parts[0].length > 0 && parts[1].length > 0) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return name.slice(0, 2).toUpperCase()
+}
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -288,7 +311,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-3 py-5 md:px-4 md:py-8">
         <div className="max-w-lg mx-auto space-y-4">
           <div className="h-8 w-32 bg-separator-light rounded-lg animate-pulse" />
           {[1, 2, 3].map((i) => (
@@ -300,10 +323,24 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-3 py-5 md:px-4 md:py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
-        <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
+        {/* ── Profile Header ──────────────────────────────────── */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white select-none shrink-0"
+            style={{ background: avatarColor(profile?.email ?? '') }}
+          >
+            {avatarInitials(firstName, lastName, profile?.email ?? '')}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">
+              {firstName.trim() && lastName.trim() ? `${firstName.trim()} ${lastName.trim()}` : 'Profile & Settings'}
+            </h1>
+            <p className="text-sm text-text-secondary">{profile?.email ?? ''}</p>
+          </div>
+        </div>
 
         {/* ── Name ───────────────────────────────────────────── */}
         <Section title="Your Name">
@@ -455,7 +492,7 @@ export default function SettingsPage() {
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => startEditing(c)}
-                      className="text-text-tertiary hover:text-brand transition-colors p-1"
+                      className="text-text-tertiary hover:text-brand transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label={`Edit ${c.name}`}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -465,7 +502,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => removeContact(c.id)}
                       disabled={removingContactId === c.id}
-                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-1 disabled:opacity-50"
+                      className="text-text-tertiary hover:text-[#FF3B30] transition-colors p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center disabled:opacity-50"
                       aria-label={`Remove ${c.name}`}
                     >
                       {removingContactId === c.id ? (
@@ -553,9 +590,6 @@ export default function SettingsPage() {
             </button>
           )}
         </Section>
-
-        {/* ── Apple Watch ───────────────────────────────────────── */}
-        <WatchPairingCard />
 
         {/* ── Account ──────────────────────────────────────────── */}
         <Section title="Account">

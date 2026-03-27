@@ -1,45 +1,9 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DashboardLayout } from '@/components/DashboardLayout'
-import { HealthMonitor } from '@/components/dashboard/HealthMonitor'
-import type { CypData } from '@/types'
-
-const GENOTYPE_COLORS: Record<string, string> = {
-  LQT1: 'bg-brand-light text-brand-deep',
-  LQT2: 'bg-coral-light text-coral-deep',
-  LQT3: 'bg-teal-light text-teal',
-  OTHER: 'bg-surface text-text-secondary',
-  UNKNOWN: 'bg-surface text-text-secondary',
-}
-
-const RISK_DOT: Record<string, string> = {
-  KNOWN_RISK: 'bg-risk-danger',
-  POSSIBLE_RISK: 'bg-risk-caution',
-  CONDITIONAL_RISK: 'bg-risk-caution',
-  NOT_LISTED: 'bg-risk-safe',
-}
-
-function formatDate(date: Date) {
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const mins = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
-
-type CypConflict = {
-  medA: string
-  medB: string
-  enzyme: string
-  type: 'inhibition' | 'induction'
-}
+import { DashboardContent } from '@/components/dashboard/DashboardContent'
+import type { CypData, CypConflict } from '@/types'
 
 function detectCypConflicts(
   meds: { genericName: string; cypData: CypData | null }[],
@@ -51,25 +15,21 @@ function detectCypConflicts(
       const b = meds[j]
       if (!a.cypData || !b.cypData) continue
 
-      // A inhibits enzyme that B is metabolized by
       for (const enzyme of a.cypData.inhibits) {
         if (b.cypData.metabolizedBy.includes(enzyme)) {
           conflicts.push({ medA: a.genericName, medB: b.genericName, enzyme, type: 'inhibition' })
         }
       }
-      // B inhibits enzyme that A is metabolized by
       for (const enzyme of b.cypData.inhibits) {
         if (a.cypData.metabolizedBy.includes(enzyme)) {
           conflicts.push({ medA: b.genericName, medB: a.genericName, enzyme, type: 'inhibition' })
         }
       }
-      // A induces enzyme that B is metabolized by
       for (const enzyme of a.cypData.induces) {
         if (b.cypData.metabolizedBy.includes(enzyme)) {
           conflicts.push({ medA: a.genericName, medB: b.genericName, enzyme, type: 'induction' })
         }
       }
-      // B induces enzyme that A is metabolized by
       for (const enzyme of b.cypData.induces) {
         if (a.cypData.metabolizedBy.includes(enzyme)) {
           conflicts.push({ medA: b.genericName, medB: a.genericName, enzyme, type: 'induction' })
@@ -85,7 +45,7 @@ export default async function HomePage() {
   if (!user) redirect('/login')
   if (!user.onboarded) redirect('/onboarding')
 
-  const [medications, recentScans] = await Promise.all([
+  const [medications, recentScans, watchDevice] = await Promise.all([
     prisma.medication.findMany({
       where: { userId: user.id, active: true },
       select: { genericName: true, qtRisk: true, isDTA: true, cypData: true },
@@ -96,225 +56,47 @@ export default async function HomePage() {
       take: 5,
       select: { id: true, drugName: true, genericName: true, riskCategory: true, createdAt: true },
     }),
+    prisma.watchDevice.findFirst({
+      where: { userId: user.id },
+      select: { id: true },
+    }),
   ])
 
-  const totalMeds = medications.length
-  const qtMeds = medications.filter((m) => m.qtRisk !== 'NOT_LISTED')
-  const dtaMeds = medications.filter((m) => m.isDTA)
-  const firstName = user.firstName ?? 'there'
-
-  // CYP conflict detection (pure computation, no AI)
   const medsWithCyp = medications.map((m) => ({
     genericName: m.genericName,
     cypData: m.cypData as CypData | null,
   }))
   const cypConflicts = detectCypConflicts(medsWithCyp)
 
-  // Determine overall risk level
   const hasKnownRisk = medications.some((m) => m.qtRisk === 'KNOWN_RISK')
-  const hasDTA = dtaMeds.length > 0
+  const hasDTA = medications.some((m) => m.isDTA)
   const hasCypConflicts = cypConflicts.some((c) => c.type === 'inhibition')
-  const overallRisk = hasDTA || (hasKnownRisk && hasCypConflicts)
-    ? 'CRITICAL'
-    : hasKnownRisk
-      ? 'HIGH'
-      : qtMeds.length > 0
-        ? 'MODERATE'
-        : 'LOW'
+  const qtMeds = medications.filter((m) => m.qtRisk !== 'NOT_LISTED')
 
-  const riskConfig = {
-    CRITICAL: { color: 'bg-risk-danger-bg border-risk-danger/20', text: 'text-risk-danger-text', dot: 'bg-risk-danger', label: 'Critical Risk' },
-    HIGH: { color: 'bg-risk-danger-bg border-risk-danger/20', text: 'text-risk-danger-text', dot: 'bg-risk-danger', label: 'High Risk' },
-    MODERATE: { color: 'bg-risk-caution-bg border-risk-caution/20', text: 'text-risk-caution-text', dot: 'bg-risk-caution', label: 'Moderate Risk' },
-    LOW: { color: 'bg-risk-safe-bg border-risk-safe/20', text: 'text-risk-safe-text', dot: 'bg-risk-safe', label: 'Low Risk' },
-  }
-  const risk = riskConfig[overallRisk]
+  const overallRisk = hasDTA || (hasKnownRisk && hasCypConflicts)
+    ? 'CRITICAL' as const
+    : hasKnownRisk
+      ? 'HIGH' as const
+      : qtMeds.length > 0
+        ? 'MODERATE' as const
+        : 'LOW' as const
+
+  // Serialize dates for client component
+  const serializedScans = recentScans.map((s) => ({
+    ...s,
+    createdAt: s.createdAt.toISOString(),
+  }))
 
   return (
-    <DashboardLayout email={user.email}>
-      <div className="p-6 max-w-lg space-y-5">
-
-        {/* Welcome */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-text-secondary">Welcome back</p>
-            <h1 className="text-2xl font-bold text-text-primary">{firstName}</h1>
-          </div>
-          {user.genotype && (
-            <span className={`text-sm font-semibold px-3 py-1 rounded-full ${GENOTYPE_COLORS[user.genotype] ?? GENOTYPE_COLORS.UNKNOWN}`}>
-              {user.genotype}
-            </span>
-          )}
-        </div>
-
-        {/* Risk Summary Card */}
-        {totalMeds > 0 && (
-          <div className={`rounded-2xl border-2 p-4 ${risk.color}`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${risk.dot} shrink-0`} />
-              <div>
-                <p className={`font-semibold ${risk.text}`}>{risk.label}</p>
-                <p className={`text-sm mt-0.5 ${risk.text} opacity-80`}>
-                  {totalMeds} medication{totalMeds !== 1 ? 's' : ''}
-                  {qtMeds.length > 0 && ` · ${qtMeds.length} QT-prolonging`}
-                  {dtaMeds.length > 0 && ` · ${dtaMeds.length} DTA`}
-                  {cypConflicts.length > 0 && ` · ${cypConflicts.length} CYP conflict${cypConflicts.length !== 1 ? 's' : ''}`}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Health Monitor + SOS */}
-        <HealthMonitor />
-
-        {/* Scan Button */}
-        <Link
-          href="/scan"
-          className="block w-full py-5 rounded-2xl bg-brand hover:bg-brand-hover active:bg-brand-deep text-white text-center transition-colors shadow-[0_4px_16px_rgba(52,120,246,0.3)]"
-        >
-          <div className="flex items-center justify-center gap-3">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-            <span className="text-lg font-bold">Scan Medication</span>
-          </div>
-          <p className="text-white/80 text-sm mt-1">Check any drug for QT risk</p>
-        </Link>
-
-        {/* CYP Conflict Matrix */}
-        {cypConflicts.length > 0 && (
-          <div className="bg-surface-raised rounded-2xl card-shadow p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <svg className="w-4 h-4 text-risk-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
-              <p className="font-semibold text-text-primary text-sm">CYP450 Drug Interactions</p>
-            </div>
-            <p className="text-xs text-text-secondary mb-3">
-              Detected enzyme conflicts between your current medications (computed locally, no AI)
-            </p>
-            <div className="space-y-2">
-              {cypConflicts.map((conflict, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${
-                    conflict.type === 'inhibition'
-                      ? 'bg-risk-danger-bg'
-                      : 'bg-risk-caution-bg'
-                  }`}
-                >
-                  <span className={`shrink-0 mt-0.5 font-bold text-xs ${
-                    conflict.type === 'inhibition' ? 'text-risk-danger' : 'text-risk-caution'
-                  }`}>
-                    {conflict.type === 'inhibition' ? '!!' : '!'}
-                  </span>
-                  <div>
-                    <p className={`font-medium ${
-                      conflict.type === 'inhibition'
-                        ? 'text-risk-danger-text'
-                        : 'text-risk-caution-text'
-                    }`}>
-                      <span className="font-semibold">{conflict.medA}</span>
-                      {conflict.type === 'inhibition' ? ' inhibits ' : ' induces '}
-                      <span className="font-mono text-xs">{conflict.enzyme}</span>
-                    </p>
-                    <p className={`text-xs mt-0.5 ${
-                      conflict.type === 'inhibition'
-                        ? 'text-risk-danger-text'
-                        : 'text-risk-caution-text'
-                    }`}>
-                      {conflict.type === 'inhibition'
-                        ? `May increase ${conflict.medB} plasma levels → amplified QT effect`
-                        : `May decrease ${conflict.medB} plasma levels`
-                      }
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Medication Summary */}
-        <Link
-          href="/medications"
-          className="block bg-surface-raised rounded-2xl p-4 card-shadow hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-text-secondary mb-1">My Medications</p>
-              {totalMeds === 0 ? (
-                <p className="font-semibold text-text-primary">No medications added</p>
-              ) : (
-                <p className="font-semibold text-text-primary">
-                  {totalMeds} medication{totalMeds !== 1 ? 's' : ''}
-                  {qtMeds.length > 0 && <span className="text-risk-danger-text ml-1">· {qtMeds.length} QT-prolonging</span>}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5">
-              {qtMeds.length > 0 && <div className="w-2.5 h-2.5 rounded-full bg-risk-danger" />}
-              <svg className="w-5 h-5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </div>
-          </div>
-        </Link>
-
-        {/* Recent Scans */}
-        <div className="bg-surface-raised rounded-2xl overflow-hidden card-shadow">
-          <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            <p className="font-semibold text-text-primary">Recent Scans</p>
-            <Link href="/history" className="text-sm text-brand hover:underline">View all</Link>
-          </div>
-          {recentScans.length === 0 ? (
-            <div className="px-4 pb-5 text-center">
-              <p className="text-sm text-text-secondary">No scans yet. Tap Scan Medication to get started.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-separator-light">
-              {recentScans.map((scan) => (
-                <div key={scan.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${RISK_DOT[scan.riskCategory] ?? 'bg-text-tertiary'}`} />
-                  <p className="font-medium text-text-primary truncate flex-1">{scan.genericName || scan.drugName}</p>
-                  <p className="text-xs text-text-tertiary shrink-0">{formatDate(scan.createdAt)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Data Sources */}
-        <div className="bg-surface-raised rounded-2xl card-shadow p-4">
-          <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
-            Verification Sources
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-brand-light px-2.5 py-1 text-xs font-medium text-brand">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand" />
-              Local DB (111 drugs)
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-risk-safe-bg px-2.5 py-1 text-xs font-medium text-risk-safe-text">
-              <span className="w-1.5 h-1.5 rounded-full bg-risk-safe" />
-              CredibleMeds
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-coral-light px-2.5 py-1 text-xs font-medium text-coral-deep">
-              <span className="w-1.5 h-1.5 rounded-full bg-coral" />
-              FDA FAERS
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-risk-caution-bg px-2.5 py-1 text-xs font-medium text-risk-caution-text">
-              <span className="w-1.5 h-1.5 rounded-full bg-risk-caution" />
-              RxNorm
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text-secondary">
-              <span className="w-1.5 h-1.5 rounded-full bg-text-tertiary" />
-              CYP450 Analysis
-            </span>
-          </div>
-        </div>
-
-      </div>
+    <DashboardLayout>
+      <DashboardContent
+        user={{ firstName: user.firstName ?? 'there', genotype: user.genotype }}
+        medications={medications}
+        recentScans={serializedScans}
+        cypConflicts={cypConflicts}
+        overallRisk={overallRisk}
+        watchPaired={!!watchDevice}
+      />
     </DashboardLayout>
   )
 }

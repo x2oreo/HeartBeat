@@ -53,7 +53,7 @@ export default async function HistoryPage() {
   })
 
   return (
-    <div className="p-6 max-w-lg space-y-5">
+    <div className="px-3 py-5 md:p-6 max-w-lg space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Scan History</h1>
         <p className="text-sm text-text-secondary mt-1">

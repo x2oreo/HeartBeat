@@ -58,7 +58,7 @@ export default function PhoneInput({
         <select
           value={selectedCountry.code}
           onChange={handleCountryChange}
-          className="w-[110px] shrink-0 px-2 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition text-sm"
+          className="w-[90px] sm:w-[110px] shrink-0 px-2 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition text-sm"
           aria-label="Country code"
         >
           {COUNTRIES.map((c) => (

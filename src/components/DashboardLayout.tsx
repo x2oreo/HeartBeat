@@ -1,25 +1,8 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '../lib/supabase/client'
-
-// ── Helpers ──────────────────────────────────────────────────────────
-
-function getInitials(email: string) {
-  const name = email.split('@')[0]
-  const parts = name.split(/[._-]/)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  return name.slice(0, 2).toUpperCase()
-}
-
-function getAvatarColor(email: string) {
-  const hues = [210, 160, 280, 30, 190, 340, 60]
-  let hash = 0
-  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash)
-  return hues[Math.abs(hash) % hues.length]
-}
+import { MobileBottomNav } from './MobileBottomNav'
 
 // ── Nav items ────────────────────────────────────────────────────────
 
@@ -40,6 +23,17 @@ const NAV_ITEMS = [
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
         <path d="M6 14V9h4v5" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/watch',
+    label: 'Apple Watch',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="4" y="2" width="8" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.25" />
+        <path d="M6 2V1M10 2V1M6 14v1M10 14v1" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+        <polyline points="5.5,8 7,8 7.7,6.5 8.3,9.5 9,6 9.7,9 10.5,8" stroke="currentColor" strokeWidth="0.9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -104,27 +98,11 @@ const BOTTOM_NAV = {
 // ── Component ────────────────────────────────────────────────────────
 
 type Props = {
-  email: string
   children: React.ReactNode
 }
 
-export function DashboardLayout({ email, children }: Props) {
-  const router = useRouter()
+export function DashboardLayout({ children }: Props) {
   const pathname = usePathname()
-  const initials = getInitials(email)
-  const hue = getAvatarColor(email)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const profileRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/'
@@ -133,13 +111,13 @@ export function DashboardLayout({ email, children }: Props) {
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-surface p-2"
+      className="flex h-screen overflow-hidden bg-surface p-0 md:p-2"
       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      <div className="flex flex-1 bg-white rounded-2xl overflow-hidden card-shadow">
+      <div className="flex flex-1 bg-white rounded-none md:rounded-2xl overflow-hidden md:card-shadow">
 
-        {/* Sidebar */}
-        <aside className="w-52 shrink-0 flex flex-col bg-surface-raised border-r border-separator-light">
+        {/* Sidebar — hidden on mobile */}
+        <aside className="hidden md:flex w-52 shrink-0 flex-col bg-surface-raised border-r border-separator-light">
 
           {/* Logo */}
           <div className="h-14 flex items-center px-4">
@@ -196,42 +174,10 @@ export function DashboardLayout({ email, children }: Props) {
 
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Topbar */}
-          <header className="h-14 shrink-0 flex items-center justify-end px-4 border-b border-separator-light">
-            <div className="relative" ref={profileRef}>
-              <button
-                onClick={() => setProfileOpen((o) => !o)}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white select-none cursor-pointer border-0 ring-2 ring-transparent hover:ring-separator transition-all"
-                style={{ background: `hsl(${hue} 60% 45%)` }}
-              >
-                {initials}
-              </button>
-
-              {profileOpen && (
-                <div className="absolute right-0 top-9 w-52 bg-surface-raised rounded-xl shadow-lg border border-separator-light py-1 z-50">
-                  <div className="px-3 py-2.5 border-b border-separator-light">
-                    <p className="text-xs font-semibold text-text-primary truncate">
-                      {email.split('@')[0]}
-                    </p>
-                    <p className="text-[11px] text-text-tertiary truncate mt-0.5">
-                      {email}
-                    </p>
-                  </div>
-                  <button
-                    onClick={async () => { await createClient().auth.signOut(); router.push('/login') }}
-                    className="w-full text-left px-3 py-2 text-xs text-text-secondary hover:bg-surface hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              )}
-            </div>
-          </header>
-
-          {/* Content */}
           <main className="flex-1 overflow-auto bg-surface">
             {children}
+            {/* Bottom nav for mobile */}
+            <MobileBottomNav />
           </main>
         </div>
 

@@ -67,7 +67,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-separator text-text-tertiary transition-colors hover:bg-surface hover:border-brand hover:text-brand disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-separator text-text-tertiary transition-colors hover:bg-surface hover:border-brand hover:text-brand disabled:opacity-40"
           aria-label="Upload medication photo"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -103,7 +103,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
           aria-label="Send message"
         >
           {isLoading ? (

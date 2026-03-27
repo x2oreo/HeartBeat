@@ -302,7 +302,30 @@ export default function SettingsPage() {
     <div className="px-4 py-8">
       <div className="max-w-lg mx-auto space-y-4">
 
-        <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
+        {/* ── Profile Header ──────────────────────────────────── */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white select-none shrink-0"
+            style={{ background: `hsl(${(() => { const hues = [210, 160, 280, 30, 190, 340, 60]; let hash = 0; const e = profile?.email ?? ''; for (let i = 0; i < e.length; i++) hash = e.charCodeAt(i) + ((hash << 5) - hash); return hues[Math.abs(hash) % hues.length] })()} 60% 45%)` }}
+          >
+            {(() => {
+              const f = firstName.trim()
+              const l = lastName.trim()
+              if (f && l) return (f[0] + l[0]).toUpperCase()
+              if (f) return f.slice(0, 2).toUpperCase()
+              const name = (profile?.email ?? '').split('@')[0]
+              const parts = name.split(/[._-]/)
+              if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+              return name.slice(0, 2).toUpperCase()
+            })()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">
+              {firstName.trim() && lastName.trim() ? `${firstName.trim()} ${lastName.trim()}` : 'Profile & Settings'}
+            </h1>
+            <p className="text-sm text-text-secondary">{profile?.email ?? ''}</p>
+          </div>
+        </div>
 
         {/* ── Name ───────────────────────────────────────────── */}
         <Section title="Your Name">

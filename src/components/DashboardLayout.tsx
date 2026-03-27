@@ -1,25 +1,7 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '../lib/supabase/client'
-
-// ── Helpers ──────────────────────────────────────────────────────────
-
-function getInitials(email: string) {
-  const name = email.split('@')[0]
-  const parts = name.split(/[._-]/)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  return name.slice(0, 2).toUpperCase()
-}
-
-function getAvatarColor(email: string) {
-  const hues = [210, 160, 280, 30, 190, 340, 60]
-  let hash = 0
-  for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash)
-  return hues[Math.abs(hash) % hues.length]
-}
 
 // ── Nav items ────────────────────────────────────────────────────────
 
@@ -104,27 +86,11 @@ const BOTTOM_NAV = {
 // ── Component ────────────────────────────────────────────────────────
 
 type Props = {
-  email: string
   children: React.ReactNode
 }
 
-export function DashboardLayout({ email, children }: Props) {
-  const router = useRouter()
+export function DashboardLayout({ children }: Props) {
   const pathname = usePathname()
-  const initials = getInitials(email)
-  const hue = getAvatarColor(email)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const profileRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/'
@@ -196,40 +162,6 @@ export function DashboardLayout({ email, children }: Props) {
 
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Topbar */}
-          <header className="h-14 shrink-0 flex items-center justify-end px-4 border-b border-separator-light">
-            <div className="relative" ref={profileRef}>
-              <button
-                onClick={() => setProfileOpen((o) => !o)}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white select-none cursor-pointer border-0 ring-2 ring-transparent hover:ring-separator transition-all"
-                style={{ background: `hsl(${hue} 60% 45%)` }}
-              >
-                {initials}
-              </button>
-
-              {profileOpen && (
-                <div className="absolute right-0 top-9 w-52 bg-surface-raised rounded-xl shadow-lg border border-separator-light py-1 z-50">
-                  <div className="px-3 py-2.5 border-b border-separator-light">
-                    <p className="text-xs font-semibold text-text-primary truncate">
-                      {email.split('@')[0]}
-                    </p>
-                    <p className="text-[11px] text-text-tertiary truncate mt-0.5">
-                      {email}
-                    </p>
-                  </div>
-                  <button
-                    onClick={async () => { await createClient().auth.signOut(); router.push('/login') }}
-                    className="w-full text-left px-3 py-2 text-xs text-text-secondary hover:bg-surface hover:text-text-primary transition-colors cursor-pointer bg-transparent border-0"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              )}
-            </div>
-          </header>
-
-          {/* Content */}
           <main className="flex-1 overflow-auto bg-surface">
             {children}
           </main>

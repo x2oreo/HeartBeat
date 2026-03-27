@@ -354,3 +354,33 @@ export type HealthStreamEvent = {
 export type WatchPushPayload =
   | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
   | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }
+
+// ── Dashboard Stats ──────────────────────────────────────────────
+
+export type ScanActivityDay = {
+  date: string
+  label: string
+  count: number
+  knownRisk: number
+  possibleRisk: number
+  conditionalRisk: number
+  safe: number
+}
+
+export type HealthSummary = {
+  avgHR24h: number | null
+  avgHrv24h: number | null
+  watchPaired: boolean
+  watchLastSeen: string | null
+}
+
+export type HeartRatePoint = {
+  time: string
+  hr: number
+}
+
+export type DashboardStats = {
+  scanActivity: ScanActivityDay[]
+  healthSummary: HealthSummary
+  heartRateHistory: HeartRatePoint[]
+}

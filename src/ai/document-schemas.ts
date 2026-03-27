@@ -59,6 +59,8 @@ export const enhancedEmergencyCardDataSchema = z.object({
     name: z.string(),
     riskCategory: riskCategorySchema,
     isDTA: z.boolean(),
+    dosage: z.string().optional(),
+    brandName: z.string().optional(),
   })),
   emergencyContacts: z.array(z.object({
     name: z.string(),
@@ -68,33 +70,63 @@ export const enhancedEmergencyCardDataSchema = z.object({
   criticalNotes: z.array(z.string()),
   generatedAt: z.string(),
   shareSlug: z.string(),
-  aiContent: emergencyCardAISchema,
+  aiContent: emergencyCardAISchema.optional(),
+  patientPhoto: z.string().optional(),
+  personalNotes: z.object({
+    en: z.string(),
+    bg: z.string(),
+  }).optional(),
 })
 
 // ── Doctor Prep AI Schema ────────────────────────────────────────
 
 export const doctorPrepAISchema = z.object({
+  summary: z
+    .string()
+    .describe('A 2-3 sentence plain-language summary of the most important safety points in this document. Should mention the patient\'s condition, key medication risks, and the most critical thing the doctor needs to know. Written so a patient can glance at it and remember what this document covers.'),
+  syndromeExplanation: z
+    .string()
+    .describe('2-3 sentence medical explanation of the patient\'s specific LQT syndrome type, written for a physician who may not specialize in cardiac electrophysiology'),
   drugSafetyBrief: z
     .string()
-    .describe('Summary of current medication QT risks, written for a physician audience'),
+    .describe('Summary of current medication QT risks and CYP450 interaction concerns, written for a physician audience'),
+  medicationImplications: z
+    .array(
+      z.object({
+        name: z.string().describe('Name of the current medication'),
+        implication: z.string().describe('What this medication implies for treatment — risk level, interactions, monitoring needs'),
+      }),
+    )
+    .describe('Per-medication risk explanation for each of the patient\'s current medications'),
   questionsForDoctor: z
     .array(z.string())
     .describe('Suggested questions the patient should ask their doctor, max 8'),
   medicationsToAvoid: z
-    .array(z.string())
-    .describe('Specific medications to avoid during/around the procedure or treatment'),
+    .array(
+      z.object({
+        genericName: z.string().describe('Generic name of the drug to avoid'),
+        drugClass: z.string().describe('Drug class'),
+        reason: z.string().describe('Brief reason why this drug is dangerous for this LQTS patient'),
+      }),
+    )
+    .describe('Specific medications to avoid, tailored to the doctor specialty context'),
   saferAlternatives: z
     .array(
       z.object({
         genericName: z.string().describe('Generic name of the safer alternative'),
         drugClass: z.string().describe('Drug class of the alternative'),
-        whySafer: z.string().describe('Brief explanation of why this is safer for LQTS patients'),
-      }),
+        whySafer: z.string().describe('Why this is safer for LQTS patients').optional(),
+        reason: z.string().describe('Why this is safer for LQTS patients').optional(),
+      }).transform((alt) => ({
+        genericName: alt.genericName,
+        drugClass: alt.drugClass,
+        whySafer: alt.whySafer ?? alt.reason ?? '',
+      })),
     )
     .describe('Alternatives the doctor might consider instead of QT-prolonging drugs'),
-  procedureSpecificWarnings: z
+  specialtyWarnings: z
     .array(z.string())
-    .describe('Warnings specific to the procedure type — empty array if no procedure specified'),
+    .describe('Warnings specific to the doctor specialty — e.g. anesthesia concerns for surgeons, sedation for dentists'),
 })
 
 export type DoctorPrepAIOutput = z.infer<typeof doctorPrepAISchema>

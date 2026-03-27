@@ -12,6 +12,8 @@ import { parseE164, validateNationalNumber, formatPhoneDisplay } from '@/lib/pho
 type Contact = { id: string; name: string; phone: string; relationship: string }
 
 type ProfileData = {
+  firstName: string
+  lastName: string
   email: string
   genotype: Genotype | null
   contacts: Contact[]
@@ -46,6 +48,12 @@ export default function SettingsPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Name state
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameMsg, setNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Genotype state
   const [genotype, setGenotype] = useState<Genotype | null>(null)
@@ -82,7 +90,9 @@ export default function SettingsPage() {
         const profileData = profileRes.ok ? await profileRes.json() : {}
         const contacts: Contact[] = contactsRes.ok ? await contactsRes.json() : []
 
-        setProfile({ email: profileData.email ?? '', genotype: profileData.genotype ?? null, contacts })
+        setProfile({ firstName: profileData.firstName ?? '', lastName: profileData.lastName ?? '', email: profileData.email ?? '', genotype: profileData.genotype ?? null, contacts })
+        setFirstName(profileData.firstName ?? '')
+        setLastName(profileData.lastName ?? '')
         setGenotype(profileData.genotype ?? null)
       } catch {
         // Non-fatal — show empty state
@@ -92,6 +102,31 @@ export default function SettingsPage() {
     }
     load()
   }, [])
+
+  // ── Name ────────────────────────────────────────────────────────
+
+  const nameChanged = firstName.trim() !== (profile?.firstName ?? '') || lastName.trim() !== (profile?.lastName ?? '')
+
+  async function saveName() {
+    if (!firstName.trim() || !lastName.trim()) return
+    setSavingName(true)
+    setNameMsg(null)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: firstName.trim(), lastName: lastName.trim() }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      setProfile((prev) => prev ? { ...prev, firstName: firstName.trim(), lastName: lastName.trim() } : prev)
+      setNameMsg({ type: 'success', text: 'Saved' })
+      setTimeout(() => setNameMsg(null), 2000)
+    } catch {
+      setNameMsg({ type: 'error', text: 'Failed to save. Try again.' })
+    } finally {
+      setSavingName(false)
+    }
+  }
 
   // ── Genotype ────────────────────────────────────────────────────
 
@@ -265,6 +300,44 @@ export default function SettingsPage() {
       <div className="max-w-lg mx-auto space-y-4">
 
         <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
+
+        {/* ── Name ───────────────────────────────────────────── */}
+        <Section title="Your Name">
+          <div className="flex gap-2">
+            <div className="flex-1 flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-text-secondary">First name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First name"
+                className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-text-secondary">Last name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last name"
+                className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
+              />
+            </div>
+          </div>
+          <button
+            onClick={saveName}
+            disabled={savingName || !firstName.trim() || !lastName.trim() || !nameChanged}
+            className="px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {savingName ? 'Saving…' : 'Save'}
+          </button>
+          {nameMsg && (
+            <p className={`text-sm ${nameMsg.type === 'success' ? 'text-[#1B7A34]' : 'text-[#FF3B30]'}`}>
+              {nameMsg.text}
+            </p>
+          )}
+        </Section>
 
         {/* ── Genotype ─────────────────────────────────────────── */}
         <Section title="LQTS Type">

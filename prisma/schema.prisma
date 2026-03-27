@@ -11,7 +11,8 @@ model User {
   id         String   @id @default(uuid()) @db.Uuid
   supabaseId String   @unique @map("supabase_id")
   email      String
-  name       String?
+  firstName  String?  @map("first_name")
+  lastName   String?  @map("last_name")
   genotype   String?  // LQT1, LQT2, LQT3, OTHER, UNKNOWN
   onboarded  Boolean  @default(false)
   createdAt  DateTime @default(now()) @map("created_at")
@@ -21,6 +22,7 @@ model User {
   scanLogs          ScanLog[]
   emergencyContacts EmergencyContact[]
   sharedCards       SharedEmergencyCard[]
+  doctorPrepDocs    DoctorPrepDocument[]
   healthMetrics     HealthMetric[]
   healthAlerts      HealthAlert[]
   watchDevice       WatchDevice?
@@ -84,10 +86,27 @@ model SharedEmergencyCard {
   slug      String   @unique
   cardData  Json     @map("card_data")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("shared_emergency_cards")
+}
+
+model DoctorPrepDocument {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  doctorSpecialty String   @map("doctor_specialty")
+  customSpecialty String?  @map("custom_specialty")
+  language        String
+  customLanguage  String?  @map("custom_language")
+  documentData    Json     @map("document_data")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("doctor_prep_documents")
 }
 
 model HealthMetric {

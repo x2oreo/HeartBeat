@@ -37,7 +37,7 @@ const shareCardSchema = z.object({
       name: z.string(),
       warning: z.string(),
     })),
-  }),
+  }).optional(),
   patientPhoto: z.string().optional(),
   personalNotes: z.object({
     en: z.string(),

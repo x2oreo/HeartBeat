@@ -10,6 +10,19 @@ type LQTTypeContent = {
   restrictions: string[]
 }
 
+type EmergencyProtocol = {
+  title: string
+  subtitle: string
+  immediateSteps: { step: string; detail: string }[]
+  doNotDo: string[]
+  torsadesProtocol: {
+    title: string
+    description: string
+    steps: string[]
+  }
+  genotypeNotes: Record<string, { title: string; notes: string[] }>
+}
+
 type Translations = {
   // Page chrome
   title: string
@@ -71,6 +84,9 @@ type Translations = {
     family: string
     friend: string
   }
+
+  // Emergency protocol for first responders
+  emergencyProtocol: EmergencyProtocol
 
   // Disclaimer
   disclaimerText: string
@@ -259,6 +275,87 @@ export const translations: Record<Lang, Translations> = {
       friend: 'Friend',
     },
 
+    emergencyProtocol: {
+      title: 'EMERGENCY: IF THIS PERSON IS UNRESPONSIVE',
+      subtitle: 'This patient has Long QT Syndrome — a genetic heart condition that can cause life-threatening arrhythmias. Follow this protocol immediately.',
+      immediateSteps: [
+        {
+          step: 'Check pulse and breathing',
+          detail: 'If no pulse, begin CPR immediately and call emergency services (112 / 911).',
+        },
+        {
+          step: 'Use an AED if available',
+          detail: 'AED is SAFE and recommended for LQTS patients. Apply and follow voice prompts. Defibrillation can terminate Torsades de Pointes.',
+        },
+        {
+          step: 'Get a 12-lead ECG as soon as possible',
+          detail: 'Look for Torsades de Pointes (polymorphic ventricular tachycardia with twisting QRS axis) or prolonged QTc interval (>500 ms is critical).',
+        },
+        {
+          step: 'Administer IV Magnesium Sulfate',
+          detail: '2 g IV over 1–2 minutes for active Torsades de Pointes. This is the first-line treatment even if serum magnesium is normal.',
+        },
+        {
+          step: 'Correct electrolytes',
+          detail: 'Maintain potassium at 4.5–5.0 mEq/L and magnesium at >2.0 mg/dL. Hypokalemia dramatically increases arrhythmia risk.',
+        },
+        {
+          step: 'Overdrive pacing if Torsades persists',
+          detail: 'Temporary transvenous pacing at 90–110 bpm or IV isoproterenol to increase heart rate and shorten the QT interval.',
+        },
+      ],
+      doNotDo: [
+        'Do NOT administer amiodarone — it prolongs QT and will worsen the arrhythmia',
+        'Do NOT administer sotalol, procainamide, or any class III antiarrhythmic',
+        'Do NOT administer droperidol, haloperidol, or ondansetron (Zofran) for nausea/agitation',
+        'Do NOT administer IV erythromycin or fluoroquinolone antibiotics (ciprofloxacin, moxifloxacin, levofloxacin)',
+        'Do NOT give metoclopramide for nausea',
+        'Do NOT use any drug from the QT-prolonging list without checking — see patient\'s medication list below',
+        'Do NOT allow potassium to drop below 4.0 mEq/L',
+      ],
+      torsadesProtocol: {
+        title: 'Torsades de Pointes Protocol',
+        description: 'If ECG shows Torsades de Pointes (polymorphic VT with twisting axis):',
+        steps: [
+          'IV Magnesium Sulfate 2 g bolus over 1–2 min (repeat once if needed)',
+          'If unstable: immediate defibrillation (unsynchronized shock)',
+          'If recurrent: overdrive pacing at 90–110 bpm',
+          'IV Isoproterenol as bridge to pacing (increases heart rate, shortens QT)',
+          'Correct K⁺ to 4.5–5.0 mEq/L and Mg²⁺ to >2.0 mg/dL',
+          'AVOID amiodarone, lidocaine, and all QT-prolonging antiarrhythmics',
+        ],
+      },
+      genotypeNotes: {
+        LQT1: {
+          title: 'LQT1-Specific Emergency Notes',
+          notes: [
+            'Events often triggered by exercise or swimming — ask about recent physical activity',
+            'Beta-blockers are effective — do NOT discontinue patient\'s beta-blocker',
+            'If patient was swimming: suspect drowning secondary to arrhythmia, not primary drowning',
+          ],
+        },
+        LQT2: {
+          title: 'LQT2-Specific Emergency Notes',
+          notes: [
+            'Events often triggered by sudden loud noises or emotional stress',
+            'This type is the MOST drug-sensitive — extra caution with all medications',
+            'Potassium levels are critical — check immediately and maintain >4.5 mEq/L',
+            'Beta-blockers + potassium supplementation is the standard treatment',
+          ],
+        },
+        LQT3: {
+          title: 'LQT3-Specific Emergency Notes',
+          notes: [
+            'Events often occur during rest or sleep — higher risk of sudden cardiac death',
+            'Beta-blockers are LESS effective for LQT3 compared to LQT1/LQT2',
+            'Patient may benefit from sodium channel blockers (mexiletine)',
+            'ICD (Implantable Cardioverter-Defibrillator) may be present — check chest for device',
+            'Higher risk type — escalate to cardiology urgently',
+          ],
+        },
+      },
+    },
+
     disclaimerText:
       'This emergency card is an AI-generated reference document. It does not replace professional medical advice. Always consult the patient\'s cardiologist before administering medications or making treatment decisions.',
     generatedBy: 'Generated by HeartGuard',
@@ -442,6 +539,87 @@ export const translations: Record<Lang, Translations> = {
       cardiologist: 'Кардиолог',
       family: 'Семейство',
       friend: 'Приятел',
+    },
+
+    emergencyProtocol: {
+      title: 'СПЕШНО: АКО ТОЗИ ЧОВЕК Е В БЕЗСЪЗНАНИЕ',
+      subtitle: 'Този пациент има Синдром на удължен QT — генетично сърдечно заболяване, което може да причини животозастрашаващи аритмии. Следвайте този протокол незабавно.',
+      immediateSteps: [
+        {
+          step: 'Проверете пулс и дишане',
+          detail: 'Ако няма пулс, започнете КПР незабавно и се обадете на спешна помощ (112).',
+        },
+        {
+          step: 'Използвайте АВД ако е наличен',
+          detail: 'АВД е БЕЗОПАСЕН и препоръчителен за пациенти с LQTS. Приложете и следвайте гласовите инструкции. Дефибрилацията може да прекрати Torsades de Pointes.',
+        },
+        {
+          step: 'Направете 12-канална ЕКГ възможно най-скоро',
+          detail: 'Търсете Torsades de Pointes (полиморфна камерна тахикардия с въртящ се QRS) или удължен QTc интервал (>500 ms е критично).',
+        },
+        {
+          step: 'Приложете IV Магнезиев Сулфат',
+          detail: '2 g IV за 1–2 минути при активен Torsades de Pointes. Това е първа линия на лечение дори при нормален серумен магнезий.',
+        },
+        {
+          step: 'Коригирайте електролитите',
+          detail: 'Поддържайте калий 4.5–5.0 mEq/L и магнезий >2.0 mg/dL. Хипокалиемията драматично увеличава риска от аритмия.',
+        },
+        {
+          step: 'Овердрайв пейсиране при персистиращ Torsades',
+          detail: 'Временно трансвенозно пейсиране на 90–110 уд./мин или IV изопротеренол за увеличаване на сърдечната честота и скъсяване на QT интервала.',
+        },
+      ],
+      doNotDo: [
+        'НЕ прилагайте амиодарон — удължава QT и ще влоши аритмията',
+        'НЕ прилагайте соталол, прокаинамид или антиаритмици от клас III',
+        'НЕ прилагайте дроперидол, халоперидол или ондансетрон (Zofran) при гадене/възбуда',
+        'НЕ прилагайте IV еритромицин или флуорохинолонови антибиотици (ципрофлоксацин, моксифлоксацин, левофлоксацин)',
+        'НЕ давайте метоклопрамид при гадене',
+        'НЕ използвайте лекарства от списъка за QT-удължаване без проверка — вижте списъка с лекарства на пациента по-долу',
+        'НЕ позволявайте калият да падне под 4.0 mEq/L',
+      ],
+      torsadesProtocol: {
+        title: 'Протокол при Torsades de Pointes',
+        description: 'Ако ЕКГ показва Torsades de Pointes (полиморфна КТ с въртящ се QRS):',
+        steps: [
+          'IV Магнезиев Сулфат 2 g болус за 1–2 мин (повторете веднъж при нужда)',
+          'Ако е нестабилен: незабавна дефибрилация (несинхронизиран шок)',
+          'Ако се повтаря: овердрайв пейсиране на 90–110 уд./мин',
+          'IV Изопротеренол като мост към пейсиране (увеличава честотата, скъсява QT)',
+          'Коригирайте K⁺ до 4.5–5.0 mEq/L и Mg²⁺ до >2.0 mg/dL',
+          'ИЗБЯГВАЙТЕ амиодарон, лидокаин и всички QT-удължаващи антиаритмици',
+        ],
+      },
+      genotypeNotes: {
+        LQT1: {
+          title: 'Спешни бележки специфични за LQT1',
+          notes: [
+            'Събитията често се провокират от упражнения или плуване — попитайте за скорошна физическа активност',
+            'Бета-блокерите са ефективни — НЕ спирайте бета-блокера на пациента',
+            'Ако пациентът е плувал: подозирайте давене вследствие на аритмия, а не първично давене',
+          ],
+        },
+        LQT2: {
+          title: 'Спешни бележки специфични за LQT2',
+          notes: [
+            'Събитията често се провокират от внезапни силни звуци или емоционален стрес',
+            'Този тип е НАЙ-ЧУВСТВИТЕЛЕН към лекарства — допълнително внимание с всички медикаменти',
+            'Нивата на калий са критични — проверете незабавно и поддържайте >4.5 mEq/L',
+            'Бета-блокери + калиеви добавки са стандартното лечение',
+          ],
+        },
+        LQT3: {
+          title: 'Спешни бележки специфични за LQT3',
+          notes: [
+            'Събитията често се случват по време на покой или сън — по-висок риск от внезапна сърдечна смърт',
+            'Бета-блокерите са ПО-МАЛКО ефективни при LQT3 в сравнение с LQT1/LQT2',
+            'Пациентът може да се повлияе от блокери на натриевите канали (мексилетин)',
+            'Възможно е наличие на ИКД (имплантируем кардиовертер-дефибрилатор) — проверете гърдите за устройство',
+            'По-високорисков тип — ескалирайте спешно към кардиология',
+          ],
+        },
+      },
     },
 
     disclaimerText:

@@ -54,7 +54,8 @@ export async function POST(request: Request) {
         create: {
           supabaseId: supabaseUser.id,
           email: supabaseUser.email ?? '',
-          name: supabaseUser.user_metadata?.full_name ?? null,
+          firstName: supabaseUser.user_metadata?.first_name ?? null,
+          lastName: supabaseUser.user_metadata?.last_name ?? null,
           genotype,
           onboarded: true,
         },

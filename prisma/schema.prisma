@@ -190,6 +190,17 @@ model ApiToken {
   @@map("api_tokens")
 }
 
+model BgDrug {
+  id        String  @id @default(uuid()) @db.Uuid
+  inn       String
+  brandName String  @map("brand_name")
+  atcCode   String? @map("atc_code")
+
+  @@index([brandName])
+  @@index([inn])
+  @@map("bg_drugs")
+}
+
 model PairingCode {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid

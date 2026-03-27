@@ -50,6 +50,7 @@ export function sourceLabel(source: RiskSource): string {
     case 'CREDIBLEMEDS_API': return 'CredibleMeds API'
     case 'MULTI_SOURCE': return 'Multi-Source Verified'
     case 'AI_ENRICHED': return 'AI + External Data'
+    case 'BG_VERIFIED': return 'Bulgarian Drug List'
     case 'AI_ASSESSED': return 'AI Assessment Only'
   }
 }
@@ -64,6 +65,8 @@ export function sourceBadgeStyle(source: RiskSource): string {
       return 'bg-purple-100 text-purple-700'
     case 'AI_ASSESSED':
       return 'bg-amber-100 text-amber-700'
+    case 'BG_VERIFIED':
+      return 'bg-green-100 text-green-700'
   }
 }
 

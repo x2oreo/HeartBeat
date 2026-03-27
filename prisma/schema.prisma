@@ -18,7 +18,7 @@ model User {
   firstName         String?              @map("first_name")
   lastName          String?              @map("last_name")
   apiTokens         ApiToken[]
-  conversations     conversations[]
+  conversations     Conversation[]
   doctorPrepDocs    DoctorPrepDocument[]
   emergencyContacts EmergencyContact[]
   healthAlerts      HealthAlert[]
@@ -27,8 +27,6 @@ model User {
   scanLogs          ScanLog[]
   sharedCards       SharedEmergencyCard?
   watchDevice       WatchDevice?
-  apiTokens         ApiToken[]
-  conversations     Conversation[]
 
   @@map("users")
 }

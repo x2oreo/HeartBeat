@@ -1,16 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import type { RiskCategory } from '@/types'
+import type { AutocompleteSuggestion } from '@/types'
 
-export type DrugSuggestion = {
-  genericName: string
-  brandNames: string[]
-  riskCategory: RiskCategory
-  drugClass: string
-}
+export type DrugSuggestion = AutocompleteSuggestion
 
-export function useDrugSearch() {
+export function useDrugSearch(debounceMs = 300) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [loading, setLoading] = useState(false)
@@ -30,7 +25,7 @@ export function useDrugSearch() {
       setLoading(true)
       try {
         const res = await fetch(
-          `/api/drugs/search?q=${encodeURIComponent(query.trim())}`,
+          `/api/drugs/autocomplete?q=${encodeURIComponent(query.trim())}`,
           { signal: controller.signal },
         )
         if (res.ok) {
@@ -42,13 +37,13 @@ export function useDrugSearch() {
       } finally {
         if (!controller.signal.aborted) setLoading(false)
       }
-    }, 300)
+    }, debounceMs)
 
     return () => {
       clearTimeout(timeout)
       abortRef.current?.abort()
     }
-  }, [query])
+  }, [query, debounceMs])
 
   return { query, setQuery, suggestions, loading }
 }

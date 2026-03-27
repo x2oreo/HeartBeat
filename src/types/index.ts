@@ -17,6 +17,7 @@ export type RiskSource =
   | 'CREDIBLEMEDS_VERIFIED'  // In local curated JSON (sourced from CredibleMeds)
   | 'CREDIBLEMEDS_API'       // From CredibleMeds API, not in local JSON
   | 'MULTI_SOURCE'           // Confirmed by multiple data sources
+  | 'BG_VERIFIED'            // Resolved via Bulgarian Positive Drug List
   | 'AI_ASSESSED'            // AI-only assessment, no external verification
   | 'AI_ENRICHED'            // AI assessment supplemented with external data
 
@@ -46,6 +47,20 @@ export type DrugSearchResult = {
   brandNames: string[]
   riskCategory: RiskCategory
   isDTA: boolean
+}
+
+// ── Autocomplete (unified local + RxNorm results) ────────────────
+
+export type AutocompleteSource = 'LOCAL' | 'RXNORM' | 'DRUG_TABLE' | 'BG_POSITIVE_LIST'
+
+export type AutocompleteSuggestion = {
+  genericName: string
+  brandNames: string[]
+  riskCategory: RiskCategory | null // null = not evaluated for QT risk
+  isDTA: boolean
+  drugClass: string | null
+  source: AutocompleteSource
+  rxcui: string | null
 }
 
 // ── Drug Info (lookup result) ──────────────────────────────────────
@@ -339,3 +354,20 @@ export type HealthStreamEvent = {
 export type WatchPushPayload =
   | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
   | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }
+
+// ── Chat Conversations ─────────────────────────────────────────────
+
+export type ConversationSummary = {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+}
+
+export type ConversationMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  createdAt: string
+}

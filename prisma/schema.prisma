@@ -18,7 +18,7 @@ model User {
   firstName         String?              @map("first_name")
   lastName          String?              @map("last_name")
   apiTokens         ApiToken[]
-  conversations     conversations[]
+  conversations     Conversation[]
   doctorPrepDocs    DoctorPrepDocument[]
   emergencyContacts EmergencyContact[]
   healthAlerts      HealthAlert[]
@@ -37,6 +37,7 @@ model Medication {
   genericName String   @map("generic_name")
   brandName   String?  @map("brand_name")
   dosage      String?
+  frequency   String?
   qtRisk      String   @map("qt_risk")
   isDTA       Boolean  @default(false) @map("is_dta")
   cypData     Json?    @map("cyp_data")
@@ -189,6 +190,17 @@ model ApiToken {
   @@map("api_tokens")
 }
 
+model BgDrug {
+  id        String  @id @default(uuid()) @db.Uuid
+  inn       String
+  brandName String  @map("brand_name")
+  atcCode   String? @map("atc_code")
+
+  @@index([brandName])
+  @@index([inn])
+  @@map("bg_drugs")
+}
+
 model PairingCode {
   id            String   @id @default(uuid()) @db.Uuid
   userId        String?  @map("user_id") @db.Uuid
@@ -202,28 +214,30 @@ model PairingCode {
   @@map("pairing_codes")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model chat_messages {
-  id              String        @id @db.Uuid
-  conversation_id String        @db.Uuid
-  role            String
-  content         String
-  tool_data       Json?
-  created_at      DateTime      @default(now())
-  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+model Conversation {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  title     String?
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
-  @@index([conversation_id, created_at])
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("conversations")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model conversations {
-  id            String          @id @db.Uuid
-  user_id       String          @db.Uuid
-  title         String?
-  created_at    DateTime        @default(now())
-  updated_at    DateTime
-  chat_messages chat_messages[]
-  users         User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model ChatMessage {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @map("conversation_id") @db.Uuid
+  role           String
+  content        String
+  toolData       Json?        @map("tool_data")
+  createdAt      DateTime     @default(now()) @map("created_at")
 
-  @@index([user_id, updated_at(sort: Desc)])
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
 }

@@ -8,46 +8,46 @@ function riskColor(level: WatchRiskLevel) {
   switch (level) {
     case 'ELEVATED':
       return {
-        bg: 'bg-red-50 dark:bg-red-950/40',
-        border: 'border-red-200 dark:border-red-800',
-        text: 'text-red-700 dark:text-red-300',
-        dot: 'bg-red-500',
+        bg: 'bg-risk-danger-bg',
+        border: 'border-risk-danger/20',
+        text: 'text-risk-danger-text',
+        dot: 'bg-risk-danger',
       }
     case 'CAUTION':
       return {
-        bg: 'bg-amber-50 dark:bg-amber-950/40',
-        border: 'border-amber-200 dark:border-amber-800',
-        text: 'text-amber-700 dark:text-amber-300',
-        dot: 'bg-amber-500',
+        bg: 'bg-risk-caution-bg',
+        border: 'border-risk-caution/20',
+        text: 'text-risk-caution-text',
+        dot: 'bg-risk-caution',
       }
     default:
       return {
-        bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-        border: 'border-emerald-200 dark:border-emerald-800',
-        text: 'text-emerald-700 dark:text-emerald-300',
-        dot: 'bg-emerald-500',
+        bg: 'bg-risk-safe-bg',
+        border: 'border-risk-safe/20',
+        text: 'text-risk-safe-text',
+        dot: 'bg-risk-safe',
       }
   }
 }
 
 function stressLabel(level: WatchStressLevel) {
   switch (level) {
-    case 'HIGH': return { text: 'High', color: 'text-red-600 dark:text-red-400' }
-    case 'MODERATE': return { text: 'Moderate', color: 'text-amber-600 dark:text-amber-400' }
-    default: return { text: 'Calm', color: 'text-emerald-600 dark:text-emerald-400' }
+    case 'HIGH': return { text: 'High', color: 'text-risk-danger-text' }
+    case 'MODERATE': return { text: 'Moderate', color: 'text-risk-caution-text' }
+    default: return { text: 'Calm', color: 'text-risk-safe-text' }
   }
 }
 
 function MetricTile({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="flex flex-col items-center rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2">
-      <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+    <div className="flex flex-col items-center rounded-lg bg-surface px-3 py-2">
+      <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 leading-tight">
+      <span className="text-lg font-semibold text-text-primary leading-tight">
         {value}
       </span>
-      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{unit}</span>
+      <span className="text-[10px] text-text-tertiary">{unit}</span>
     </div>
   )
 }
@@ -66,11 +66,11 @@ function AlertItem({ alert }: { alert: HealthAlertPayload }) {
         <p className={`text-xs font-medium ${colors.text}`}>
           {alert.riskLevel === 'ELEVATED' ? 'Elevated Risk' : 'Caution'}
         </p>
-        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">
+        <p className="text-[11px] text-text-secondary truncate">
           {alert.message}
         </p>
       </div>
-      <span className="text-[10px] text-neutral-400 dark:text-neutral-500 shrink-0">{time}</span>
+      <span className="text-[10px] text-text-tertiary shrink-0">{time}</span>
     </div>
   )
 }
@@ -88,12 +88,12 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
           Long QT Risk: {metric.riskLevel === 'NORMAL' ? 'Normal' : metric.riskLevel === 'CAUTION' ? 'Caution' : 'Elevated'}
         </span>
         {metric.isAsleep && (
-          <span className="ml-auto text-[10px] bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-full px-2 py-0.5">
+          <span className="ml-auto text-[10px] bg-brand-light text-brand-deep rounded-full px-2 py-0.5">
             Sleeping
           </span>
         )}
         {metric.irregularRhythm && (
-          <span className="ml-auto text-[10px] bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300 rounded-full px-2 py-0.5">
+          <span className="ml-auto text-[10px] bg-risk-danger-bg text-risk-danger-text rounded-full px-2 py-0.5">
             Irregular Rhythm
           </span>
         )}
@@ -109,14 +109,14 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
       <div className="grid grid-cols-3 gap-2">
         <MetricTile label="Steps" value={metric.steps > 0 ? String(Math.round(metric.steps)) : '—'} unit="today" />
         <MetricTile label="Calories" value={metric.activeEnergy > 0 ? String(Math.round(metric.activeEnergy)) : '—'} unit="kcal" />
-        <div className="flex flex-col items-center rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2">
-          <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+        <div className="flex flex-col items-center rounded-lg bg-surface px-3 py-2">
+          <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">
             Stress
           </span>
           <span className={`text-lg font-semibold leading-tight ${stress.color}`}>
             {stress.text}
           </span>
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500">level</span>
+          <span className="text-[10px] text-text-tertiary">level</span>
         </div>
       </div>
     </div>
@@ -132,7 +132,6 @@ function SOSButton() {
     setSending(true)
     setResult(null)
     try {
-      // Try to get location before sending SOS (5s timeout, non-blocking)
       const body: Record<string, unknown> = {}
       if (typeof navigator !== 'undefined' && navigator.geolocation) {
         const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -168,8 +167,8 @@ function SOSButton() {
     return (
       <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${
         result.success
-          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-          : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+          ? 'bg-risk-safe-bg text-risk-safe-text'
+          : 'bg-risk-danger-bg text-risk-danger-text'
       }`}>
         {result.success
           ? `SOS sent to ${result.contactsReached} contact${result.contactsReached !== 1 ? 's' : ''}`
@@ -181,17 +180,17 @@ function SOSButton() {
   if (showConfirm) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-red-600 dark:text-red-400 font-medium">Alert all contacts?</span>
+        <span className="text-xs text-risk-danger-text font-medium">Alert all contacts?</span>
         <button
           onClick={handleSOS}
           disabled={sending}
-          className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-risk-danger text-white text-xs font-semibold hover:bg-[#E53529] disabled:opacity-50 transition-colors"
         >
           {sending ? 'Sending...' : 'Confirm'}
         </button>
         <button
           onClick={() => setShowConfirm(false)}
-          className="px-3 py-1.5 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs font-medium hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-surface text-text-secondary text-xs font-medium hover:bg-separator-light transition-colors"
         >
           Cancel
         </button>
@@ -202,7 +201,7 @@ function SOSButton() {
   return (
     <button
       onClick={() => setShowConfirm(true)}
-      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors shadow-sm"
+      className="px-3 py-1.5 rounded-lg bg-risk-danger text-white text-xs font-bold hover:bg-[#E53529] transition-colors shadow-sm"
     >
       SOS
     </button>
@@ -213,16 +212,16 @@ export function HealthMonitor() {
   const { latestMetric, recentAlerts, isConnected } = useHealthStream()
 
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-4">
+    <div className="rounded-xl bg-surface-raised card-shadow p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+          <span className="text-base font-semibold text-text-primary">
             Apple Watch
           </span>
           <div className="flex items-center gap-1">
-            <div className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
-            <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+            <div className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-risk-safe animate-pulse' : 'bg-text-tertiary'}`} />
+            <span className="text-[10px] text-text-secondary">
               {isConnected ? 'Live' : 'Connecting...'}
             </span>
           </div>
@@ -236,10 +235,10 @@ export function HealthMonitor() {
       ) : (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <div className="mb-2 text-2xl">&#9201;</div>
-          <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm font-medium text-text-secondary">
             No watch data yet
           </p>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             Pair your Apple Watch in Settings to see live health data
           </p>
         </div>
@@ -248,7 +247,7 @@ export function HealthMonitor() {
       {/* Recent alerts */}
       {recentAlerts.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
             Recent Alerts
           </h3>
           <div className="space-y-1.5">
@@ -260,7 +259,7 @@ export function HealthMonitor() {
       )}
 
       {/* Disclaimer */}
-      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 text-center">
+      <p className="text-[10px] text-text-tertiary text-center">
         Not a medical device. For monitoring and awareness only.
       </p>
     </div>

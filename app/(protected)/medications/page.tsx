@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useMedications } from '@/hooks/use-medications'
+import type { AddMedicationParams } from '@/hooks/use-medications'
 import type { RiskCategory, DrugSearchResult } from '@/types'
 
 // ── Constants ────────────────────────────────────────────────────────
@@ -15,7 +16,7 @@ const RISK_CONFIG: Record<RiskCategory, { dot: string; badge: string; label: str
 
 // ── Add Medication Panel ─────────────────────────────────────────────
 
-function AddMedicationPanel({ onAdd, onClose }: { onAdd: (name: string) => Promise<void>; onClose: () => void }) {
+function AddMedicationPanel({ onAdd, onClose }: { onAdd: (params: AddMedicationParams) => Promise<void>; onClose: () => void }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSearchResult[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -59,7 +60,7 @@ function AddMedicationPanel({ onAdd, onClose }: { onAdd: (name: string) => Promi
     setAdding(true)
     setError(null)
     try {
-      await onAdd(name.trim())
+      await onAdd({ drugName: name.trim() })
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add medication')
@@ -266,9 +267,9 @@ export default function MedicationsPage() {
                       {/* Risk dot */}
                       <div className={`w-3 h-3 rounded-full shrink-0 mt-1.5 ${risk.dot}`} />
                       <div className="min-w-0">
-                        <p className="font-semibold text-text-primary leading-tight">{med.genericName}</p>
+                        <p className="font-semibold text-text-primary leading-tight capitalize">{med.genericName}</p>
                         {med.brandName && (
-                          <p className="text-sm text-text-secondary">{med.brandName}</p>
+                          <p className="text-sm text-text-secondary capitalize">{med.brandName}</p>
                         )}
                         {med.dosage && (
                           <p className="text-sm text-text-secondary">{med.dosage}</p>

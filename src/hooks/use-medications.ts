@@ -8,9 +8,16 @@ export type Medication = {
   genericName: string
   brandName: string | null
   dosage: string | null
+  frequency: string | null
   qtRisk: RiskCategory
   isDTA: boolean
   addedAt: string
+}
+
+export type AddMedicationParams = {
+  drugName: string
+  dosage?: string
+  frequency?: string
 }
 
 export function useMedications() {
@@ -33,11 +40,11 @@ export function useMedications() {
     }
   }, [])
 
-  const addMedication = useCallback(async (drugName: string) => {
+  const addMedication = useCallback(async (params: AddMedicationParams) => {
     const res = await fetch('/api/medications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ drugName }),
+      body: JSON.stringify(params),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => null)

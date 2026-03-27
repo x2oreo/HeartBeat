@@ -6,6 +6,7 @@ import { lookupDrug, fuzzyLookupDrug } from '@/services/drug-lookup'
 import { resolveDrugName } from '@/services/external/rxnorm-client'
 import { lookupCredibleMeds } from '@/services/external/crediblemeds-client'
 import { getTorsadesSignal } from '@/services/external/openfda-client'
+import { resolveBgBrandName } from '@/services/bg-drug-lookup'
 import type { RxNormResult } from '@/services/external/rxnorm-client'
 import type { CredibleMedsResult } from '@/services/external/crediblemeds-client'
 import type { OpenFDASignal } from '@/services/external/openfda-client'
@@ -15,7 +16,7 @@ import type { DrugInfo, RiskCategory, DrugEnrichment, FuzzyMatchInfo, PipelineSt
 
 export type ResolvedDrug = {
   genericName: string
-  matchSource: 'LOCAL_EXACT' | 'LOCAL_FUZZY' | 'RXNORM' | 'CREDIBLEMEDS' | 'AI_ONLY'
+  matchSource: 'LOCAL_EXACT' | 'LOCAL_FUZZY' | 'BG_DATABASE' | 'RXNORM' | 'CREDIBLEMEDS' | 'AI_ONLY'
   localEntry: DrugInfo | null
   credibleMedsData: CredibleMedsResult | null
   fdaSignal: OpenFDASignal | null
@@ -80,11 +81,17 @@ function buildEnrichment(
 async function fetchEnrichmentWithTrace(
   genericName: string,
   trace: PipelineStep[],
+  onStep?: OnStepCallback,
 ): Promise<{
   credibleMedsData: CredibleMedsResult | null
   fdaSignal: OpenFDASignal | null
   rxnormData: RxNormResult | null
 }> {
+  function emitStep(step: PipelineStep) {
+    trace.push(step)
+    onStep?.(step)
+  }
+
   const t = Date.now()
   const [credibleMedsData, fdaSignal, rxnormData] = await Promise.all([
     lookupCredibleMeds(genericName).catch(() => null),
@@ -93,31 +100,31 @@ async function fetchEnrichmentWithTrace(
   ])
   const d = Date.now() - t
 
-  trace.push({
-    name: 'CredibleMeds API',
+  emitStep({
+    name: 'QT Risk Verification',
     status: credibleMedsData ? 'HIT' : 'MISS',
     durationMs: d,
     detail: credibleMedsData
-      ? `${credibleMedsData.riskCategory} confirmed${credibleMedsData.isDTA ? ' (DTA)' : ''}`
-      : 'Not found in CredibleMeds',
+      ? `Risk level confirmed: ${credibleMedsData.riskCategory.replace('_', ' ').toLowerCase()}`
+      : 'No additional risk data found',
   })
 
-  trace.push({
-    name: 'FDA FAERS (OpenFDA)',
+  emitStep({
+    name: 'FDA Safety Reports',
     status: fdaSignal && fdaSignal.torsadesReportCount > 0 ? 'HIT' : 'MISS',
     durationMs: d,
     detail: fdaSignal && fdaSignal.torsadesReportCount > 0
-      ? `${fdaSignal.torsadesReportCount} Torsades de Pointes adverse event reports`
-      : 'No TdP signal found',
+      ? `${fdaSignal.torsadesReportCount} heart rhythm adverse event reports found`
+      : 'No adverse event reports found',
   })
 
-  trace.push({
-    name: 'RxNorm API',
+  emitStep({
+    name: 'Drug Name Resolution',
     status: rxnormData ? 'HIT' : 'MISS',
     durationMs: d,
     detail: rxnormData
-      ? `Resolved to "${rxnormData.genericName}" (score: ${rxnormData.score})`
-      : 'No resolution needed (already matched locally)',
+      ? `Identified as "${rxnormData.genericName}"`
+      : 'Already identified',
   })
 
   return { credibleMedsData, fdaSignal, rxnormData }
@@ -135,9 +142,16 @@ async function fetchEnrichmentWithTrace(
  * 4. CredibleMeds API (~500ms) → direct lookup
  * 5. AI_ONLY fallback
  */
-export async function resolveDrug(query: string): Promise<ResolvedDrug> {
+export type OnStepCallback = (step: PipelineStep) => void
+
+export async function resolveDrug(query: string, onStep?: OnStepCallback): Promise<ResolvedDrug> {
   const normalized = query.toLowerCase().trim()
   const trace: PipelineStep[] = []
+
+  function emitStep(step: PipelineStep) {
+    trace.push(step)
+    onStep?.(step)
+  }
 
   // ── Step 1: Local exact match ───────────────────────────────────
   const t1 = Date.now()
@@ -145,15 +159,15 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
   const d1 = Date.now() - t1
 
   if (exactMatch) {
-    trace.push({
-      name: 'Local DB (111 drugs)',
+    emitStep({
+      name: 'US Drug Safety Database',
       status: 'HIT',
       durationMs: d1,
-      detail: `Matched "${normalized}" → ${exactMatch.genericName}`,
+      detail: `Found: ${exactMatch.genericName}`,
     })
 
     // Fire enrichment APIs in parallel with individual timing
-    const enrichResult = await fetchEnrichmentWithTrace(exactMatch.genericName, trace)
+    const enrichResult = await fetchEnrichmentWithTrace(exactMatch.genericName, trace, onStep)
 
     return {
       genericName: exactMatch.genericName,
@@ -169,11 +183,11 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
     }
   }
 
-  trace.push({
-    name: 'Local DB (111 drugs)',
+  emitStep({
+    name: 'US Drug Safety Database',
     status: 'MISS',
     durationMs: d1,
-    detail: `No exact match for "${normalized}"`,
+    detail: 'Not found in US database',
   })
 
   // ── Step 2: Local fuzzy match ───────────────────────────────────
@@ -183,14 +197,14 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
   const fuzzyHit = fuzzyResult && fuzzyResult.matchType === 'FUZZY' && fuzzyResult.confidence >= 0.7
 
   if (fuzzyHit) {
-    trace.push({
-      name: 'Fuzzy Match (Levenshtein)',
+    emitStep({
+      name: 'Checking Similar Names',
       status: 'HIT',
       durationMs: d2,
-      detail: `"${normalized}" → ${fuzzyResult.drug.genericName} (${Math.round(fuzzyResult.confidence * 100)}% confidence)`,
+      detail: `Did you mean "${fuzzyResult.drug.genericName}"? (${Math.round(fuzzyResult.confidence * 100)}% match)`,
     })
 
-    const enrichResult = await fetchEnrichmentWithTrace(fuzzyResult.drug.genericName, trace)
+    const enrichResult = await fetchEnrichmentWithTrace(fuzzyResult.drug.genericName, trace, onStep)
 
     return {
       genericName: fuzzyResult.drug.genericName,
@@ -210,13 +224,56 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
     }
   }
 
-  trace.push({
-    name: 'Fuzzy Match (Levenshtein)',
+  emitStep({
+    name: 'Checking Similar Names',
     status: 'MISS',
     durationMs: d2,
-    detail: fuzzyResult
-      ? `Best: ${fuzzyResult.drug.genericName} (${Math.round(fuzzyResult.confidence * 100)}% — below 70% threshold)`
-      : 'No close matches found',
+    detail: 'No similar drug names found',
+  })
+
+  // ── Step 2b: Bulgarian brand name resolution ─────────────────────
+  const t2b = Date.now()
+  const bgResolved = await resolveBgBrandName(normalized)
+  const d2b = Date.now() - t2b
+
+  if (bgResolved) {
+    emitStep({
+      name: 'Bulgarian Drug Database',
+      status: 'HIT',
+      durationMs: d2b,
+      detail: `Recognized "${bgResolved.brandName}" as ${bgResolved.inn}`,
+    })
+
+    // Try to match the resolved INN against local QT database
+    const bgLocalMatch = lookupDrug(bgResolved.inn)
+    const enrichResult = await fetchEnrichmentWithTrace(bgResolved.inn, trace, onStep)
+
+    const bgEnrichment = buildEnrichment(!!bgLocalMatch, enrichResult.credibleMedsData, enrichResult.fdaSignal, enrichResult.rxnormData)
+    bgEnrichment.dataSources = ['bg_positive_list', ...bgEnrichment.dataSources]
+
+    return {
+      genericName: bgLocalMatch?.genericName ?? bgResolved.inn,
+      matchSource: 'BG_DATABASE',
+      localEntry: bgLocalMatch,
+      credibleMedsData: enrichResult.credibleMedsData,
+      fdaSignal: enrichResult.fdaSignal,
+      rxnormData: enrichResult.rxnormData,
+      confidence: bgLocalMatch ? 0.95 : 0.7,
+      enrichment: bgEnrichment,
+      fuzzyMatch: {
+        originalQuery: query,
+        matchedName: bgResolved.inn,
+        confidence: 0.95,
+      },
+      pipelineTrace: trace,
+    }
+  }
+
+  emitStep({
+    name: 'Bulgarian Drug Database',
+    status: 'MISS',
+    durationMs: d2b,
+    detail: 'Not found in Bulgarian database',
   })
 
   // ── Step 3: RxNorm + CredibleMeds + OpenFDA in parallel ─────────
@@ -229,31 +286,31 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
   const d3 = Date.now() - t3
 
   // Add individual trace entries for each external API
-  trace.push({
-    name: 'RxNorm API',
+  emitStep({
+    name: 'Drug Name Resolution',
     status: rxnormResult ? 'HIT' : 'MISS',
     durationMs: d3,
     detail: rxnormResult
-      ? `Resolved to "${rxnormResult.genericName}" (score: ${rxnormResult.score})`
-      : `No resolution for "${normalized}"`,
+      ? `Identified as "${rxnormResult.genericName}"`
+      : 'Could not identify drug name',
   })
 
-  trace.push({
-    name: 'CredibleMeds API',
+  emitStep({
+    name: 'QT Risk Verification',
     status: directCredibleMeds ? 'HIT' : 'MISS',
     durationMs: d3,
     detail: directCredibleMeds
-      ? `${directCredibleMeds.riskCategory}${directCredibleMeds.isDTA ? ' (DTA)' : ''}`
-      : 'Not found in CredibleMeds',
+      ? `Risk level confirmed: ${directCredibleMeds.riskCategory.replace('_', ' ').toLowerCase()}`
+      : 'No additional risk data found',
   })
 
-  trace.push({
-    name: 'FDA FAERS (OpenFDA)',
+  emitStep({
+    name: 'FDA Safety Reports',
     status: directFdaSignal && directFdaSignal.torsadesReportCount > 0 ? 'HIT' : 'MISS',
     durationMs: d3,
     detail: directFdaSignal && directFdaSignal.torsadesReportCount > 0
-      ? `${directFdaSignal.torsadesReportCount} Torsades de Pointes adverse event reports`
-      : 'No TdP signal found',
+      ? `${directFdaSignal.torsadesReportCount} heart rhythm adverse event reports found`
+      : 'No adverse event reports found',
   })
 
   if (rxnormResult) {
@@ -336,11 +393,11 @@ export async function resolveDrug(query: string): Promise<ResolvedDrug> {
   }
 
   // ── Step 5: AI-only fallback ────────────────────────────────────
-  trace.push({
-    name: 'AI Fallback',
+  emitStep({
+    name: 'AI Safety Review',
     status: 'HIT',
     durationMs: 0,
-    detail: 'No verified sources found — AI will assess this drug',
+    detail: 'No database match — running AI safety assessment',
   })
 
   return {

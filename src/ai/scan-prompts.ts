@@ -16,7 +16,7 @@ export type MedicationWithCyp = {
 // ── System Context ───────────────────────────────────────────────────
 // Shared medical context injected into all scan-related AI calls.
 
-const SYSTEM_CONTEXT = `You are a cardiac pharmacology AI specialized in Long QT Syndrome (LQTS) medication safety. Your role is to help patients understand whether a medication is dangerous for their heart condition.
+export const SYSTEM_CONTEXT = `You are a cardiac pharmacology AI specialized in Long QT Syndrome (LQTS) medication safety. Your role is to help patients understand whether a medication is dangerous for their heart condition.
 
 ## CRITICAL RULES — FOLLOW EXACTLY
 1. BE CONSERVATIVE: When uncertain about a drug's QT risk, ALWAYS flag it as higher risk rather than lower. A false alarm is inconvenient; a missed warning can be fatal.

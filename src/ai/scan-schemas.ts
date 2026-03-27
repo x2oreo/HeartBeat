@@ -21,7 +21,7 @@ export const ComboAnalysisSchema = z.object({
           .describe('What this interaction means for the patient in practical terms'),
       })
     ).describe('All pairwise drug interactions found between the new drug and current medications'),
-    additiveQTCount: z.number().int()
+    additiveQTCount: z.number()
       .describe('Number of the patient\'s current medications that also prolong the QT interval, contributing to additive risk'),
   }),
   genotypeConsiderations: z.string().nullable()

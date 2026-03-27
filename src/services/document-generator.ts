@@ -134,6 +134,7 @@ export async function generateEmergencyCard(
     },
   })
 
+  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient'
   const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
@@ -145,7 +146,7 @@ export async function generateEmergencyCard(
   }))
 
   const prompt = buildEnhancedEmergencyCardPrompt(
-    [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient',
+    patientName,
     genotype,
     medications,
     user.emergencyContacts,
@@ -159,7 +160,7 @@ export async function generateEmergencyCard(
   })
 
   return {
-    patientName: [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient',
+    patientName,
     genotype,
     medications: medications.map((m) => ({
       name: m.name,
@@ -232,6 +233,7 @@ export async function generateDoctorPrep(
     },
   })
 
+  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient'
   const genotype = genotypeSchema.parse(user.genotype)
   const medications = user.medications.map((m) => ({
     name: m.genericName,
@@ -246,7 +248,7 @@ export async function generateDoctorPrep(
   const resolvedLanguage = language === 'Other' && customLanguage ? customLanguage : language
 
   const prompt = buildEnhancedDoctorPrepPrompt(
-    [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient',
+    patientName,
     genotype,
     medications,
     resolvedSpecialty,
@@ -262,7 +264,7 @@ export async function generateDoctorPrep(
   })
 
   const documentData: DoctorPrepData = {
-    patientName: [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown Patient',
+    patientName,
     genotype,
     currentMedications: medications.map((m) => ({
       name: m.name,
@@ -401,10 +403,11 @@ export async function saveSharedEmergencyCard(
   })
   const slug = existing?.slug ?? crypto.randomUUID()
 
+  const now = new Date()
   await prisma.sharedEmergencyCard.upsert({
     where: { userId },
-    update: { cardData },
-    create: { userId, slug, cardData },
+    update: { slug, cardData, updatedAt: now },
+    create: { userId, slug, cardData, updatedAt: now },
   })
 
   return { slug }

@@ -109,6 +109,21 @@ export default function SettingsPage() {
   // Sign out
   const [signingOut, setSigningOut] = useState(false)
 
+  // Test notifications
+  const [testingNotifications, setTestingNotifications] = useState(false)
+  type TestChannelResult = { success: boolean; error?: string }
+  type TestContactResult = { contact: string; phone: string; email: string | null; sms: TestChannelResult; voice: TestChannelResult; email_channel: TestChannelResult }
+  type TestSOSResponse = {
+    notified: boolean
+    contactsReached: number
+    smsText: string
+    voiceScript: string
+    emailSubject: string
+    perContact: TestContactResult[]
+  }
+  const [testResponse, setTestResponse] = useState<TestSOSResponse | null>(null)
+  const [testError, setTestError] = useState<string | null>(null)
+
   // ── Load profile ────────────────────────────────────────────────
 
   useEffect(() => {
@@ -322,6 +337,30 @@ export default function SettingsPage() {
       setEditContactError('Failed to save. Try again.')
     } finally {
       setSavingEdit(false)
+    }
+  }
+
+  // ── Test notifications ──────────────────────────────────────────
+
+  async function handleTestNotifications() {
+    setTestingNotifications(true)
+    setTestResponse(null)
+    setTestError(null)
+    try {
+      const res = await fetch('/api/sos/test', { method: 'POST' })
+      const data: unknown = await res.json()
+      if (!res.ok) {
+        const errMsg = typeof data === 'object' && data !== null && typeof (data as Record<string, unknown>).error === 'string'
+          ? (data as Record<string, unknown>).error as string
+          : 'Test failed. Check your contacts and credentials.'
+        setTestError(errMsg)
+      } else {
+        setTestResponse(data as TestSOSResponse)
+      }
+    } catch {
+      setTestError('Network error. Make sure the dev server is running.')
+    } finally {
+      setTestingNotifications(false)
     }
   }
 
@@ -680,6 +719,78 @@ export default function SettingsPage() {
             >
               + Add contact
             </button>
+          )}
+        </Section>
+
+        {/* ── Test Notifications ───────────────────────────────── */}
+        <Section title="Test Notifications">
+          <p className="text-sm text-text-secondary">
+            Sends real-format SOS notifications (same as a live cardiac event) to all emergency contacts using simulated Apple Watch data: <strong>187 BPM, irregular rhythm, HIGH stress</strong>. Messages are prefixed with <strong>[TEST — THIS IS A DRILL]</strong>.
+          </p>
+          <button
+            onClick={handleTestNotifications}
+            disabled={testingNotifications}
+            className="w-full py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-hover disabled:opacity-50 transition-colors"
+          >
+            {testingNotifications ? 'Sending test…' : 'Send Test Notifications'}
+          </button>
+          {testError && (
+            <p className="text-sm text-risk-danger-text bg-risk-danger-bg rounded-xl px-3 py-2">{testError}</p>
+          )}
+          {testResponse && (
+            <div className="space-y-4">
+              {/* Per-contact delivery results */}
+              <div className="space-y-2">
+                {testResponse.perContact.map((r, i) => (
+                  <div key={i} className="rounded-xl bg-surface p-3 space-y-1.5">
+                    <p className="text-sm font-semibold text-text-primary">
+                      {r.contact} <span className="font-normal text-text-tertiary text-xs">{r.phone}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.sms.success ? 'bg-risk-safe-bg text-risk-safe-text' : 'bg-risk-danger-bg text-risk-danger-text'}`}>
+                        SMS {r.sms.success ? '✓' : `✗ ${r.sms.error ?? ''}`}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.voice.success ? 'bg-risk-safe-bg text-risk-safe-text' : 'bg-risk-danger-bg text-risk-danger-text'}`}>
+                        Voice {r.voice.success ? '✓' : `✗ ${r.voice.error ?? ''}`}
+                      </span>
+                      {r.email && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.email_channel.success ? 'bg-risk-safe-bg text-risk-safe-text' : 'bg-risk-danger-bg text-risk-danger-text'}`}>
+                          Email {r.email_channel.success ? '✓' : `✗ ${r.email_channel.error ?? ''}`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Exact SMS text sent */}
+              {testResponse.smsText && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Exact SMS sent</p>
+                  <pre className="text-xs text-text-primary bg-surface rounded-xl px-4 py-3 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto">
+                    {testResponse.smsText}
+                  </pre>
+                </div>
+              )}
+
+              {/* Exact voice script read aloud */}
+              {testResponse.voiceScript && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Exact voice call script</p>
+                  <p className="text-xs text-text-primary bg-surface rounded-xl px-4 py-3 leading-relaxed">
+                    {testResponse.voiceScript}
+                  </p>
+                </div>
+              )}
+
+              {/* Email subject */}
+              {testResponse.emailSubject && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Email subject</p>
+                  <p className="text-xs text-text-primary bg-surface rounded-xl px-4 py-3 font-mono">{testResponse.emailSubject}</p>
+                </div>
+              )}
+            </div>
           )}
         </Section>
 

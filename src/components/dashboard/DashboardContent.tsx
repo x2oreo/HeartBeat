@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useDashboardStats } from '@/hooks/use-dashboard-stats'
 import { QuickActionsGrid } from './QuickActionsGrid'
 import { HealthMonitorCompact } from './HealthMonitorCompact'
+import { SOSButton } from './HealthMonitor'
 import { MedicationRiskChart } from './MedicationRiskChart'
 import { ScanActivityChart } from './ScanActivityChart'
 import type { CypConflict } from '@/types'
@@ -108,6 +109,15 @@ export function DashboardContent({
           </div>
         </div>
       )}
+
+      {/* SOS */}
+      <div className="flex items-center justify-between rounded-2xl bg-surface-raised card-shadow px-5 py-4 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Emergency Alert</p>
+          <p className="text-xs text-text-secondary mt-0.5">Notify all emergency contacts instantly</p>
+        </div>
+        <SOSButton />
+      </div>
 
       {/* Quick Actions */}
       <QuickActionsGrid />

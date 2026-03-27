@@ -6,6 +6,8 @@ import { triggerSOS } from '@/services/sos-notifier'
 
 const sosSchema = z.object({
   alertId: z.string().uuid().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
 })
 
 export async function POST(request: Request) {
@@ -35,6 +37,8 @@ export async function POST(request: Request) {
         isAsleep: false,
         irregularRhythm: false,
         message: 'Manual SOS triggered by user',
+        latitude: parsed.data.latitude ?? null,
+        longitude: parsed.data.longitude ?? null,
         triggeredAt: new Date(),
       },
     })

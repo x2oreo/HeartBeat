@@ -216,6 +216,8 @@ export type HealthAlertPayload = {
   irregularRhythm: boolean
   message: string
   triggeredAt: string // ISO 8601
+  latitude?: number
+  longitude?: number
 }
 
 export type WatchConfigResponse = {

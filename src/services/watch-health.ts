@@ -67,6 +67,8 @@ export async function saveHealthAlert(
       isAsleep: payload.isAsleep,
       irregularRhythm: payload.irregularRhythm,
       message: payload.message,
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
       triggeredAt: new Date(payload.triggeredAt),
     },
   })

@@ -132,10 +132,26 @@ function SOSButton() {
     setSending(true)
     setResult(null)
     try {
+      // Try to get location before sending SOS (5s timeout, non-blocking)
+      const body: Record<string, unknown> = {}
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 60000,
+          })
+        }).catch(() => null)
+        if (pos) {
+          body.latitude = pos.coords.latitude
+          body.longitude = pos.coords.longitude
+        }
+      }
+
       const res = await fetch('/api/sos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       setResult({ success: res.ok && data.notified, contactsReached: data.contactsReached ?? 0 })

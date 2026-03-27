@@ -11,6 +11,8 @@ const alertSchema = z.object({
   isAsleep: z.boolean(),
   irregularRhythm: z.boolean(),
   message: z.string().max(500),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   triggeredAt: z.string().datetime().refine((dateStr) => {
     const date = new Date(dateStr)
     const now = Date.now()

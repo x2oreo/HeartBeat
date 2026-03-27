@@ -47,7 +47,8 @@ export async function triggerSOS(
     prisma.user.findUnique({
       where: { id: userId },
       select: {
-        name: true,
+        firstName: true,
+        lastName: true,
         genotype: true,
         email: true,
         medications: {
@@ -93,7 +94,7 @@ export async function triggerSOS(
     return { notified: false, contactsReached: 0 }
   }
 
-  const patientName = user.name ?? 'HeartGuard Patient'
+  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
   const timestamp = alert.triggeredAt.toLocaleString('en-GB', {
     timeZone: 'Europe/Sofia',
     dateStyle: 'short',

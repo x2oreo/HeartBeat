@@ -658,7 +658,7 @@ export async function triggerTestSOS(userId: string): Promise<TestSOSResult> {
   if (!user) return { notified: false, contactsReached: 0, smsText: '', voiceScript: '', emailSubject: '', perContact: [] }
   if (contacts.length === 0) return { notified: false, contactsReached: 0, smsText: '', voiceScript: '', emailSubject: '', perContact: [] }
 
-  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'HeartGuard Patient'
+  const patientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'QTShield Patient'
   const emergencyInfo = getEmergencyInfo(user.country ?? null)
   const cardUrl = emergencyCard?.slug ? `${getAppBaseUrl()}/emergency-card/${emergencyCard.slug}` : null
   const qtMeds = user.medications.filter(
@@ -691,7 +691,7 @@ export async function triggerTestSOS(userId: string): Promise<TestSOSResult> {
 
   const rawSms = composeSMS(patientName, user.genotype, simulatedAlert, qtMeds, null, cardUrl, timestamp, emergencyInfo)
   const rawVoice = composeVoiceMessage(patientName, user.genotype, simulatedAlert, qtMeds, emergencyInfo)
-  const emailSubject = `[TEST] HeartGuard SOS Alert for ${patientName}`
+  const emailSubject = `[TEST] QTShield SOS Alert for ${patientName}`
   const rawEmailHtml = composeEmailHtml(patientName, user.genotype, simulatedAlert, qtMeds, null, cardUrl, timestamp, emergencyInfo)
 
   const smsText = TEST_BANNER_SMS + rawSms

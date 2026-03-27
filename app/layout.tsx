@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'QTShield',
   manifest: '/manifest.webmanifest',
   openGraph: {
-    title: 'HeartGuard',
+    title: 'QTShield',
     images: [{ url: '/icons/512.png', width: 512, height: 512 }],
   },
   icons: {

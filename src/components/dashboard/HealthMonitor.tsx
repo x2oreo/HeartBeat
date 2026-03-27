@@ -155,10 +155,6 @@ function AlertItem({ alert }: { alert: HealthAlertPayload }) {
         <p className={`text-xs font-medium ${colors.text}`}>
           {alert.riskLevel === 'ELEVATED' ? 'Elevated Risk' : 'Caution'}
         </p>
-        {/*
-          Fix #4: line-clamp-2 instead of truncate.
-          Safety-critical alert messages must not be silently cut to a single line.
-        */}
         <p className="text-[11px] text-text-secondary line-clamp-2">{alert.message}</p>
       </div>
       <span className="text-[10px] text-text-tertiary shrink-0">{time}</span>
@@ -169,10 +165,6 @@ function AlertItem({ alert }: { alert: HealthAlertPayload }) {
 function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
   const risk = riskColor(metric.riskLevel)
   const stress = stressLabel(metric.stressLevel)
-  /*
-   * Fix #3: only animate-pulse the risk dot when risk is actually elevated.
-   * A pulsing green dot implies urgency and causes unnecessary anxiety.
-   */
   const riskDotPulse = metric.riskLevel !== 'NORMAL' ? 'animate-pulse' : ''
 
   return (
@@ -188,11 +180,6 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
               ? 'Caution'
               : 'Elevated'}
         </span>
-        {/*
-          Fix #5: wrap both badges in a single ml-auto container.
-          Previously both had ml-auto independently — only the first would
-          push right; the second would render flush against the first.
-        */}
         {(metric.isAsleep || metric.irregularRhythm) && (
           <div className="ml-auto flex items-center gap-1.5">
             {metric.isAsleep && (
@@ -406,10 +393,6 @@ function WatchIcon() {
 export function HealthMonitor() {
   const { latestMetric, recentAlerts, connectionStatus } = useHealthStream()
 
-  /*
-   * Fix #6: tick `now` every 30 s so formatRelativeTime stays accurate
-   * without needing the metrics themselves to update.
-   */
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000)
@@ -427,16 +410,11 @@ export function HealthMonitor() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold text-text-primary">Apple Watch</span>
-          {/*
-            Fix #2: indicator reflects four distinct states — not just a binary
-            isConnected boolean. Also shows last-updated timestamp when live.
-          */}
           <div className="flex items-center gap-1.5">
             <div className={`h-1.5 w-1.5 rounded-full ${indicator.dotClass}`} />
             <span className="text-[10px] text-text-secondary">{indicator.label}</span>
             {showUpdatedAt && (
               <span className="text-[10px] text-text-tertiary">
-                {/* Fix #6: last-updated timestamp */}
                 · {formatRelativeTime(latestMetric.recordedAt, now)}
               </span>
             )}
@@ -460,11 +438,6 @@ export function HealthMonitor() {
           )}
         </>
       ) : (
-        /*
-          Fix #7: replace stopwatch (⏱) with a watch+EKG SVG icon.
-          Also differentiate copy between 'offline' (not paired) and
-          all other states (still trying to connect).
-        */
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <WatchIcon />
           <p className="text-sm font-medium text-text-secondary">

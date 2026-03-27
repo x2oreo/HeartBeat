@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ── Sliding Window Rate Limiter ──────────────────────────────────────
-// Hand-built rate limiter for scan endpoints. In production, use Redis.
+// Per-IP sliding window rate limiter for scan endpoints.
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 10
 const rateLimitStore = new Map<string, number[]>()

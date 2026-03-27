@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import qtdrugs from '@/data/qtdrugs.json'
 import { useDashboardStats } from '@/hooks/use-dashboard-stats'
 import { QuickActionsGrid } from './QuickActionsGrid'
 import { HealthMonitorCompact } from './HealthMonitorCompact'
@@ -219,7 +220,7 @@ export function DashboardContent({
         <div className="flex flex-wrap gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-light px-2.5 py-1 text-xs font-medium text-brand">
             <span className="w-1.5 h-1.5 rounded-full bg-brand" />
-            Local DB (111 drugs)
+            Local DB ({qtdrugs.length} drugs)
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-risk-safe-bg px-2.5 py-1 text-xs font-medium text-risk-safe-text">
             <span className="w-1.5 h-1.5 rounded-full bg-risk-safe" />

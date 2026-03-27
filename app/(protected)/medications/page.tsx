@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useMedications } from '@/hooks/use-medications'
-import type { AddMedicationParams } from '@/hooks/use-medications'
-import type { RiskCategory, DrugSearchResult } from '@/types'
+import type { RiskCategory } from '@/types'
 
 // ── Constants ────────────────────────────────────────────────────────
 
@@ -14,151 +14,11 @@ const RISK_CONFIG: Record<RiskCategory, { dot: string; badge: string; label: str
   NOT_LISTED:       { dot: 'bg-[#34C759]', badge: 'bg-[#EAFBF0] text-[#1B7A34]',   label: 'Not Listed' },
 }
 
-// ── Add Medication Panel ─────────────────────────────────────────────
-
-function AddMedicationPanel({ onAdd, onClose }: { onAdd: (params: AddMedicationParams) => Promise<void>; onClose: () => void }) {
-  const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<DrugSearchResult[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [searching, setSearching] = useState(false)
-  const [adding, setAdding] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
-
-  useEffect(() => { inputRef.current?.focus() }, [])
-
-  const fetchSuggestions = useCallback(async (q: string) => {
-    if (q.length < 2) { setSuggestions([]); return }
-    setSearching(true)
-    try {
-      const res = await fetch(`/api/medications/search?q=${encodeURIComponent(q)}`)
-      if (res.ok) setSuggestions(await res.json())
-    } catch { /* non-critical */ } finally { setSearching(false) }
-  }, [])
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => fetchSuggestions(query), 250)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [query, fetchSuggestions])
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
-        inputRef.current && !inputRef.current.contains(e.target as Node)
-      ) setShowSuggestions(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  async function submit(name: string) {
-    if (!name.trim() || adding) return
-    setAdding(true)
-    setError(null)
-    try {
-      await onAdd({ drugName: name.trim() })
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add medication')
-    } finally {
-      setAdding(false)
-    }
-  }
-
-  return (
-    <div className="bg-surface-raised rounded-2xl card-shadow p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-text-primary">Add medication</span>
-        <button onClick={onClose} className="text-text-tertiary hover:text-text-secondary transition-colors">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true) }}
-          onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              if (suggestions.length > 0) submit(suggestions[0].genericName)
-              else if (query.trim()) submit(query.trim())
-            }
-            if (e.key === 'Escape') onClose()
-          }}
-          placeholder="Search medication name..."
-          className="w-full px-3.5 py-3 rounded-xl border-[1.5px] border-separator bg-surface-raised text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition"
-        />
-        {searching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-
-        {showSuggestions && suggestions.length > 0 && (
-          <div ref={suggestionsRef} className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden">
-            {suggestions.map((drug) => (
-              <button
-                key={drug.genericName}
-                type="button"
-                onClick={() => submit(drug.genericName)}
-                className="w-full text-left px-4 py-3 hover:bg-surface transition-colors flex items-center justify-between"
-              >
-                <div>
-                  <span className="font-medium text-text-primary">{drug.genericName}</span>
-                  {drug.brandNames.length > 0 && (
-                    <span className="text-xs text-text-tertiary ml-2">({drug.brandNames.slice(0, 2).join(', ')})</span>
-                  )}
-                </div>
-                <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${RISK_CONFIG[drug.riskCategory].badge}`}>
-                  {RISK_CONFIG[drug.riskCategory].label}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {showSuggestions && query.trim().length >= 2 && suggestions.length === 0 && !searching && (
-          <div className="absolute z-10 w-full mt-1 bg-surface-raised border border-separator-light rounded-xl shadow-lg overflow-hidden">
-            <button
-              type="button"
-              onClick={() => submit(query.trim())}
-              className="w-full text-left px-4 py-3 hover:bg-surface transition-colors text-text-secondary"
-            >
-              Add &quot;{query.trim()}&quot;
-            </button>
-          </div>
-        )}
-      </div>
-
-      {error && <p className="text-sm text-[#FF3B30]">{error}</p>}
-
-      <button
-        type="button"
-        onClick={() => { if (suggestions.length > 0) submit(suggestions[0].genericName); else if (query.trim()) submit(query.trim()) }}
-        disabled={!query.trim() || adding}
-        className="w-full py-3 rounded-xl font-semibold text-white bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {adding ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Adding...</> : 'Add Medication'}
-      </button>
-    </div>
-  )
-}
-
 // ── Main Page ────────────────────────────────────────────────────────
 
 export default function MedicationsPage() {
-  const { medications, loading, error, addMedication, removeMedication, fetchMedications } = useMedications()
-  const [showAdd, setShowAdd] = useState(false)
+  const router = useRouter()
+  const { medications, loading, error, removeMedication, fetchMedications } = useMedications()
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
 
@@ -181,17 +41,15 @@ export default function MedicationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-text-primary">My Medications</h1>
-          {!showAdd && (
-            <button
-              onClick={() => setShowAdd(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-semibold transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Add
-            </button>
-          )}
+          <button
+            onClick={() => router.push('/scan')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-semibold transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add
+          </button>
         </div>
 
         {/* QT Warning Banner */}
@@ -205,9 +63,6 @@ export default function MedicationsPage() {
             </p>
           </div>
         )}
-
-        {/* Add Medication Panel */}
-        {showAdd && <AddMedicationPanel onAdd={addMedication} onClose={() => setShowAdd(false)} />}
 
         {/* Loading */}
         {loading && (
@@ -241,10 +96,10 @@ export default function MedicationsPage() {
               Add your current medications so HeartGuard can check drug combinations.
             </p>
             <button
-              onClick={() => setShowAdd(true)}
+              onClick={() => router.push('/scan')}
               className="mt-2 px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-semibold transition-colors"
             >
-              Add your first medication
+              Scan your first medication
             </button>
           </div>
         )}

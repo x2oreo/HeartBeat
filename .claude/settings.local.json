@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "*",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(curl -s -L -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" \"https://portal.ncpr.bg/registers/pages/register/pdl.xhtml\")"
     ],
     "defaultMode": "bypassPermissions"
   },

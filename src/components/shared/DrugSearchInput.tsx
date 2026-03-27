@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDrugSearch } from '@/hooks/use-drug-search'
 import type { AutocompleteSuggestion, RiskCategory } from '@/types'
 
@@ -39,14 +39,16 @@ export function DrugSearchInput({
 }: DrugSearchInputProps) {
   const { query, setQuery, suggestions, loading } = useDrugSearch()
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [lastResetSignal, setLastResetSignal] = useState(resetSignal)
+  const prevResetSignal = useRef(resetSignal)
 
-  if (resetSignal !== lastResetSignal) {
-    setLastResetSignal(resetSignal)
-    setQuery('')
-    setShowSuggestions(false)
-    onQueryChange?.('')
-  }
+  useEffect(() => {
+    if (resetSignal !== prevResetSignal.current) {
+      prevResetSignal.current = resetSignal
+      setQuery('')
+      setShowSuggestions(false)
+      onQueryChange?.('')
+    }
+  }, [resetSignal, setQuery, onQueryChange])
 
   function handleChange(value: string) {
     setQuery(value)

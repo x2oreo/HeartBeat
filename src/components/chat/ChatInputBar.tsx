@@ -2,18 +2,25 @@
 
 import { useRef, useCallback } from 'react'
 
-function readFileAsBase64(file: File): Promise<string> {
+function convertToJpegBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result
-      if (typeof result !== 'string') return reject(new Error('Failed to read file'))
-      const base64 = result.split(',')[1]
-      if (!base64) return reject(new Error('Empty file'))
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { URL.revokeObjectURL(url); return reject(new Error('Canvas not supported')) }
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+      const base64 = dataUrl.split(',')[1]
+      if (!base64) return reject(new Error('Empty image'))
       resolve(base64)
     }
-    reader.onerror = () => reject(new Error('Failed to read file'))
-    reader.readAsDataURL(file)
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')) }
+    img.src = url
   })
 }
 
@@ -47,7 +54,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const base64 = await readFileAsBase64(file)
+      const base64 = await convertToJpegBase64(file)
       onImageUpload(base64)
     } catch {
       console.error('Failed to read image')
@@ -60,14 +67,14 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
       <form
         id="chat-form"
         onSubmit={onSubmit}
-        className="mx-auto flex max-w-2xl items-end gap-2 px-4 py-3"
+        className="mx-auto flex max-w-2xl items-center gap-2 px-4 py-3"
       >
         {/* Image upload */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-separator text-text-tertiary transition-colors hover:bg-surface hover:border-brand hover:text-brand disabled:opacity-40"
+          className="flex h-10 w-10 shrink-0 -mt-1.5 items-center justify-center rounded-xl border-[1.5px] border-separator text-text-tertiary transition-colors hover:bg-surface hover:border-brand hover:text-brand disabled:opacity-40"
           aria-label="Upload medication photo"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -103,7 +110,7 @@ export function ChatInputBar({ input, setInput, onSubmit, onImageUpload, isLoadi
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
+          className="flex h-10 w-10 shrink-0 -mt-1.5 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
           aria-label="Send message"
         >
           {isLoading ? (

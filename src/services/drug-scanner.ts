@@ -260,6 +260,36 @@ async function getUserMedications(userId: string): Promise<{
   return { genotype: userData?.genotype ?? null, currentMeds }
 }
 
+// ── Pipeline step backfill ───────────────────────────────────────────
+// The resolver returns early on match, so later steps never emit.
+// This ensures the full pipeline is always visible in the UI.
+
+const EXPECTED_RESOLVER_STEPS = [
+  'US Drug Safety Database',
+  'Checking Similar Names',
+  'Bulgarian Drug Database',
+]
+
+function backfillPipelineSteps(trace: PipelineStep[]): PipelineStep[] {
+  const result: PipelineStep[] = []
+  const resolverStepSet = new Set(EXPECTED_RESOLVER_STEPS)
+
+  // Insert expected resolver steps in order, filling gaps with SKIPPED
+  for (const name of EXPECTED_RESOLVER_STEPS) {
+    const existing = trace.find((s) => s.name === name)
+    result.push(existing ?? { name, status: 'SKIPPED', durationMs: 0, detail: 'Not needed — resolved earlier' })
+  }
+
+  // Append non-resolver steps in their original order (AI Safety Review, Drug Interaction Check, etc.)
+  for (const step of trace) {
+    if (!resolverStepSet.has(step.name)) {
+      result.push(step)
+    }
+  }
+
+  return result
+}
+
 // ── Main Export ──────────────────────────────────────────────────────
 
 /**
@@ -384,7 +414,7 @@ export async function scanDrugByText(
       }
     }
 
-    result.pipelineTrace = trace
+    result.pipelineTrace = backfillPipelineSteps(trace)
     setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
     return result
@@ -459,7 +489,7 @@ export async function scanDrugByText(
         }
       }
 
-      result.pipelineTrace = trace
+      result.pipelineTrace = backfillPipelineSteps(trace)
       await saveScanLog(userId, drugName, result)
       return result
     }
@@ -475,7 +505,7 @@ export async function scanDrugByText(
     emitStep({ name: 'AI Safety Review', status: 'HIT', durationMs: Date.now() - tFb, detail: 'AI assessed drug safety' })
 
     const result = mapUnknownDrugToScanResult(drugName, aiResult, resolved)
-    result.pipelineTrace = trace
+    result.pipelineTrace = backfillPipelineSteps(trace)
     setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
     return result
@@ -488,7 +518,7 @@ export async function scanDrugByText(
   // If NOT_LISTED → instant green, no AI call needed
   if (result.riskCategory === 'NOT_LISTED') {
     emitStep({ name: 'Drug Interaction Check', status: 'SKIPPED', durationMs: 0, detail: 'Drug not in risk list — no interaction check needed' })
-    result.pipelineTrace = trace
+    result.pipelineTrace = backfillPipelineSteps(trace)
     setCachedResult(userId, drugName, result)
     await saveScanLog(userId, drugName, result)
     return result
@@ -527,7 +557,7 @@ export async function scanDrugByText(
     emitStep({ name: 'Drug Interaction Check', status: 'ERROR', durationMs: 0, detail: 'Could not check interactions — showing available results' })
   }
 
-  result.pipelineTrace = trace
+  result.pipelineTrace = backfillPipelineSteps(trace)
   await saveScanLog(userId, drugName, result)
 
   // Notify watch if drug is risky (fire-and-forget, non-blocking)

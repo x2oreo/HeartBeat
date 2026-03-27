@@ -9,22 +9,32 @@ import { EmergencyCardPart } from './parts/EmergencyCardPart'
 import { DoctorPrepPart } from './parts/DoctorPrepPart'
 import { ToolProgressPart } from './parts/ToolProgressPart'
 
-export function ChatMessage({ message }: { message: UIMessage }) {
+export function ChatMessage({ message, imageBase64 }: { message: UIMessage; imageBase64?: string }) {
   if (message.role === 'user') {
-    return <UserBubble message={message} />
+    return <UserBubble message={message} imageBase64={imageBase64} />
   }
 
   return <AssistantBubble message={message} />
 }
 
-function UserBubble({ message }: { message: UIMessage }) {
+function UserBubble({ message, imageBase64 }: { message: UIMessage; imageBase64?: string }) {
   const textContent = message.parts
     .filter((p): p is Extract<typeof p, { type: 'text' }> => p.type === 'text')
     .map((p) => p.text)
     .join('')
 
   return (
-    <div className="flex justify-end">
+    <div className="flex flex-col items-end gap-2">
+      {imageBase64 && (
+        <div className="max-w-[85%]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/jpeg;base64,${imageBase64}`}
+            alt="Uploaded medication photo"
+            className="rounded-2xl rounded-br-md max-h-64 object-cover"
+          />
+        </div>
+      )}
       <div className="max-w-[85%] rounded-2xl rounded-br-md bg-brand px-4 py-3">
         <p className="text-[15px] leading-relaxed text-white whitespace-pre-wrap">{textContent}</p>
       </div>

@@ -122,10 +122,7 @@ function Spinner() {
   )
 }
 
-const HIDDEN_PIPELINE_STEPS = new Set(['FDA Safety Reports'])
-
 function LivePipelineTracker({ steps, loading }: { steps: PipelineStep[]; loading: boolean }) {
-  steps = steps.filter((s) => !HIDDEN_PIPELINE_STEPS.has(s.name))
   const [visibleCount, setVisibleCount] = useState(0)
 
   useEffect(() => {
@@ -456,8 +453,7 @@ function stepStatusColor(status: PipelineStepStatus) {
   }
 }
 
-function CompletedPipelineView({ steps: rawSteps }: { steps: PipelineStep[] }) {
-  const steps = rawSteps.filter((s) => !HIDDEN_PIPELINE_STEPS.has(s.name))
+function CompletedPipelineView({ steps }: { steps: PipelineStep[] }) {
   const [open, setOpen] = useState(false)
   const hitCount = steps.filter((s) => s.status === 'HIT').length
   const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
@@ -534,7 +530,7 @@ function CompletedPipelineView({ steps: rawSteps }: { steps: PipelineStep[] }) {
             ))}
           </div>
           <p className="mt-3 text-[10px] text-text-tertiary">
-            Pipeline: Local DB &rarr; Fuzzy Match &rarr; RxNorm &rarr; CredibleMeds &rarr; FDA FAERS &rarr; AI Analysis
+            Pipeline: Local DB &rarr; Fuzzy Match &rarr; BG Database &rarr; AI Analysis
           </p>
         </div>
       )}
@@ -663,10 +659,12 @@ function ScanHistory({ onSelect }: { onSelect: (entry: ScanHistoryEntry) => void
   )
 }
 
-const FREQUENCY_PERIODS = ['day', 'week', 'month'] as const
+const FREQUENCY_PERIODS = ['day', 'week', 'month', 'once in a while'] as const
 
 function formatFrequency(times: string, period: string): string {
-  if (!times || !period) return ''
+  if (!period) return ''
+  if (period === 'once in a while') return 'once in a while'
+  if (!times) return ''
   const n = parseInt(times, 10)
   if (!n || n < 1) return ''
   return `${n}x/${period}`
@@ -674,9 +672,9 @@ function formatFrequency(times: string, period: string): string {
 
 function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: () => void }) {
   const { addMedication } = useMedications()
-  const [dosage, setDosage] = useState(result.dosage ?? '')
-  const [freqTimes, setFreqTimes] = useState('')
-  const [freqPeriod, setFreqPeriod] = useState<string>('')
+  const [dosage, setDosage] = useState(result.dosage ?? '1')
+  const [freqTimes, setFreqTimes] = useState('1')
+  const [freqPeriod, setFreqPeriod] = useState<string>('once in a while')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -740,16 +738,20 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
             Frequency
           </label>
           <div className="flex gap-2">
-            <input
-              type="number"
-              min="1"
-              max="99"
-              value={freqTimes}
-              onChange={(e) => setFreqTimes(e.target.value)}
-              placeholder="e.g. 2"
-              className="w-16 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
-            />
-            <span className="flex items-center text-sm text-neutral-400">per</span>
+            {freqPeriod !== 'once in a while' && (
+              <>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={freqTimes}
+                  onChange={(e) => setFreqTimes(e.target.value)}
+                  placeholder="e.g. 2"
+                  className="w-16 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                />
+                <span className="flex items-center text-sm text-neutral-400">per</span>
+              </>
+            )}
             <select
               value={freqPeriod}
               onChange={(e) => setFreqPeriod(e.target.value)}
@@ -771,7 +773,7 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
       <button
         type="button"
         onClick={handleSave}
-        disabled={saving}
+        disabled={saving || !formatFrequency(freqTimes, freqPeriod)}
         className="mt-3 w-full rounded-xl bg-neutral-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
       >
         {saving ? 'Adding...' : 'Add to My Medications'}

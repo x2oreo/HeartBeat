@@ -3,14 +3,15 @@
 import type { UIMessage } from 'ai'
 import { ChatMessage } from './ChatMessage'
 
-export function ChatMessageList({ messages, isLoading }: {
+export function ChatMessageList({ messages, isLoading, messageImages }: {
   messages: UIMessage[]
   isLoading: boolean
+  messageImages?: Map<string, string>
 }) {
   return (
     <div className="space-y-6">
       {messages.map((message) => (
-        <ChatMessage key={message.id} message={message} />
+        <ChatMessage key={message.id} message={message} imageBase64={messageImages?.get(message.id)} />
       ))}
       {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
         <ThinkingIndicator />

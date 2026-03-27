@@ -41,9 +41,11 @@ export async function POST(request: NextRequest) {
 
   // Run scan in background — writer pushes lines as steps complete
   const scanPromise = (async () => {
+    let closed = false
     function onStep(step: PipelineStep) {
+      if (closed) return
       const line = JSON.stringify({ type: 'step', step }) + '\n'
-      void writer.write(encoder.encode(line))
+      void writer.write(encoder.encode(line)).catch(() => { closed = true })
     }
 
     try {
@@ -54,17 +56,21 @@ export async function POST(request: NextRequest) {
         ),
       ])
 
-      const line = JSON.stringify({ type: 'result', data: result }) + '\n'
-      await writer.write(encoder.encode(line))
+      if (!closed) {
+        const line = JSON.stringify({ type: 'result', data: result }) + '\n'
+        await writer.write(encoder.encode(line)).catch(() => { closed = true })
+      }
     } catch (err) {
-      const message =
-        err instanceof Error && err.message === 'SCAN_TIMEOUT'
-          ? 'Scan timed out. Please try again.'
-          : 'Scan failed. Please try again.'
-      const line = JSON.stringify({ type: 'error', error: message }) + '\n'
-      await writer.write(encoder.encode(line))
+      if (!closed) {
+        const message =
+          err instanceof Error && err.message === 'SCAN_TIMEOUT'
+            ? 'Scan timed out. Please try again.'
+            : 'Scan failed. Please try again.'
+        const line = JSON.stringify({ type: 'error', error: message }) + '\n'
+        await writer.write(encoder.encode(line)).catch(() => {})
+      }
     } finally {
-      await writer.close()
+      if (!closed) await writer.close().catch(() => {})
     }
   })()
 

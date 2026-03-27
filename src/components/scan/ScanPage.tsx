@@ -106,11 +106,11 @@ function sourceBadgeStyle(source: ScanResult['source']): string {
     case 'CREDIBLEMEDS_VERIFIED':
     case 'CREDIBLEMEDS_API':
     case 'MULTI_SOURCE':
-      return 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'
+      return 'bg-brand-light text-brand'
     case 'AI_ENRICHED':
-      return 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'
+      return 'bg-coral-light text-coral-deep'
     case 'AI_ASSESSED':
-      return 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300'
+      return 'bg-risk-caution-bg text-risk-caution-text'
   }
 }
 
@@ -122,8 +122,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
     <div className="space-y-4">
       {/* Fuzzy match banner */}
       {result.fuzzyMatch && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+        <div className="rounded-xl border border-brand/20 bg-brand-light p-3">
+          <p className="text-sm text-brand-deep">
             Showing results for <strong>{result.fuzzyMatch.matchedName}</strong>
             {result.fuzzyMatch.originalQuery !== result.fuzzyMatch.matchedName && (
               <> (you searched for &ldquo;{result.fuzzyMatch.originalQuery}&rdquo;)</>
@@ -134,8 +134,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
 
       {/* AI-only warning */}
       {result.source === 'AI_ASSESSED' && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+        <div className="rounded-xl border border-risk-caution/20 bg-risk-caution-bg p-3">
+          <p className="text-sm font-medium text-risk-caution-text">
             This drug was not found in any verified medical database. This assessment is based on AI analysis only. Please consult your cardiologist.
           </p>
         </div>
@@ -172,8 +172,8 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
           </div>
           {result.dosage && (
             <div>
-              <dt className="text-xs text-neutral-500 dark:text-neutral-400">Dosage</dt>
-              <dd className="text-neutral-800 dark:text-neutral-200">{result.dosage}</dd>
+              <dt className="text-xs text-text-secondary">Dosage</dt>
+              <dd className="text-text-primary">{result.dosage}</dd>
             </div>
           )}
           {result.qtMechanism && (
@@ -188,12 +188,12 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
             {sourceLabel(result.source)}
           </span>
           {result.enrichment && result.enrichment.fdaTorsadesReports !== null && result.enrichment.fdaTorsadesReports > 0 && (
-            <span className="inline-block rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/60 dark:text-red-300">
+            <span className="inline-block rounded-md bg-risk-danger-bg px-2 py-0.5 text-xs font-medium text-risk-danger-text">
               {result.enrichment.fdaTorsadesReports} FDA TdP reports
             </span>
           )}
           {result.enrichment && result.enrichment.dataSources.length > 1 && (
-            <span className="inline-block rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+            <span className="inline-block rounded-md bg-surface px-2 py-0.5 text-xs font-medium text-text-secondary">
               {result.enrichment.dataSources.length} data sources
             </span>
           )}
@@ -300,24 +300,24 @@ function ResultCard({ result, showActions = true }: { result: ScanResult; showAc
 function stepStatusIcon(status: PipelineStepStatus) {
   switch (status) {
     case 'HIT':
-      return <span className="text-emerald-500">&#10003;</span>
+      return <span className="text-risk-safe">&#10003;</span>
     case 'MISS':
-      return <span className="text-neutral-400">&mdash;</span>
+      return <span className="text-text-tertiary">&mdash;</span>
     case 'SKIPPED':
-      return <span className="text-neutral-300">&#8226;</span>
+      return <span className="text-text-tertiary">&#8226;</span>
     case 'ERROR':
-      return <span className="text-red-500">&#10005;</span>
+      return <span className="text-risk-danger">&#10005;</span>
   }
 }
 
 function stepStatusColor(status: PipelineStepStatus) {
   switch (status) {
     case 'HIT':
-      return 'border-emerald-200 dark:border-emerald-800'
+      return 'border-risk-safe/20'
     case 'ERROR':
-      return 'border-red-200 dark:border-red-800'
+      return 'border-risk-danger/20'
     default:
-      return 'border-neutral-200 dark:border-neutral-700'
+      return 'border-separator-light'
   }
 }
 
@@ -327,26 +327,26 @@ function PipelineView({ steps }: { steps: PipelineStep[] }) {
   const hitCount = steps.filter((s) => s.status === 'HIT').length
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+    <div className="rounded-xl border border-separator-light bg-surface-raised print:hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
-          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          <span className="text-sm font-medium text-text-primary">
             How we verified this
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-400 dark:text-neutral-500">
+          <span className="text-xs text-text-tertiary">
             {hitCount}/{steps.length} sources &middot; {totalMs > 1000 ? `${(totalMs / 1000).toFixed(1)}s` : `${totalMs}ms`}
           </span>
           <svg
-            className={`h-4 w-4 text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 text-text-tertiary transition-transform ${open ? 'rotate-180' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -358,7 +358,7 @@ function PipelineView({ steps }: { steps: PipelineStep[] }) {
       </button>
 
       {open && (
-        <div className="border-t border-neutral-100 px-4 pb-4 pt-3 dark:border-neutral-800">
+        <div className="border-t border-separator-light px-4 pb-4 pt-3">
           <div className="space-y-2">
             {steps.map((step, i) => (
               <div
@@ -370,26 +370,26 @@ function PipelineView({ steps }: { steps: PipelineStep[] }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                    <span className="text-xs font-semibold text-text-primary">
                       {step.name}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                         step.status === 'HIT'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
+                          ? 'bg-risk-safe-bg text-risk-safe-text'
                           : step.status === 'ERROR'
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300'
-                            : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                            ? 'bg-risk-danger-bg text-risk-danger-text'
+                            : 'bg-surface text-text-secondary'
                       }`}>
                         {step.status}
                       </span>
-                      <span className="font-mono text-[10px] text-neutral-400 dark:text-neutral-500">
+                      <span className="font-mono text-[10px] text-text-tertiary">
                         {step.durationMs > 1000 ? `${(step.durationMs / 1000).toFixed(1)}s` : `${step.durationMs}ms`}
                       </span>
                     </div>
                   </div>
                   {step.detail && (
-                    <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <p className="mt-0.5 text-[11px] text-text-secondary">
                       {step.detail}
                     </p>
                   )}
@@ -397,7 +397,7 @@ function PipelineView({ steps }: { steps: PipelineStep[] }) {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[10px] text-neutral-400 dark:text-neutral-500">
+          <p className="mt-3 text-[10px] text-text-tertiary">
             Pipeline: Local DB &rarr; Fuzzy Match &rarr; RxNorm &rarr; CredibleMeds &rarr; FDA FAERS &rarr; AI Analysis
           </p>
         </div>

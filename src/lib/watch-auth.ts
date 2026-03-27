@@ -43,6 +43,7 @@ export async function exchangePairingCode(
   if (!pairingCode) return null
   if (pairingCode.used) return null
   if (pairingCode.expiresAt < new Date()) return null
+  if (!pairingCode.userId) return null
 
   // Generate token before transaction (crypto is not async)
   const rawToken = randomBytes(32).toString('hex')

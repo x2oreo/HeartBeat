@@ -45,6 +45,14 @@ next-env.d.ts
 # Misc
 .vercel
 
+# Claude Code
+.claude/
+
+# Internal planning docs
+docs/HEARTGUARD-*.md
+docs/PERSON-*.md
+docs/*.docx
+
 # Xcode / watchOS
 HeartBeatWatch/Secrets.xcconfig
 HeartBeatWatch/*.xcodeproj/xcuserdata/

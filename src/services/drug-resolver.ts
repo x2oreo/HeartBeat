@@ -1,4 +1,3 @@
-// ── Drug Resolution Pipeline ────────────────────────────────────────
 // Multi-step drug name resolution: local exact → fuzzy → RxNorm → CredibleMeds → AI.
 // Returns the best available data from all sources for a given drug query.
 
@@ -12,7 +11,6 @@ import type { CredibleMedsResult } from '@/services/external/crediblemeds-client
 import type { OpenFDASignal } from '@/services/external/openfda-client'
 import type { DrugInfo, RiskCategory, DrugEnrichment, FuzzyMatchInfo, PipelineStep } from '@/types'
 
-// ── Types ───────────────────────────────────────────────────────────
 
 export type ResolvedDrug = {
   genericName: string
@@ -27,7 +25,6 @@ export type ResolvedDrug = {
   pipelineTrace: PipelineStep[]
 }
 
-// ── Risk Aggregation ────────────────────────────────────────────────
 
 const RISK_PRIORITY: Record<RiskCategory, number> = {
   KNOWN_RISK: 4,
@@ -54,7 +51,6 @@ export function aggregateRisk(
   )
 }
 
-// ── Parallel Enrichment ─────────────────────────────────────────────
 
 function buildEnrichment(
   hasLocal: boolean,
@@ -76,7 +72,6 @@ function buildEnrichment(
   }
 }
 
-// ── Enrichment with Pipeline Tracing ─────────────────────────────────
 
 async function fetchEnrichmentWithTrace(
   genericName: string,
@@ -96,7 +91,6 @@ async function fetchEnrichmentWithTrace(
   return { credibleMedsData, fdaSignal, rxnormData }
 }
 
-// ── Main Resolution Pipeline ────────────────────────────────────────
 
 /**
  * Resolve a drug query through multiple data sources.
@@ -119,7 +113,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     onStep?.(step)
   }
 
-  // ── Step 1: Local exact match ───────────────────────────────────
   const t1 = Date.now()
   const exactMatch = lookupDrug(normalized)
   const d1 = Date.now() - t1
@@ -156,7 +149,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     detail: 'Not found in US database',
   })
 
-  // ── Step 2: Local fuzzy match ───────────────────────────────────
   const t2 = Date.now()
   const fuzzyResult = fuzzyLookupDrug(normalized)
   const d2 = Date.now() - t2
@@ -197,7 +189,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     detail: 'No similar drug names found',
   })
 
-  // ── Step 2b: Bulgarian brand name resolution ─────────────────────
   const t2b = Date.now()
   const bgResolved = await resolveBgBrandName(normalized)
   const d2b = Date.now() - t2b
@@ -242,7 +233,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     detail: 'Not found in Bulgarian database',
   })
 
-  // ── Step 3: RxNorm + CredibleMeds + OpenFDA in parallel ─────────
   const [rxnormResult, directCredibleMeds, directFdaSignal] = await Promise.all([
     resolveDrugName(normalized).catch(() => null),
     lookupCredibleMeds(normalized).catch(() => null),
@@ -312,7 +302,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     }
   }
 
-  // ── Step 4: CredibleMeds direct lookup ──────────────────────────
   if (directCredibleMeds) {
     return {
       genericName: directCredibleMeds.genericName,
@@ -328,7 +317,6 @@ export async function resolveDrug(query: string, onStep?: OnStepCallback): Promi
     }
   }
 
-  // ── Step 5: AI-only fallback ────────────────────────────────────
   emitStep({
     name: 'AI Safety Review',
     status: 'HIT',

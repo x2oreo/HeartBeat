@@ -24,12 +24,10 @@ export type CountryEmergencyInfo = {
  * Keyed by uppercase ISO 3166-1 alpha-2 code.
  */
 const COUNTRY_EMERGENCY_MAP: Record<string, CountryEmergencyInfo> = {
-  // ── Americas ──────────────────────────────────────────────────────────
   US: { countryCode: 'US', countryName: 'United States',  ambulance: '911',   general: '911'   },
   CA: { countryCode: 'CA', countryName: 'Canada',         ambulance: '911',   general: '911'   },
   MX: { countryCode: 'MX', countryName: 'Mexico',         ambulance: '911',   general: '911'   },
   BR: { countryCode: 'BR', countryName: 'Brazil',         ambulance: '192',   general: '192'   }, // SAMU; 190 = police
-  // ── Europe ────────────────────────────────────────────────────────────
   GB: { countryCode: 'GB', countryName: 'United Kingdom', ambulance: '999',   general: '999'   }, // 112 also works from mobile
   DE: { countryCode: 'DE', countryName: 'Germany',        ambulance: '112',   general: '112'   }, // 110 = police only
   FR: { countryCode: 'FR', countryName: 'France',         ambulance: '15',    general: '112'   }, // 15 = SAMU; 112 routes to same
@@ -39,10 +37,8 @@ const COUNTRY_EMERGENCY_MAP: Record<string, CountryEmergencyInfo> = {
   PL: { countryCode: 'PL', countryName: 'Poland',         ambulance: '999',   general: '112'   }, // 999 = ambulance; 112 = EU unified
   NL: { countryCode: 'NL', countryName: 'Netherlands',    ambulance: '112',   general: '112'   },
   IL: { countryCode: 'IL', countryName: 'Israel',         ambulance: '101',   general: '101'   }, // 101 = MDA (national ambulance)
-  // ── Middle East & Africa ──────────────────────────────────────────────
   AE: { countryCode: 'AE', countryName: 'UAE',            ambulance: '998',   general: '999'   }, // 998 = ambulance; 999 = police/fire
   ZA: { countryCode: 'ZA', countryName: 'South Africa',   ambulance: '10177', general: '10177' }, // 10111 = police
-  // ── Asia-Pacific ──────────────────────────────────────────────────────
   AU: { countryCode: 'AU', countryName: 'Australia',      ambulance: '000',   general: '000'   }, // 112 from mobile also routes here
   IN: { countryCode: 'IN', countryName: 'India',          ambulance: '102',   general: '112'   }, // 102 = ambulance; 112 = national unified (2019)
   JP: { countryCode: 'JP', countryName: 'Japan',          ambulance: '119',   general: '119'   }, // 110 = police; 112 routes to police, NOT ambulance

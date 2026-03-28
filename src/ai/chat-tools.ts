@@ -6,7 +6,6 @@ import { lookupDrug, searchDrugs } from '@/services/drug-lookup'
 import { prisma } from '@/lib/prisma'
 import type { ScanResult, EnhancedEmergencyCardData, DoctorPrepData, DrugInfo } from '@/types'
 
-// ── Tool Result Types ──────────────────────────────────────────────────
 
 export type ChatToolResult =
   | { toolName: 'scan_drug'; result: ScanResult }
@@ -33,7 +32,6 @@ type DrugLookupResult = {
   suggestions: { genericName: string; riskCategory: string }[]
 }
 
-// ── Build Chat Tools ───────────────────────────────────────────────────
 // Each tool wraps an existing service function. The userId is injected via
 // closure so the model never sees or controls it.
 

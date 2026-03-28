@@ -1,4 +1,3 @@
-// ── Drug Autocomplete Service ───────────────────────────────────────
 // Priority: 1) Local QT drugs  2) Bulgarian Positive List (Supabase)  3) RxNorm
 // Local results always appear first (with full QT risk data).
 // Bulgarian results add local brand-name coverage.
@@ -9,7 +8,6 @@ import { prisma } from '@/lib/prisma'
 import { EXTERNAL_API_CONFIG } from '@/services/external/config'
 import type { AutocompleteSuggestion } from '@/types'
 
-// ── RxNorm Spelling Suggestions ─────────────────────────────────────
 
 type SpellingSuggestionsResponse = {
   suggestionGroup?: {
@@ -43,7 +41,6 @@ async function fetchRxNormSuggestions(
   }
 }
 
-// ── Bulgarian Positive List (Supabase) ────────────────────────────────
 
 type BgDrugRow = { inn: string; brand_name: string; atc_code: string | null }
 
@@ -105,7 +102,6 @@ async function fetchBgDrugSuggestions(
   }
 }
 
-// ── Deduplication ───────────────────────────────────────────────────
 
 /** Quick Levenshtein distance — used to filter near-duplicate suggestions. */
 function editDistance(a: string, b: string): number {
@@ -140,7 +136,6 @@ function isTooSimilar(name: string, existing: string[]): boolean {
   return false
 }
 
-// ── Unified Autocomplete ────────────────────────────────────────────
 
 /**
  * Search for drugs across local QT database and RxNorm.

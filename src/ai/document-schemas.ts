@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// ── Shared primitive schemas (reused in service for safe DB parsing) ─
 
 export const riskCategorySchema = z.enum(['KNOWN_RISK', 'POSSIBLE_RISK', 'CONDITIONAL_RISK', 'NOT_LISTED'])
 export const genotypeSchema = z.enum(['LQT1', 'LQT2', 'LQT3', 'OTHER', 'UNKNOWN']).nullable()
@@ -10,7 +9,6 @@ export const cypDataSchema = z.object({
   induces: z.array(z.string()),
 })
 
-// ── Emergency Card AI Schema ─────────────────────────────────────
 
 export const emergencyCardAISchema = z.object({
   headline: z
@@ -50,7 +48,6 @@ export const emergencyCardAISchema = z.object({
 
 export type EmergencyCardAIOutput = z.infer<typeof emergencyCardAISchema>
 
-// ── Full enhanced card schema (used to validate DB reads/writes) ──
 
 export const enhancedEmergencyCardDataSchema = z.object({
   patientName: z.string(),
@@ -78,7 +75,6 @@ export const enhancedEmergencyCardDataSchema = z.object({
   }).optional(),
 })
 
-// ── Doctor Prep AI Schema ────────────────────────────────────────
 
 export const doctorPrepAISchema = z.object({
   summary: z

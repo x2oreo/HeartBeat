@@ -250,7 +250,6 @@ export async function triggerSOS(
   return { notified: true, contactsReached }
 }
 
-// ── Types ─────────────────────────────────────────────────────────────
 
 type AlertData = {
   heartRate: number
@@ -272,7 +271,6 @@ type AlertData = {
 
 type MedInfo = { genericName: string; brandName: string | null; qtRisk: string }
 
-// ── Helpers ───────────────────────────────────────────────────────────
 
 function escapeHtml(str: string): string {
   return str
@@ -331,7 +329,6 @@ function formatSMSLocation(alert: AlertData, mapsUrl: string | null): string {
   return lines.join('\n') + '\n'
 }
 
-// ── Message Composers ────────────────────────────────────────────────
 
 function composeSMS(
   patientName: string,
@@ -602,7 +599,6 @@ function composeEmailHtml(
 </html>`
 }
 
-// ── Test SOS ──────────────────────────────────────────────────────────
 //
 // Sends real-format SOS notifications (same compose functions, same structure)
 // to all emergency contacts using a realistic simulated cardiac event.

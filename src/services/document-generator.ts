@@ -101,7 +101,6 @@ function parseCypData(raw: unknown) {
   return result.success ? result.data : defaultCyp
 }
 
-// ── Emergency Card Generation ────────────────────────────────────
 
 export async function generateEmergencyCard(
   userId: string,
@@ -179,7 +178,6 @@ export async function generateEmergencyCard(
   }
 }
 
-// ── Prohibited Drugs List (deterministic, from qtdrugs.json) ─────
 
 function getProhibitedDrugs(): ProhibitedDrug[] {
   const entries = qtDrugs as { genericName: string; drugClass: string; riskCategory: string; isDTA: boolean }[]
@@ -206,7 +204,6 @@ function buildProhibitedDrugsSummary(drugs: ProhibitedDrug[]): string {
     .join('\n')
 }
 
-// ── Doctor Prep Generation ───────────────────────────────────────
 
 export type DocPrepStepCallback = (step: import('@/types').PipelineStep) => void
 
@@ -349,7 +346,6 @@ export async function generateDoctorPrep(
   return { ...documentData, id: saved.id }
 }
 
-// ── Doctor Prep Document CRUD ────────────────────────────────────
 
 export async function getDoctorPrepDocuments(userId: string): Promise<SavedDoctorPrepDocumentWithPreview[]> {
   const docs = await prisma.doctorPrepDocument.findMany({
@@ -434,7 +430,6 @@ export async function deleteDoctorPrepDocument(
   return true
 }
 
-// ── Shared Emergency Card (slug-based sharing) ───────────────────
 
 export async function saveSharedEmergencyCard(
   userId: string,

@@ -1,4 +1,3 @@
-// ── External API Configuration ──────────────────────────────────────
 // Centralized config for all external drug data APIs.
 // All APIs are optional — the system degrades gracefully without them.
 

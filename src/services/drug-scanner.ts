@@ -26,7 +26,6 @@ import type {
   PipelineStep,
 } from '@/types'
 
-// ── Scan Cache ──────────────────────────────────────────────────────
 
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 const scanCache = new Map<string, { result: ScanResult; timestamp: number }>()
@@ -60,7 +59,6 @@ export function clearScanCache(userId: string): void {
   }
 }
 
-// ── Private Helpers ─────────────────────────────────────────────────
 
 /** Convert DrugInfo (from lookupDrug) to QtDrugEntry (for buildComboPrompt). */
 function drugInfoToQtDrugEntry(info: DrugInfo): QtDrugEntry {
@@ -260,7 +258,6 @@ async function getUserMedications(userId: string): Promise<{
   return { genotype: userData?.genotype ?? null, currentMeds }
 }
 
-// ── Pipeline step backfill ───────────────────────────────────────────
 // The resolver returns early on match, so later steps never emit.
 // This ensures the full pipeline is always visible in the UI.
 
@@ -290,7 +287,6 @@ function backfillPipelineSteps(trace: PipelineStep[]): PipelineStep[] {
   return result
 }
 
-// ── Main Export ──────────────────────────────────────────────────────
 
 /**
  * Scan a drug by text name. Orchestrates multi-source resolution + AI analysis.
@@ -309,7 +305,6 @@ export async function scanDrugByText(
   dosage?: string,
   onStep?: OnStepCallback,
 ): Promise<ScanResult> {
-  // ── Cache check ────────────────────────────────────────────────────
   const cached = getCachedResult(userId, drugName)
   if (cached) {
     const cachedResult = {
@@ -322,7 +317,6 @@ export async function scanDrugByText(
     return cachedResult
   }
 
-  // ── Step 1: Multi-source drug resolution ──────────────────────────
   const resolved = await resolveDrug(drugName, onStep)
   const trace: PipelineStep[] = [...(resolved.pipelineTrace ?? [])]
 
@@ -331,7 +325,6 @@ export async function scanDrugByText(
     onStep?.(step)
   }
 
-  // ── Step 2: Unknown drug path (AI assessment) ─────────────────────
   if (!resolved.localEntry && resolved.matchSource === 'AI_ONLY') {
     // Build enrichment data for the AI prompt
     const enrichment: EnrichmentData = {
@@ -365,10 +358,8 @@ export async function scanDrugByText(
     const result = mapUnknownDrugToScanResult(drugName, aiResult, resolved)
     if (dosage) result.dosage = dosage
 
-    // ── CRITICAL FIX: Combo analysis for unknown drugs ──────────────
-    // Previously, unknown drugs NEVER got combo analysis even if the user
-    // had medications. Now we run combo analysis when the AI assessment
-    // indicates the drug may be risky.
+    // Run combo analysis when the AI assessment indicates the drug may be
+    // risky and the user has other medications on file.
     if (
       aiResult.isRealDrug &&
       aiResult.qtRiskAssessment !== 'LIKELY_SAFE' &&
@@ -420,7 +411,6 @@ export async function scanDrugByText(
     return result
   }
 
-  // ── Step 3: Known/resolved drug path ──────────────────────────────
   const drugInfo = resolved.localEntry
   if (!drugInfo) {
     // Resolved via CredibleMeds API but not in local DB
@@ -511,7 +501,6 @@ export async function scanDrugByText(
     return result
   }
 
-  // ── Step 4: Known drug with local entry ───────────────────────────
   const result = drugInfoToScanResult(drugName, drugInfo, resolved)
   if (dosage) result.dosage = dosage
 

@@ -7,7 +7,6 @@ import { useDrugScan } from '@/hooks/use-drug-scan'
 import { useMedications } from '@/hooks/use-medications'
 import { DrugSearchInput } from '@/components/shared/DrugSearchInput'
 
-// ── History types ────────────────────────────────────────────────────
 
 type ScanHistoryEntry = {
   id: string
@@ -36,7 +35,6 @@ function readFileAsBase64(file: File): Promise<string> {
   })
 }
 
-// ── Components ──────────────────────────────────────────────────────
 
 function ExpandableText({ text, className, lines = 2 }: { text: string; className?: string; lines?: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -502,7 +500,6 @@ function Disclaimer() {
   )
 }
 
-// ── History constants ────────────────────────────────────────────────
 
 const HIST_RISK_DOT: Record<string, string> = {
   KNOWN_RISK: 'bg-[#FF3B30]',
@@ -736,7 +733,6 @@ function AddToMedications({ result, onAdded }: { result: ScanResult; onAdded: ()
   )
 }
 
-// ── Main Page ───────────────────────────────────────────────────────
 
 export function ScanPage() {
   const { result, photoResult, loading: scanLoading, error, liveSteps, scanByText, scanByPhoto, reset } = useDrugScan()

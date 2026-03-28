@@ -1,7 +1,6 @@
 import { SYSTEM_CONTEXT } from '@/ai/scan-prompts'
 import type { Genotype } from '@/types'
 
-// ── Patient Context ────────────────────────────────────────────────────
 
 export type PatientContext = {
   name: string | null
@@ -10,7 +9,6 @@ export type PatientContext = {
   medicationNames: string[]
 }
 
-// ── Chat System Prompt ─────────────────────────────────────────────────
 
 export function buildChatSystemPrompt(patient: PatientContext): string {
   const genotypeInfo = patient.genotype && patient.genotype !== 'UNKNOWN'

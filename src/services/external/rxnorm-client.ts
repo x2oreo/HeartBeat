@@ -1,4 +1,3 @@
-// ── RxNorm API Client ───────────────────────────────────────────────
 // Free NIH API for drug name resolution with fuzzy matching.
 // Resolves typos, brand names, international names → canonical generic name.
 // No API key needed. Docs: https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html
@@ -38,7 +37,6 @@ type PropertiesResponse = {
   }
 }
 
-// ── In-memory cache ─────────────────────────────────────────────────
 
 const cache = new Map<string, { result: RxNormResult | null; timestamp: number }>()
 
@@ -56,7 +54,6 @@ function setCache(key: string, result: RxNormResult | null): void {
   cache.set(key, { result, timestamp: Date.now() })
 }
 
-// ── API helpers ─────────────────────────────────────────────────────
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController()
@@ -71,7 +68,6 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-// ── Public API ──────────────────────────────────────────────────────
 
 /**
  * Resolve a drug name using RxNorm approximate matching.

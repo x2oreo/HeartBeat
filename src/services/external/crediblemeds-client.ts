@@ -1,4 +1,3 @@
-// ── CredibleMeds API Client ─────────────────────────────────────────
 // THE authoritative source for QT drug risk classification.
 // Requires API key (env var CREDIBLEMEDS_API_KEY). Optional — system works without it.
 // Docs: https://api.crediblemeds.org/index.php/api-manual/
@@ -32,7 +31,6 @@ type CredibleMedsResponse = {
   }>
 }
 
-// ── In-memory cache ─────────────────────────────────────────────────
 
 const cache = new Map<string, { result: CredibleMedsResult | null; timestamp: number }>()
 
@@ -50,7 +48,6 @@ function setCache(key: string, result: CredibleMedsResult | null): void {
   cache.set(key, { result, timestamp: Date.now() })
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
 
 /** Map CredibleMeds risk categories to our RiskCategory type. */
 function mapRiskCategory(category: string): RiskCategory {
@@ -81,7 +78,6 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-// ── Public API ──────────────────────────────────────────────────────
 
 /**
  * Look up a drug in the CredibleMeds database.

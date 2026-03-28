@@ -1,6 +1,5 @@
 import type { Genotype, CypData } from '@/types'
 
-// ── Photo Scan Prompt ──────────────────────────────────────────────
 
 export function buildPhotoScanPrompt() {
   return `You are a medication identification AI reading a photo of a medication package, box, label, pill bottle, or blister pack. Your goal is to extract the medication name(s) so an LQTS patient can check if the drug is safe.
@@ -34,7 +33,6 @@ export function buildPhotoScanPrompt() {
 - If the image shows something that is clearly not a medication (e.g., food, a non-medical product), set imageQuality to UNREADABLE and explain in notes`
 }
 
-// ── Emergency Card Prompt ──────────────────────────────────────────
 
 export function buildEmergencyCardPrompt(
   patientName: string,
@@ -63,7 +61,6 @@ Generate up to 5 critical notes for emergency responders. These must be:
 - Always include: "Do NOT administer QT-prolonging drugs without cardiology consult"`
 }
 
-// ── Doctor Prep Prompt ─────────────────────────────────────────────
 
 export function buildDoctorPrepPrompt(
   patientName: string,

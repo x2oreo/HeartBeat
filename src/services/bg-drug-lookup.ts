@@ -1,4 +1,3 @@
-// ── Bulgarian Drug Lookup ────────────────────────────────────────────
 // Resolves Bulgarian brand names to their INN (generic name) using the
 // bg_drugs table in Supabase (sourced from the Bulgarian Positive Drug List).
 

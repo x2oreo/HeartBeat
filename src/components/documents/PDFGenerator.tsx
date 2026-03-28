@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { EnhancedEmergencyCardData, DoctorPrepData, ProhibitedDrug } from '@/types'
 
-// ── Emergency Card PDF ───────────────────────────────────────────
 
 type EmergencyCardPDFProps = {
   data: EnhancedEmergencyCardData
@@ -184,7 +183,6 @@ export function EmergencyCardPDFButton({ data, shareUrl }: EmergencyCardPDFProps
   )
 }
 
-// ── Doctor Prep PDF ──────────────────────────────────────────────
 
 type DoctorPrepPDFProps = {
   data: DoctorPrepData

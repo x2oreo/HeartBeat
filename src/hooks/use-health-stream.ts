@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { HealthMetricPayload, HealthAlertPayload, HealthStreamEvent } from '@/types'
 
-// ── Connection status ────────────────────────────────────────────────
 //
 // Four distinct states to give the UI accurate copy:
 //   'connecting'    — initial load, SSE opened, waiting for first 'connected' event

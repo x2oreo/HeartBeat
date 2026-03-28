@@ -3,7 +3,6 @@
 
 import type { EmergencyCardAIOutput } from '@/ai/document-schemas'
 
-// ── Risk & Classification ──────────────────────────────────────────
 
 export type RiskCategory = 'KNOWN_RISK' | 'POSSIBLE_RISK' | 'CONDITIONAL_RISK' | 'NOT_LISTED'
 
@@ -21,7 +20,6 @@ export type RiskSource =
   | 'AI_ASSESSED'            // AI-only assessment, no external verification
   | 'AI_ENRICHED'            // AI assessment supplemented with external data
 
-// ── Drug Data (qtdrugs.json) ───────────────────────────────────────
 
 export type CypData = {
   metabolizedBy: string[]
@@ -40,7 +38,6 @@ export type QtDrugEntry = {
   cyp: CypData
 }
 
-// ── Drug Search (autocomplete result from /api/medications/search) ─
 
 export type DrugSearchResult = {
   genericName: string
@@ -49,7 +46,6 @@ export type DrugSearchResult = {
   isDTA: boolean
 }
 
-// ── CYP450 Conflict (detected locally between user's medications) ─
 
 export type CypConflict = {
   medA: string
@@ -58,7 +54,6 @@ export type CypConflict = {
   type: 'inhibition' | 'induction'
 }
 
-// ── Autocomplete (unified local + RxNorm results) ────────────────
 
 export type AutocompleteSource = 'LOCAL' | 'RXNORM' | 'DRUG_TABLE' | 'BG_POSITIVE_LIST'
 
@@ -72,7 +67,6 @@ export type AutocompleteSuggestion = {
   rxcui: string | null
 }
 
-// ── Drug Info (lookup result) ──────────────────────────────────────
 
 export type DrugInfo = {
   genericName: string
@@ -86,7 +80,6 @@ export type DrugInfo = {
   source: RiskSource
 }
 
-// ── AI Combo Analysis ──────────────────────────────────────────────
 
 export type DrugInteraction = {
   drugA: string
@@ -109,7 +102,6 @@ export type ComboAnalysisResult = {
   genotypeConsiderations: string | null
 }
 
-// ── Pipeline Tracing ─────────────────────────────────────────────────
 
 export type PipelineStepStatus = 'HIT' | 'MISS' | 'SKIPPED' | 'ERROR'
 
@@ -120,7 +112,6 @@ export type PipelineStep = {
   detail?: string
 }
 
-// ── Scan Results ───────────────────────────────────────────────────
 
 export type DrugEnrichment = {
   credibleMedsVerified: boolean
@@ -159,7 +150,6 @@ export type PhotoScanResult = {
   unrecognizedText: string[]
 }
 
-// ── Documents ──────────────────────────────────────────────────────
 
 export type EmergencyContactInfo = {
   name: string
@@ -186,7 +176,6 @@ export type EmergencyCardData = {
   personalNotes?: { en: string; bg: string }
 }
 
-// ── Doctor Prep ──────────────────────────────────────────────────────
 
 export type DoctorSpecialty =
   | 'Cardiologist'
@@ -278,13 +267,11 @@ export type SavedDoctorPrepDocumentWithPreview = SavedDoctorPrepDocument & {
   summary: string
 }
 
-// ── Enhanced Document Types ─────────────────────────────────────────
 
 export type EnhancedEmergencyCardData = EmergencyCardData & {
   aiContent?: EmergencyCardAIOutput
 }
 
-// ── Country Emergency Services ─────────────────────────────────────
 
 export type CountryEmergencyInfo = {
   /** ISO 3166-1 alpha-2 country code */
@@ -297,7 +284,6 @@ export type CountryEmergencyInfo = {
   general: string
 }
 
-// ── Emergency Card Page Local Types ────────────────────────────────
 
 export type ProfileData = {
   name: string | null
@@ -321,7 +307,6 @@ export type MedicationData = {
   isDTA: boolean
 }
 
-// ── Watch Health Data ──────────────────────────────────────────────
 
 export type WatchRiskLevel = 'NORMAL' | 'CAUTION' | 'ELEVATED'
 
@@ -377,7 +362,6 @@ export type WatchPushPayload =
   | { type: 'drug-alert'; drugName: string; riskCategory: RiskCategory; message: string }
   | { type: 'mode-change'; mode: WatchMonitoringMode; reason: string }
 
-// ── Dashboard Stats ──────────────────────────────────────────────
 
 export type ScanActivityDay = {
   date: string
@@ -407,7 +391,6 @@ export type DashboardStats = {
   heartRateHistory: HeartRatePoint[]
 }
 
-// ── Watch Dashboard ─────────────────────────────────────────────
 
 export type HRVPoint = {
   time: string
@@ -453,7 +436,6 @@ export type WatchDashboardData = {
   }
 }
 
-// ── Chat Conversations ─────────────────────────────────────────────
 
 export type ConversationSummary = {
   id: string

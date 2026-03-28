@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// ── Combo Analysis Schema ──────────────────────────────────────────
 
 export const drugInteractionSchema = z.object({
   drugA: z.string().describe('First drug in the interaction pair'),
@@ -23,7 +22,6 @@ export const comboAnalysisSchema = z.object({
   genotypeConsiderations: z.string().nullable().describe('Genotype-specific advice if applicable, or null'),
 })
 
-// ── Photo Scan Schema ──────────────────────────────────────────────
 
 export const photoScanSchema = z.object({
   detectedDrugNames: z.array(z.string()).describe('Drug names detected in the image'),
@@ -31,13 +29,11 @@ export const photoScanSchema = z.object({
   rawText: z.string().describe('Raw text read from the image'),
 })
 
-// ── Emergency Card Schema ──────────────────────────────────────────
 
 export const emergencyCardSchema = z.object({
   criticalNotes: z.array(z.string()).describe('Critical medical notes for ER personnel, max 5 items'),
 })
 
-// ── Doctor Prep Schema ─────────────────────────────────────────────
 
 export const doctorPrepSchema = z.object({
   drugSafetyBrief: z.string().describe('Summary of current medication QT risks for the doctor'),

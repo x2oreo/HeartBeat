@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
-// ── Bottom nav tabs ─────────────────────────────────────────────────
 
 const TABS = [
   {
@@ -93,7 +92,6 @@ const TABS = [
   },
 ]
 
-// ── More sheet items ─────────────────────────────────────────────────
 
 const SHEET_ITEMS = [
   {
@@ -144,11 +142,9 @@ const SHEET_ITEMS = [
   },
 ]
 
-// ── More tab routes ──────────────────────────────────────────────────
 
 const MORE_ROUTES = ['/medications', '/history', '/emergency-card', '/doctor-prep', '/settings']
 
-// ── Component ───────────────────────────────────────────────────────
 
 export function MobileBottomNav() {
   const pathname = usePathname()

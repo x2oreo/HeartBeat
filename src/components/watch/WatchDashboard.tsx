@@ -12,7 +12,6 @@ import type {
   WatchAlert,
 } from '@/types'
 
-// ── Helpers ────────────────────────────────────────────────────────
 
 function formatRelativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -36,7 +35,6 @@ const STRESS_CONFIG: Record<string, { color: string; bg: string; label: string }
   HIGH: { color: 'text-risk-danger', bg: 'bg-risk-danger-bg', label: 'High' },
 }
 
-// ── Custom Tooltip ─────────────────────────────────────────────────
 
 function ChartTooltip({ active, payload, unit }: { active?: boolean; payload?: Array<{ value: number }>; unit: string }) {
   if (!active || !payload?.length) return null
@@ -47,7 +45,6 @@ function ChartTooltip({ active, payload, unit }: { active?: boolean; payload?: A
   )
 }
 
-// ── Main Component ─────────────────────────────────────────────────
 
 type WatchDashboardProps = {
   initialData: WatchDashboardData
@@ -406,7 +403,6 @@ export function WatchDashboard({ initialData }: WatchDashboardProps) {
   )
 }
 
-// ── Sub-components ─────────────────────────────────────────────────
 
 function StatTile({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
@@ -467,7 +463,6 @@ function AlertRow({
   )
 }
 
-// ── Risk segment computation ───────────────────────────────────────
 
 function computeRiskSegments(
   timeline: { time: string; level: WatchRiskLevel }[]

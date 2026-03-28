@@ -1,4 +1,3 @@
-// ── Country phone data & E.164 helpers ───────────────────────────────
 
 export type CountryPhone = {
   code: string       // ISO 3166-1 alpha-2

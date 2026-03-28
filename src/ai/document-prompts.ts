@@ -1,6 +1,5 @@
 import type { Genotype, CypData } from '@/types'
 
-// ── Types for prompt inputs ──────────────────────────────────────
 
 type MedicationInput = {
   name: string
@@ -15,7 +14,6 @@ type ContactInput = {
   relationship: string
 }
 
-// ── Emergency Card Prompt ────────────────────────────────────────
 
 export function buildEnhancedEmergencyCardPrompt(
   patientName: string,
@@ -67,7 +65,6 @@ ${contactsBlock}
 Be CONSERVATIVE. When in doubt about a drug's safety, list it as one to avoid.`
 }
 
-// ── Doctor Prep Prompt ───────────────────────────────────────────
 
 const SPECIALTY_CONTEXT: Record<string, string> = {
   Cardiologist: 'Focus on QT interval monitoring, beta-blocker management, antiarrhythmic considerations, and ICD/pacemaker implications if relevant.',

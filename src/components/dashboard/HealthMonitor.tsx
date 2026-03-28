@@ -5,7 +5,6 @@ import { useHealthStream } from '@/hooks/use-health-stream'
 import type { ConnectionStatus } from '@/hooks/use-health-stream'
 import type { HealthMetricPayload, HealthAlertPayload, WatchRiskLevel, WatchStressLevel } from '@/types'
 
-// ── Location cache ────────────────────────────────────────────────────
 
 const LOCATION_CACHE_KEY = 'hg_last_location'
 const LOCATION_CACHE_MAX_AGE_MS = 30 * 60 * 1000 // 30 minutes
@@ -56,7 +55,6 @@ function writeLocationCache(pos: GeolocationPosition): void {
   }
 }
 
-// ── Display helpers ───────────────────────────────────────────────────
 
 /**
  * Formats an ISO 8601 timestamp as a human-readable relative time string.
@@ -220,7 +218,6 @@ function LiveMetrics({ metric }: { metric: HealthMetricPayload }) {
   )
 }
 
-// ── SOS Button ────────────────────────────────────────────────────────
 
 type SOSResult = { success: boolean; contactsReached: number }
 
@@ -358,7 +355,6 @@ export function SOSButton() {
   )
 }
 
-// ── Empty state icon ──────────────────────────────────────────────────
 
 /**
  * Apple Watch outline with an EKG pulse line on the face.
@@ -388,7 +384,6 @@ function WatchIcon() {
   )
 }
 
-// ── HealthMonitor ─────────────────────────────────────────────────────
 
 export function HealthMonitor() {
   const { latestMetric, recentAlerts, connectionStatus } = useHealthStream()

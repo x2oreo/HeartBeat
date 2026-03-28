@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { MobileBottomNav } from './MobileBottomNav'
 
-// ── Nav items ────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
   {
@@ -87,7 +86,6 @@ const BOTTOM_NAV = {
   ),
 }
 
-// ── Component ────────────────────────────────────────────────────────
 
 type Props = {
   children: React.ReactNode

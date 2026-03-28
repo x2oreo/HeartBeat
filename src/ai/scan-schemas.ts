@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-// ── Combo Analysis Schema ────────────────────────────────────────────
 // Response when Claude analyzes a risky drug against the patient's current medications.
 
 export const ComboAnalysisSchema = z.object({
@@ -42,7 +41,6 @@ export const ComboAnalysisSchema = z.object({
 
 export type ComboAnalysis = z.infer<typeof ComboAnalysisSchema>
 
-// ── Detected Drugs Schema ────────────────────────────────────────────
 // Response when Claude Vision reads a medication photo.
 
 export const DetectedDrugsSchema = z.object({
@@ -63,7 +61,6 @@ export const DetectedDrugsSchema = z.object({
 
 export type DetectedDrugs = z.infer<typeof DetectedDrugsSchema>
 
-// ── Unknown Drug Schema ──────────────────────────────────────────────
 // Response when a scanned drug is not found in our qtdrugs.json database.
 
 export const UnknownDrugSchema = z.object({

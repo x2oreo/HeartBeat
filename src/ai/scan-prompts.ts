@@ -3,7 +3,6 @@ import type { CredibleMedsResult } from '@/services/external/crediblemeds-client
 import type { OpenFDASignal } from '@/services/external/openfda-client'
 import type { RxNormResult } from '@/services/external/rxnorm-client'
 
-// ── Types ────────────────────────────────────────────────────────────
 
 /** Shape of a medication record with CYP data, as loaded from Prisma for combo analysis. */
 export type MedicationWithCyp = {
@@ -13,7 +12,6 @@ export type MedicationWithCyp = {
   cypData: CypData | null
 }
 
-// ── System Context ───────────────────────────────────────────────────
 // Shared medical context injected into all scan-related AI calls.
 
 export const SYSTEM_CONTEXT = `You are a cardiac pharmacology AI specialized in Long QT Syndrome (LQTS) medication safety. Your role is to help patients understand whether a medication is dangerous for their heart condition.
@@ -37,7 +35,6 @@ export const SYSTEM_CONTEXT = `You are a cardiac pharmacology AI specialized in 
   - LQT2: auditory stimuli (alarms, sudden loud sounds) and emotional stress are triggers — drugs affecting potassium channels (IKr/hERG) are especially dangerous
   - LQT3: risk is highest during sleep and rest — sodium channel–blocking drugs require extra caution`
 
-// ── Combo Analysis Prompt ────────────────────────────────────────────
 
 function formatCypProfile(cyp: CypData | null): string {
   if (!cyp) return 'CYP data: unknown'
@@ -111,7 +108,6 @@ Analyze the COMBINATION RISK of this new drug with the patient's current medicat
 Write the explanation in plain language a patient can understand. Be thorough but not alarmist — state the facts clearly.`
 }
 
-// ── Unknown Drug Prompt ──────────────────────────────────────────────
 
 export function buildUnknownDrugPrompt(drugName: string): string {
   return `${SYSTEM_CONTEXT}
@@ -158,7 +154,6 @@ When qtRiskAssessment is NOT_A_DRUG:
 - Leave genericName, drugClass, and primaryUse unset`
 }
 
-// ── Enriched Unknown Drug Prompt ─────────────────────────────────────
 // Injects external API data so Claude reasons with facts, not just parametric knowledge.
 
 export type EnrichmentData = {
@@ -222,7 +217,6 @@ When qtRiskAssessment is NOT_A_DRUG:
 - Leave genericName, drugClass, and primaryUse unset`
 }
 
-// ── Combo Prompt for Unknown/AI-Assessed Drugs ──────────────────────
 // Handles the gap where an AI-assessed drug needs combo analysis against
 // the user's current medications.
 
@@ -292,7 +286,6 @@ Analyze the COMBINATION RISK of this new drug with the patient's current medicat
 Write in plain language for a patient. Be thorough but not alarmist.`
 }
 
-// ── Dosage-Aware Combo Prompt Extension ─────────────────────────────
 
 export function buildComboPromptWithDosage(
   newDrug: QtDrugEntry,
@@ -311,7 +304,6 @@ export function buildComboPromptWithDosage(
 - Examples of dose-dependent QT risk: citalopram (FDA max 40mg for QT), ondansetron (high IV doses banned), escitalopram (>20mg increases QT risk significantly).`
 }
 
-// ── External Data Block Builder ─────────────────────────────────────
 
 function buildExternalDataBlock(enrichment: EnrichmentData): string {
   const sections: string[] = []

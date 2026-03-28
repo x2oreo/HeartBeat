@@ -59,7 +59,6 @@ export function searchDrugs(query: string, limit = 10): DrugInfo[] {
     .map(toDrugInfo)
 }
 
-// ── Fuzzy Matching ──────────────────────────────────────────────────
 
 export type FuzzyMatch = {
   drug: DrugInfo

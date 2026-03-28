@@ -1,4 +1,3 @@
-// ── OpenFDA Client ──────────────────────────────────────────────────
 // Free FDA Adverse Event Reporting System (FAERS) API.
 // Returns torsades de pointes adverse event report counts for a drug.
 // No API key needed (40 req/min). Docs: https://open.fda.gov/apis/drug/event/
@@ -22,7 +21,6 @@ type FDAEventResponse = {
   }
 }
 
-// ── In-memory cache ─────────────────────────────────────────────────
 
 const cache = new Map<string, { result: OpenFDASignal | null; timestamp: number }>()
 
@@ -40,7 +38,6 @@ function setCache(key: string, result: OpenFDASignal | null): void {
   cache.set(key, { result, timestamp: Date.now() })
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
 
 function classifySignal(count: number): OpenFDASignal['signalStrength'] {
   if (count >= 50) return 'STRONG'
@@ -62,7 +59,6 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-// ── Public API ──────────────────────────────────────────────────────
 
 /**
  * Get torsades de pointes adverse event signal for a drug from FDA FAERS.

@@ -6,7 +6,6 @@ import type { EnhancedEmergencyCardData, DoctorPrepData, PipelineStep, SavedDoct
 
 const shareResponseSchema = z.object({ slug: z.string(), url: z.string() })
 
-// ── Emergency Card Hook ──────────────────────────────────────────
 
 export function useEmergencyCard() {
   const [cardData, setCardData] = useState<EnhancedEmergencyCardData | null>(null)
@@ -82,7 +81,6 @@ export function useEmergencyCard() {
   return { cardData, setCardData, isGenerating, error, isSharing, generate, share, loadExisting }
 }
 
-// ── Doctor Prep Hook ─────────────────────────────────────────────
 
 type GenerateParams = {
   doctorSpecialty: DoctorSpecialty

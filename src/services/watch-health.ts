@@ -80,11 +80,14 @@ export async function saveHealthAlert(
     timestamp: new Date().toISOString(),
   })
 
-  // Trigger SOS for ELEVATED alerts (fire-and-forget).
+  // Trigger SOS for ELEVATED alerts.
   // bypassCooldown: true — the watch only sends ELEVATED when it is genuinely
   // serious, and during testing the 10-minute cooldown causes silent failures.
+  // NOTE: We await here (not fire-and-forget) because on Vercel the serverless
+  // function is frozen as soon as the HTTP response is sent. A detached promise
+  // gets killed mid-execution, which is why SOS notifications were intermittent.
   if (payload.riskLevel === 'ELEVATED') {
-    triggerSOS(userId, alert.id, { bypassCooldown: true }).catch((err) => {
+    await triggerSOS(userId, alert.id, { bypassCooldown: true }).catch((err) => {
       console.error('[SOS] Failed to trigger:', err)
     })
   }
